@@ -1,0 +1,7 @@
+ipykernel
+python-dotenv
+
+openai
+google-cloud-aiplatform
+mistralai
+perspective
