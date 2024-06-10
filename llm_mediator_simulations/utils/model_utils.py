@@ -46,14 +46,6 @@ class Agreement(Enum):
     AGREE = 3
     STRONGLY_AGREE = 4
 
-    @staticmethod
-    def from_digit(digit: int) -> "Agreement":
-        """Get the agreement level from a digit."""
-        if digit in Agreement._value2member_map_:
-            return Agreement(digit)
-        else:
-            raise ValueError(f"Invalid digit for agreement level: {digit}")
-
 
 def measure_statement(model: LanguageModel, text: str, statement: str) -> Agreement:
     """Scale the correctness of a statement regarding the given text on a scale from 0 to 10."""
