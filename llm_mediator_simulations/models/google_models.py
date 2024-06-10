@@ -27,19 +27,33 @@ class GoogleModel(LanguageModel):
         """
         genai.configure(api_key=api_key)
 
-        self.model = genai.GenerativeModel(f"model/{model_name}")
+        self.model = genai.GenerativeModel(model_name)
 
-        self.safety_settings = {
-            HarmCategory.HARM_CATEGORY_HARASSMENT: harm_block_threshold,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: harm_block_threshold,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: harm_block_threshold,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: harm_block_threshold,
-        }
+        self.safety_settings = [
+            {
+                "category": HarmCategory.HARM_CATEGORY_HARASSMENT,
+                "threshold": harm_block_threshold,
+            },
+            {
+                "category": HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                "threshold": harm_block_threshold,
+            },
+            {
+                "category": HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                "threshold": harm_block_threshold,
+            },
+            {
+                "category": HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                "threshold": harm_block_threshold,
+            },
+        ]
 
     @override
     def sample(self, prompt: str) -> str:
         """Generate text based on the given prompt."""
 
-        return self.model.generate_content(
+        response = self.model.generate_content(
             prompt, safety_settings=self.safety_settings  # type: ignore
         )
+
+        return response.text
