@@ -1,5 +1,7 @@
 """Utilities for language model prompts."""
 
+from enum import Enum, EnumMeta
+
 from llm_mediator_simulations.models.language_model import LanguageModel
 
 ###################################################################################################
@@ -35,13 +37,37 @@ def summarize_conversation(model: LanguageModel, conversation: list[str]) -> str
 ###################################################################################################
 
 
-def measure_statement(model: LanguageModel, text: str, statement: str) -> int:
+class Agreement(Enum):
+    """Agreement levels for scaling."""
+
+    STRONGLY_DISAGREE = 0
+    DISAGREE = 1
+    NEUTRAL = 2
+    AGREE = 3
+    STRONGLY_AGREE = 4
+
+    @staticmethod
+    def from_digit(digit: int) -> "Agreement":
+        """Get the agreement level from a digit."""
+        if digit in Agreement._value2member_map_:
+            return Agreement(digit)
+        else:
+            raise ValueError(f"Invalid digit for agreement level: {digit}")
+
+
+def measure_statement(model: LanguageModel, text: str, statement: str) -> Agreement:
     """Scale the correctness of a statement regarding the given text on a scale from 0 to 10."""
+
+    scale_description: list[str] = []
+
+    for member in Agreement:
+        scale_description.append(f"{member.value} is {member.name}")
 
     prompt = f"""{text}
 
-    On a scale from 0 to 10, how much do you agree with the following statement about the text above?
+    On a scale from 0 to 4, {', '.join(scale_description)}, how much do you agree with the following statement about the text above?
     {statement}
+    Answer with a single digit.
     """
 
-    return int(model.sample(prompt))
+    return Agreement(int(model.sample(prompt)))
