@@ -80,3 +80,22 @@ def measure_statement(model: LanguageModel, text: str, statement: str) -> Agreem
     """
 
     return Agreement(int(model.sample(prompt)))
+
+
+###################################################################################################
+#                                        CLOSED QUESTIONS                                         #
+###################################################################################################
+
+
+def ask_closed_question(model: LanguageModel, question: str) -> bool:
+    """Ask a closed question to the model and return the answer as a boolean (yes/no)."""
+
+    prompt = f"""{question}
+
+    Answer the question above with "0" for no and "1" for yes.
+    You must answer exactly with 0 or 1, nothing more.
+    """
+
+    answer = model.sample(prompt)
+    print(answer)
+    return answer == "1"

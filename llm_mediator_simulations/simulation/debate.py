@@ -1,49 +1,13 @@
 """Online debate simulation handler class"""
 
-from dataclasses import dataclass
-from enum import Enum
-
 from rich.progress import track
 
 from llm_mediator_simulations.models.language_model import LanguageModel
+from llm_mediator_simulations.simulation.configuration import (DebateConfig,
+                                                               DebatePosition,
+                                                               Debater)
 from llm_mediator_simulations.simulation.summary import Summary
-
-
-class DebatePosition(Enum):
-    """Debate positions for the participants."""
-
-    AGAINST = 0
-    FOR = 1
-
-
-class Personality(Enum):
-    """Debater personality qualifiers."""
-
-    # Mood
-    ANGRY = "angry"
-    AGGRESSIVE = "aggressive"
-    CALM = "calm"
-    INSULTING = "insulting"
-    EMPATHETIC = "empathetic"
-    EMOTIONAL = "emotional"
-
-    # Political
-    CONSERVATIVE = "conservative"
-    LIBERAL = "liberal"
-    LIBERTARIAN = "libertarian"
-
-
-@dataclass
-class Debater:
-    """Debater metadata class
-
-    Args:
-        position (DebatePosition): The position of the debater.
-        personality (str | None, optional): The personality of the debater (as a list of qualifiers). Defaults to None.
-    """
-
-    position: DebatePosition
-    personality: list[Personality] | None = None
+from llm_mediator_simulations.utils.model_utils import ask_closed_question
 
 
 class Debate:
@@ -53,27 +17,21 @@ class Debate:
         self,
         *,
         model: LanguageModel,
-        statement: str,
         debaters: list[Debater],
-        context="You are taking part in an online debate about the following topic:",
-        instructions="Answer with short chat messages (ranging from one to three sentences maximum). You must convince the general public of your position.",
+        configuration: DebateConfig,
         summary_handler: Summary | None = None,
     ) -> None:
         """Initialize the debate instance.
 
         Args:
             model (LanguageModel): The language model to use.
-            statement (str): The topic of the debate.
             debaters (list[Debater]): The debaters participating in the debate.
-            context (str, optional): The context of the debate.
-            instructions (str, optional): The instructions for the debate and how to answer.
+            configuration (str, optional): The context of the debate.
             summary_handler (Summary | None, optional): The summary handler to use. Defaults to None.
         """
 
         # Prompt context and metadata
-        self.context = context
-        self.topic = statement
-        self.instructions = instructions
+        self.config = configuration
 
         # Positions
         self.prompt_for = "You are arguing in favor of the statement."
@@ -97,12 +55,37 @@ class Debate:
         The debaters will all send one message per round, in the order they are listed in the debaters list.
         """
 
-        for _ in track(range(rounds), total=rounds):
+        for _ in track(range(rounds)):
+            # TODO: smarter alternance
             for debater in self.debaters:
 
+                prompt = f"""{self.config.context} {self.config.statement}. {self.prompt_for if debater.position == DebatePosition.FOR else self.prompt_against}
+                
+                Your personality is {', '.join(map(lambda x: x.value, debater.personality or []))}.
+                Here is a summary of the last exchanges (if empty, the conversation just started):
+                {self.summary_handler.summary}
+
+                Here are the last messages exchanged (you should focus your argumentation on them):
+                {'\n\n'.join(self.summary_handler.latest_messages)}
+
+                Do you want to add a comment to the online debate right now?
+                You should often add a comment when the previous context is empty or not in the favor of your position. However, you should almost never add a comment when the previous context already supports your position.
+                """
+
+                print('------')
+                print(prompt)
+                print('------')
+
+                want_to_answer = ask_closed_question(self.model, prompt)
+
+                print(want_to_answer)
+                if not want_to_answer:
+                    continue
+
                 # Prepare the prompt.
-                prompt = f"""{self.context} {self.topic}. {self.prompt_for if debater.position == DebatePosition.FOR else self.prompt_against}
-                {self.instructions}
+                msg_sep = "\n\n"
+                prompt = f"""{self.config.context} {self.config.statement}. {self.prompt_for if debater.position == DebatePosition.FOR else self.prompt_against}
+                {self.config.instructions}
                 
                 Your personality is {', '.join(map(lambda x: x.value, debater.personality or []))}.
 
@@ -110,7 +93,7 @@ class Debate:
                 {self.summary_handler.summary}
 
                 Here are the last messages exchanged (you should focus your argumentation on them):
-                {'\n\n'.join(self.summary_handler.latest_messages)}
+                {msg_sep.join(self.summary_handler.latest_messages)}
                 """
 
                 message = self.model.sample(prompt)
