@@ -5,3 +5,5 @@ openai
 google-cloud-aiplatform
 mistralai
 perspective
+
+rich

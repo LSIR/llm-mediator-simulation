@@ -1,6 +1,6 @@
 """Utilities for language model prompts."""
 
-from enum import Enum, EnumMeta
+from enum import Enum
 
 from llm_mediator_simulations.models.language_model import LanguageModel
 
@@ -27,6 +27,23 @@ def summarize_conversation(model: LanguageModel, conversation: list[str]) -> str
     prompt = f"""{separator.join(conversation)}
 
     Summarize the conversation above.
+    """
+
+    return model.sample(prompt)
+
+
+def summarize_conversation_with_last_messages(
+    model: LanguageModel, previous_summary: str, latest_messages: list[str]
+) -> str:
+    """Generate a summary of the given conversation, with an emphasis on the latest messages."""
+
+    separator = "\n\n"
+    prompt = f"""Conversation summary: {previous_summary}
+
+    Latest messages:
+    {separator.join(latest_messages)}
+
+    Summarize the conversation above, with an emphasis on the latest messages.
     """
 
     return model.sample(prompt)
