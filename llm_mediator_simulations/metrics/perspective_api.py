@@ -11,7 +11,4 @@ class PerspectiveScorer:
 
     def score(self, text: str) -> float:
         """Score the toxicity of a text."""
-        # TODO: see all options, test them... (untested as the API is not activated for this project yet)
-        result = self.client.score(text)
-        print(result)
-        return result["TOXICITY"]
+        return self.client.score(text)["TOXICITY"]
