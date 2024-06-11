@@ -23,7 +23,7 @@ model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 # Debater participants
 debaters = [
     Debater(
-        position=DebatePosition.FOR,
+        position=DebatePosition.AGAINST,
     ),
     Debater(
         position=DebatePosition.FOR,

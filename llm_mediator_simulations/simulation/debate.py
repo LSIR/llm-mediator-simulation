@@ -3,11 +3,16 @@
 from rich.progress import track
 
 from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.simulation.configuration import (DebateConfig,
-                                                               DebatePosition,
-                                                               Debater)
+from llm_mediator_simulations.simulation.configuration import (
+    DebateConfig,
+    DebatePosition,
+    Debater,
+)
+from llm_mediator_simulations.simulation.prompt import (
+    debater_comment,
+    should_participant_intervene,
+)
 from llm_mediator_simulations.simulation.summary import Summary
-from llm_mediator_simulations.utils.model_utils import ask_closed_question
 
 
 class Debate:
@@ -54,49 +59,36 @@ class Debate:
         """Run the debate simulation for the given amount of rounds.
         The debaters will all send one message per round, in the order they are listed in the debaters list.
         """
-
         for _ in track(range(rounds)):
-            # TODO: smarter alternance
             for debater in self.debaters:
 
-                prompt = f"""{self.config.context} {self.config.statement}. {self.prompt_for if debater.position == DebatePosition.FOR else self.prompt_against}
-                
-                Your personality is {', '.join(map(lambda x: x.value, debater.personality or []))}.
-                Here is a summary of the last exchanges (if empty, the conversation just started):
-                {self.summary_handler.summary}
-
-                Here are the last messages exchanged (you should focus your argumentation on them):
-                {'\n\n'.join(self.summary_handler.latest_messages)}
-
-                Do you want to add a comment to the online debate right now?
-                You should often add a comment when the previous context is empty or not in the favor of your position. However, you should almost never add a comment when the previous context already supports your position.
-                """
-
-                print('------')
-                print(prompt)
-                print('------')
-
-                want_to_answer = ask_closed_question(self.model, prompt)
-
-                print(want_to_answer)
-                if not want_to_answer:
+                if not self.should_participant_intervene(debater):
                     continue
 
-                # Prepare the prompt.
-                msg_sep = "\n\n"
-                prompt = f"""{self.config.context} {self.config.statement}. {self.prompt_for if debater.position == DebatePosition.FOR else self.prompt_against}
-                {self.config.instructions}
-                
-                Your personality is {', '.join(map(lambda x: x.value, debater.personality or []))}.
-
-                Here is a summary of the last exchanges (if empty, the conversation just started):
-                {self.summary_handler.summary}
-
-                Here are the last messages exchanged (you should focus your argumentation on them):
-                {msg_sep.join(self.summary_handler.latest_messages)}
-                """
-
-                message = self.model.sample(prompt)
+                message = self.generate_debater_comment(debater)
                 self.messages.append((debater.position, message))
-
                 self.summary_handler.update_with_message(message)
+
+    ###############################################################################################
+    #                                     HELPERS & SHORTHANDS                                    #
+    ###############################################################################################
+
+    def should_participant_intervene(self, debater: Debater) -> bool:
+        """Shorthand helper to decide whether a participant should intervene in the debate."""
+
+        return should_participant_intervene(
+            model=self.model,
+            config=self.config,
+            summary=self.summary_handler,
+            debater=debater,
+        )
+
+    def generate_debater_comment(self, debater: Debater) -> str:
+        """Shorthand helper to generate a comment for the debater."""
+
+        return debater_comment(
+            model=self.model,
+            config=self.config,
+            debater=debater,
+            summary=self.summary_handler,
+        )
