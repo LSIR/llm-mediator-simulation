@@ -16,6 +16,21 @@ class DebatePosition(Enum):
     FOR = 1
 
 
+class Personality(Enum):
+    """Debater personality qualifiers."""
+
+    # Mood
+    ANGRY = "angry"
+    AGGRESSIVE = "aggressive"
+    CALM = "calm"
+    INSULTING = "insulting"
+
+    # Political
+    CONSERVATIVE = "conservative"
+    LIBERAL = "liberal"
+    LIBERTARIAN = "libertarian"
+
+
 @dataclass
 class Debater:
     """Debater metadata class
@@ -26,7 +41,7 @@ class Debater:
     """
 
     position: DebatePosition
-    personality: str | None = None
+    personality: list[Personality] | None = None
 
 
 class Debate:
@@ -87,13 +102,13 @@ class Debate:
                 prompt = f"""{self.context} {self.topic}. {self.prompt_for if debater.position == DebatePosition.FOR else self.prompt_against}
                 {self.instructions}
                 
-                Your personality is {debater.personality}.
+                Your personality is {', '.join(map(lambda x: x.value, debater.personality or []))}.
 
                 Here is a summary of the last exchanges (if empty, the conversation just started):
                 {self.summary_handler.summary}
 
                 Here are the last messages exchanged (you should focus your argumentation on them):
-                {self.summary_handler.latest_messages}
+                {'\n\n'.join(self.summary_handler.latest_messages)}
                 """
 
                 message = self.model.sample(prompt)
