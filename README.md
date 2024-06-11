@@ -1,9 +1,13 @@
 # LLM Mediator Simulations
 
-<div style="text-align: center;">
-  [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
-  [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-</div>
+<p align="center">
+  <a href="https://www.python.org/downloads/release/python-3120/">
+    <img src="https://img.shields.io/badge/python-3.12-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.12">
+  </a>
+  <a href="https://github.com/psf/black">
+    <img src="https://img.shields.io/badge/code%20style-black-000000?style=for-the-badge&logo=black&logoColor=white" alt="Code style: black">
+  </a>
+</p>
 
 Simulate online debates using LLMs. This project runs on Python 3.12.
 
