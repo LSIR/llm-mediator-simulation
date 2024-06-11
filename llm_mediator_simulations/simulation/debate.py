@@ -24,6 +24,8 @@ class Personality(Enum):
     AGGRESSIVE = "aggressive"
     CALM = "calm"
     INSULTING = "insulting"
+    EMPATHETIC = "empathetic"
+    EMOTIONAL = "emotional"
 
     # Political
     CONSERVATIVE = "conservative"
@@ -51,7 +53,7 @@ class Debate:
         self,
         *,
         model: LanguageModel,
-        topic: str,
+        statement: str,
         debaters: list[Debater],
         context="You are taking part in an online debate about the following topic:",
         instructions="Answer with short chat messages (ranging from one to three sentences maximum). You must convince the general public of your position.",
@@ -61,7 +63,7 @@ class Debate:
 
         Args:
             model (LanguageModel): The language model to use.
-            topic (str): The topic of the debate.
+            statement (str): The topic of the debate.
             debaters (list[Debater]): The debaters participating in the debate.
             context (str, optional): The context of the debate.
             instructions (str, optional): The instructions for the debate and how to answer.
@@ -70,7 +72,7 @@ class Debate:
 
         # Prompt context and metadata
         self.context = context
-        self.topic = topic
+        self.topic = statement
         self.instructions = instructions
 
         # Positions
