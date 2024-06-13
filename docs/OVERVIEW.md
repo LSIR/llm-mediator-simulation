@@ -42,11 +42,11 @@ Note that Perspective API limits queries to 1 per second. The [`PerspectiveScore
 
 ## Summary
 
-The debater memory is handled through a `SummaryHandler` class that handles summarizing the ongoing debate using a LLM model, and remembers the `N` latest messages in order to emphasize their importance in the prompt for the next message. You can customize how many messages should be emphasized when building this class.
+The debater memory is handled through a [`SummaryHandler`](../llm_mediator_simulations/simulation/summary_handler.py) class that handles summarizing the ongoing debate using a LLM model, and remembers the `N` latest messages in order to emphasize their importance in the prompt for the next message. You can customize how many messages should be emphasized when building this class.
 
 ## The Debate
 
-All these classes are needed in order to create a `Debate` instance that will automatically generate the debate and compute its metrics.
+All these classes are needed in order to create a [`Debate`](../llm_mediator_simulations/simulation/debate.py) instance that will automatically generate the debate and compute its metrics.
 
 Once the debate is finished, you can save its configuration and messages to a pickle file for later use.
 Visit the [`example_debate.py`](../examples/example_debate.py) file for an example usage.
