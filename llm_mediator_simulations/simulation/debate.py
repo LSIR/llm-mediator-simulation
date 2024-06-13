@@ -133,7 +133,8 @@ class Debate:
                 file,
             )
 
-    def unpickle(self, path: str) -> "DebatePickle":
+    @staticmethod
+    def unpickle(path: str) -> "DebatePickle":
         """Load a debate configuration and logs from a pickle file.
 
         Args:

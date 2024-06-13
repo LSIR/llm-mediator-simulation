@@ -15,9 +15,9 @@ class MetricsHandler:
     def __init__(
         self,
         *,
-        perspective: PerspectiveScorer | None,
-        model: LanguageModel | None,
-        argument_qualities: list[ArgumentQuality] | None
+        perspective: PerspectiveScorer | None = None,
+        model: LanguageModel | None = None,
+        argument_qualities: list[ArgumentQuality] | None = None,
     ) -> None:
         """Initialize the metrics handler instance.
 
