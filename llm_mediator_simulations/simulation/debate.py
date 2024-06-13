@@ -1,6 +1,8 @@
 """Online debate simulation handler class"""
 
+import pickle
 from datetime import datetime
+from typing import TypedDict
 
 from rich.progress import track
 
@@ -68,6 +70,9 @@ class Debate:
                 self.messages.append(Message(index, message, datetime.now()))
                 self.summary_handler.update_with_message(message)
 
+                # TODO: here, decide if a mediator wants to intervene
+                # define the decision + prompt in prompt.py, and see if it works well
+
     ###############################################################################################
     #                                     HELPERS & SHORTHANDS                                    #
     ###############################################################################################
@@ -91,3 +96,45 @@ class Debate:
             debater=debater,
             summary=self.summary_handler,
         )
+
+    ###############################################################################################
+    #                                        SERIALIZATION                                        #
+    ###############################################################################################
+
+    def pickle(self, path: str) -> None:
+        """Serialize the debate configuration and logs to a pickle file.
+        This does not include the model, summary handler, and other non data-relevant attributes.
+
+        Args:
+            path (str): The path to the pickle file.
+        """
+
+        data: "DebatePickle" = {
+            "config": self.config,
+            "debaters": self.debaters,
+            "messages": self.messages,
+        }
+
+        with open(path, "wb") as file:
+            pickle.dump(
+                data,
+                file,
+            )
+
+    def unpickle(self, path: str) -> "DebatePickle":
+        """Load a debate configuration and logs from a pickle file.
+
+        Args:
+            path (str): The path to the pickle file.
+        """
+
+        with open(path, "rb") as file:
+            return pickle.load(file)
+
+
+class DebatePickle(TypedDict):
+    """Pickled debate data"""
+
+    config: DebateConfig
+    debaters: list[Debater]
+    messages: list[Message]
