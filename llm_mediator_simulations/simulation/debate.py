@@ -8,9 +8,15 @@ from rich.progress import track
 
 from llm_mediator_simulations.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.simulation.configuration import DebateConfig, Debater
+from llm_mediator_simulations.simulation.configuration import (
+    DebateConfig,
+    Debater,
+    Mediator,
+)
 from llm_mediator_simulations.simulation.prompt import (
     debater_comment,
+    mediator_comment,
+    should_mediator_intervene,
     should_participant_intervene,
 )
 from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
@@ -28,6 +34,7 @@ class Debate:
         configuration: DebateConfig,
         summary_handler: SummaryHandler | None = None,
         metrics_handler: MetricsHandler | None = None,
+        mediator: Mediator | None = None,
     ) -> None:
         """Initialize the debate instance.
 
@@ -48,6 +55,7 @@ class Debate:
 
         # Debater
         self.debaters = debaters
+        self.mediator = mediator
 
         # Conversation detailed logs
         self.messages: list[Message] = []
@@ -82,8 +90,17 @@ class Debate:
                 self.messages.append(Message(index, message, datetime.now(), metrics))
                 self.summary_handler.update_with_message(message)
 
-                # TODO: here, decide if a mediator wants to intervene
-                # define the decision + prompt in prompt.py, and see if it works well
+                if self.should_mediator_intervene():
+                    # Generate mediator comment
+                    message = self.generate_mediator_comment()
+
+                    self.messages.append(
+                        Message(None, message, datetime.now(), metrics)
+                    )
+                    # Include mediator messages in the summary
+                    self.summary_handler.update_with_message(
+                        f"Message from a mediator: {message}"
+                    )
 
     ###############################################################################################
     #                                     HELPERS & SHORTHANDS                                    #
@@ -106,6 +123,33 @@ class Debate:
             model=self.model,
             config=self.config,
             debater=debater,
+            summary=self.summary_handler,
+        )
+
+    def should_mediator_intervene(self) -> bool:
+        """Decide whether the mediator should intervene in the debate."""
+
+        if self.mediator is None:
+            return False
+
+        return should_mediator_intervene(
+            model=self.model,
+            config=self.config,
+            mediator=self.mediator,
+            summary=self.summary_handler,
+        )
+
+    def generate_mediator_comment(self) -> str:
+        """Generate a comment for the mediator."""
+
+        assert (
+            self.mediator is not None
+        ), "Trying to generate a mediator comment without mediator config"
+
+        return mediator_comment(
+            model=self.model,
+            config=self.config,
+            mediator=self.mediator,
             summary=self.summary_handler,
         )
 

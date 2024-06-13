@@ -12,13 +12,13 @@ class Message:
     """Basic message type for the debate simulation
 
     Attributes:
+        authorId (int): The author's index in the debater config list. If None, the message is from a mediator.
         text (str): The text content of the message.
         timestamp (datetime): The timestamp of the message.
-        authorId (int): The author's index in the debater config list.
         metrics (Metrics | None): The metrics associated with the message.
     """
 
-    authorId: int
+    authorId: int | None
     text: str
     timestamp: datetime
     metrics: "Metrics | None" = None
