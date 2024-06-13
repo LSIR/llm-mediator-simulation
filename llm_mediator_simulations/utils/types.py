@@ -3,6 +3,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from llm_mediator_simulations.metrics.criteria import ArgumentQuality
+from llm_mediator_simulations.utils.model_utils import Agreement
+
 
 @dataclass
 class Message:
@@ -30,4 +33,4 @@ class Metrics:
     """
 
     perspective: float | None = None
-    # TODO: add more metrics (our custom ones, for instance)
+    argument_qualities: dict[ArgumentQuality, Agreement] | None = None

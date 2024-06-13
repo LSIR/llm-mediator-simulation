@@ -6,6 +6,7 @@ from typing import TypedDict
 
 from rich.progress import track
 
+from llm_mediator_simulations.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulations.models.language_model import LanguageModel
 from llm_mediator_simulations.simulation.configuration import DebateConfig, Debater
 from llm_mediator_simulations.simulation.prompt import (
@@ -26,6 +27,7 @@ class Debate:
         debaters: list[Debater],
         configuration: DebateConfig,
         summary_handler: Summary | None = None,
+        metrics_handler: MetricsHandler | None = None,
     ) -> None:
         """Initialize the debate instance.
 
@@ -34,6 +36,7 @@ class Debate:
             debaters (list[Debater]): The debaters participating in the debate.
             configuration (str, optional): The context of the debate.
             summary_handler (Summary | None, optional): The summary handler to use. Defaults to None.
+            metrics_handler (MetricsHandler | None, optional): The metrics handler to use to compute message metrics. Defaults to None.
         """
 
         # Prompt context and metadata
@@ -50,6 +53,7 @@ class Debate:
         self.messages: list[Message] = []
 
         self.model = model
+        self.metrics_handler = metrics_handler
 
         if summary_handler is None:
             self.summary_handler = Summary(model=model)
@@ -66,8 +70,16 @@ class Debate:
                 if not self.should_participant_intervene(debater):
                     continue
 
+                # Generate debater comment
                 message = self.generate_debater_comment(debater)
-                self.messages.append(Message(index, message, datetime.now()))
+
+                # Compute metrics if a handler is provided
+                metrics = (
+                    self.metrics_handler.compute_metrics(message)
+                    if self.metrics_handler
+                    else None
+                )
+                self.messages.append(Message(index, message, datetime.now(), metrics))
                 self.summary_handler.update_with_message(message)
 
                 # TODO: here, decide if a mediator wants to intervene
