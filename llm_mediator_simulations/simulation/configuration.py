@@ -87,3 +87,36 @@ class Debater(Promptable):
     def to_prompt(self) -> str:
         return f"""You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
     Your personality is {', '.join(map(lambda x: x.value, self.personality or []))}."""
+
+
+@dataclass
+class Mediator(Promptable):
+    """Mediator metadata class
+
+    Args:
+        mediator_preprompt (str): Mediator role description for the LLM prompt.
+        detection_instructions (str): Instructions for LLMs to decide whether to intervene with a comment or not.
+        intervention_instructions (str): Instructions for LLMs to write an intervention comment.
+    """
+
+    mediator_preprompt: str = (
+        "You are a debate mediator. Your job is to ensure that the debate "
+        "remains civil and respectful, all the while encouraging the "
+        "keeping of high debating standard regarding argumentation and fair-play"
+    )
+    detection_instructions: str = (
+        "Considering the debate summary and the last messages, do you think you should intervene "
+        "with a comment to ensure the debate remains civil and respectful, while maintaining a "
+        "high standard of argumentation and debating?"
+    )
+    intervention_instructions: str = (
+        "You have chosen to intervene in the debate with a comment in order to ensure that the "
+        "debate remains civil and respectful, while maintaining a high standard of argumentation "
+        "and debating. Write a comment that will help the debaters to keep the debate on track "
+        "make it remain respectful. Adapt your comment depending on the behaviors you can observe "
+        "from the debate summary and the last messages."
+    )
+
+    @override
+    def to_prompt(self) -> str:
+        return self.mediator_preprompt

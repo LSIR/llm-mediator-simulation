@@ -1,7 +1,11 @@
 """Prompt utilities for the debate simulation."""
 
 from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.simulation.configuration import DebateConfig, Debater
+from llm_mediator_simulations.simulation.configuration import (
+    DebateConfig,
+    Debater,
+    Mediator,
+)
 from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
 from llm_mediator_simulations.utils.model_utils import ask_closed_question
 
@@ -40,6 +44,8 @@ def should_participant_intervene(
 def should_mediator_intervene(
     model: LanguageModel,
     config: DebateConfig,
+    mediator: Mediator,
+    summary: SummaryHandler,
 ):
     """Decide whether to intervene in the debate.
 
@@ -48,7 +54,16 @@ def should_mediator_intervene(
         config (DebateConfig): The debate configuration.
     """
 
-    raise NotImplementedError("Mediator intervention decision is not yet implemented.")
+    # Closed question prompt
+    prompt = f"""{config.to_prompt()}. 
+
+    {summary.to_prompt()}
+
+    {mediator.to_prompt()}
+    {mediator.detection_instructions}
+    """
+
+    return ask_closed_question(model, prompt)
 
 
 ###################################################################################################
@@ -68,9 +83,28 @@ def debater_comment(
     prompt = f"""{config.to_prompt()}. {debater.to_prompt()} 
     {config.instructions}
     
-    Your personality is {', '.join(map(lambda x: x.value, debater.personality or []))}.
-
     {summary.to_prompt()}
+    """
+
+    return model.sample(prompt)
+
+
+def mediator_comment(
+    model: LanguageModel,
+    config: DebateConfig,
+    mediator: Mediator,
+    summary: SummaryHandler,
+) -> str:
+    """Prompt a mediator to add a comment to the debate."""
+
+    # Prepare the prompt.
+    prompt = f"""{config.to_prompt()}.
+    {config.instructions}
+    
+    {summary.to_prompt()}
+    
+    {mediator.to_prompt()}
+    {mediator.intervention_instructions}
     """
 
     return model.sample(prompt)
