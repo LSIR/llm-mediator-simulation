@@ -5,7 +5,7 @@ This project aims at simulating online political debates using LLMs, and measuri
 ## Configuration
 
 Debate simulations are configured through 2 objects: `DebateConfig` and `Debater`.
-These classes can be found [here](../llm_mediator_simulations/simulations/configuration.py).
+These classes can be found [here](../llm_mediator_simulations/simulation/configuration.py).
 
 ### Debate Configuration
 
