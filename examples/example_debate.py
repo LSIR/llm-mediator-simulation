@@ -13,7 +13,7 @@ from llm_mediator_simulations.simulation.configuration import (
     Debater,
 )
 from llm_mediator_simulations.simulation.debate import Debate, Debater
-from llm_mediator_simulations.simulation.summary import Summary
+from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
 
 load_dotenv()
 
@@ -36,7 +36,7 @@ debaters = [
 metrics = MetricsHandler(perspective=PerspectiveScorer(api_key=perspective_key))
 
 # The conversation summary handler (keep track of the general history and of the n latest messages)
-summary = Summary(model=model, latest_messages_limit=1)
+summary = SummaryHandler(model=model, latest_messages_limit=1)
 
 # The debate configuration (which topic to discuss, and customisable instructions)
 configuration = DebateConfig(

@@ -13,7 +13,7 @@ from llm_mediator_simulations.simulation.prompt import (
     debater_comment,
     should_participant_intervene,
 )
-from llm_mediator_simulations.simulation.summary import Summary
+from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
 from llm_mediator_simulations.utils.types import Message
 
 
@@ -26,7 +26,7 @@ class Debate:
         model: LanguageModel,
         debaters: list[Debater],
         configuration: DebateConfig,
-        summary_handler: Summary | None = None,
+        summary_handler: SummaryHandler | None = None,
         metrics_handler: MetricsHandler | None = None,
     ) -> None:
         """Initialize the debate instance.
@@ -56,7 +56,7 @@ class Debate:
         self.metrics_handler = metrics_handler
 
         if summary_handler is None:
-            self.summary_handler = Summary(model=model)
+            self.summary_handler = SummaryHandler(model=model)
         else:
             self.summary_handler = summary_handler
 

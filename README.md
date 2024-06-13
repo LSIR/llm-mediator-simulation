@@ -11,6 +11,8 @@
 
 Simulate online debates using LLMs. This project runs on Python 3.12.
 
+See the [overview](/docs/OVERVIEW.md) for more details.
+
 ## Project Structure
 
 ```bash

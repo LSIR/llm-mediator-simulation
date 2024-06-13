@@ -6,7 +6,7 @@ from llm_mediator_simulations.utils.model_utils import (
 )
 
 
-class Summary:
+class SummaryHandler:
     """Summary class to handle the summary of a conversation"""
 
     def __init__(self, *, model: LanguageModel, latest_messages_limit: int = 3) -> None:

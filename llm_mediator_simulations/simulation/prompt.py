@@ -6,7 +6,7 @@ from llm_mediator_simulations.simulation.configuration import (
     DebatePosition,
     Debater,
 )
-from llm_mediator_simulations.simulation.summary import Summary
+from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
 from llm_mediator_simulations.utils.model_utils import ask_closed_question
 
 ###################################################################################################
@@ -17,7 +17,7 @@ from llm_mediator_simulations.utils.model_utils import ask_closed_question
 def should_participant_intervene(
     model: LanguageModel,
     config: DebateConfig,
-    summary: Summary,
+    summary: SummaryHandler,
     debater: Debater,
 ) -> bool:
     """Decide whether to intervene in the debate.
@@ -72,7 +72,7 @@ def debater_comment(
     model: LanguageModel,
     config: DebateConfig,
     debater: Debater,
-    summary: Summary,
+    summary: SummaryHandler,
 ) -> str:
     """Prompt a debater to add a comment to the debate."""
 
