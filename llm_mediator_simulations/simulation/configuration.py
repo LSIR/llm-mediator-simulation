@@ -26,6 +26,12 @@ class Personality(Enum):
     EMPATHETIC = "empathetic"
     EMOTIONAL = "emotional"
 
+    # Style
+    REDDIT = "reddit"
+    TWITTER = "twitter"
+    FORMAL = "formal"
+    INFORMAL = "informal"
+
     # Political
     CONSERVATIVE = "conservative"
     LIBERAL = "liberal"

@@ -1,18 +1,17 @@
 """Online debate simulation handler class"""
 
+from datetime import datetime
+
 from rich.progress import track
 
 from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.simulation.configuration import (
-    DebateConfig,
-    DebatePosition,
-    Debater,
-)
+from llm_mediator_simulations.simulation.configuration import DebateConfig, Debater
 from llm_mediator_simulations.simulation.prompt import (
     debater_comment,
     should_participant_intervene,
 )
 from llm_mediator_simulations.simulation.summary import Summary
+from llm_mediator_simulations.utils.types import Message
 
 
 class Debate:
@@ -42,11 +41,11 @@ class Debate:
         self.prompt_for = "You are arguing in favor of the statement."
         self.prompt_against = "You are arguing against the statement."
 
-        # Debaters
+        # Debater
         self.debaters = debaters
 
-        # Logs
-        self.messages: list[tuple[DebatePosition, str]] = []
+        # Conversation detailed logs
+        self.messages: list[Message] = []
 
         self.model = model
 
@@ -60,13 +59,13 @@ class Debate:
         The debaters will all send one message per round, in the order they are listed in the debaters list.
         """
         for _ in track(range(rounds)):
-            for debater in self.debaters:
+            for index, debater in enumerate(self.debaters):
 
                 if not self.should_participant_intervene(debater):
                     continue
 
                 message = self.generate_debater_comment(debater)
-                self.messages.append((debater.position, message))
+                self.messages.append(Message(index, message, datetime.now()))
                 self.summary_handler.update_with_message(message)
 
     ###############################################################################################
