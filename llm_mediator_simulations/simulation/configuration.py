@@ -2,6 +2,9 @@
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import override
+
+from llm_mediator_simulations.utils.interfaces import Promptable
 
 ###################################################################################################
 #                                              ENUMS                                              #
@@ -25,6 +28,7 @@ class Personality(Enum):
     INSULTING = "insulting"
     EMPATHETIC = "empathetic"
     EMOTIONAL = "emotional"
+    TOXIC = "toxic"
 
     # Style
     REDDIT = "reddit"
@@ -44,7 +48,7 @@ class Personality(Enum):
 
 
 @dataclass
-class DebateConfig:
+class DebateConfig(Promptable):
     """Debate simulation context class.
 
     Args:
@@ -56,12 +60,19 @@ class DebateConfig:
     statement: str
     context: str = "You are taking part in an online debate about the following topic:"
     instructions: str = (
-        "Answer with short chat messages (ranging from one to three sentences maximum). You must convince the general public of your position."
+        "Answer with short chat messages (ranging from one to three sentences maximum)."
     )
+
+    @override
+    def to_prompt(self) -> str:
+        # NOTE: the default prompt does not include the answer `instructions`, as this prompt
+        # can be used for tasks that do not require generating a text message
+        # (such as intervention decision)
+        return f"""{self.context} {self.statement}"""
 
 
 @dataclass
-class Debater:
+class Debater(Promptable):
     """Debater metadata class
 
     Args:
@@ -71,3 +82,8 @@ class Debater:
 
     position: DebatePosition
     personality: list[Personality] | None = None
+
+    @override
+    def to_prompt(self) -> str:
+        return f"""You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
+    Your personality is {', '.join(map(lambda x: x.value, self.personality or []))}."""

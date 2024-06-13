@@ -1,12 +1,15 @@
 """Summary class to handle the summary of a conversation"""
 
+from typing import override
+
 from llm_mediator_simulations.models.language_model import LanguageModel
+from llm_mediator_simulations.utils.interfaces import Promptable
 from llm_mediator_simulations.utils.model_utils import (
     summarize_conversation_with_last_messages,
 )
 
 
-class SummaryHandler:
+class SummaryHandler(Promptable):
     """Summary class to handle the summary of a conversation"""
 
     def __init__(self, *, model: LanguageModel, latest_messages_limit: int = 3) -> None:
@@ -39,3 +42,14 @@ class SummaryHandler:
         """Update the summary with the given message."""
 
         return self.update_with_messages([message])
+
+    @override
+    def to_prompt(self) -> str:
+        msg_sep = "\n\n"
+
+        return f"""Here is a summary of the last exchanges (if empty, the conversation just started):
+        {self.summary}
+
+        Here are the last messages exchanged (you should focus your argumentation on them):
+        {msg_sep.join(self.latest_messages)}
+        """
