@@ -1,6 +1,7 @@
 """Online debate simulation handler class"""
 
 import pickle
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TypedDict
 
@@ -175,11 +176,9 @@ class Debate:
             path (str): The path to the pickle file.
         """
 
-        data: "DebatePickle" = {
-            "config": self.config,
-            "debaters": self.debaters,
-            "messages": self.interventions,
-        }
+        data: "DebatePickle" = DebatePickle(
+            self.config, self.debaters, self.interventions
+        )
 
         with open(path, "wb") as file:
             pickle.dump(
@@ -199,7 +198,8 @@ class Debate:
             return pickle.load(file)
 
 
-class DebatePickle(TypedDict):
+@dataclass
+class DebatePickle:
     """Pickled debate data"""
 
     config: DebateConfig
