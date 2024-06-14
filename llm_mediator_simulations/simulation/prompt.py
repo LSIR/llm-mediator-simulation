@@ -18,7 +18,7 @@ LLM_RESPONSE_FORMAT: dict[str, str] = {
 }
 
 
-@retry(retry=5, verbose=True)
+@retry(attempts=5, verbose=True)
 def debater_intervention(
     model: LanguageModel,
     config: DebateConfig,
@@ -41,7 +41,7 @@ def debater_intervention(
     return parse_llm_json(response, LLMMessage)
 
 
-@retry(retry=5, verbose=True)
+@retry(attempts=5, verbose=True)
 def mediator_intervention(
     model: LanguageModel,
     config: DebateConfig,
