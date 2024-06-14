@@ -7,104 +7,53 @@ from llm_mediator_simulations.simulation.configuration import (
     Mediator,
 )
 from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
-from llm_mediator_simulations.utils.model_utils import ask_closed_question
+from llm_mediator_simulations.utils.decorators import retry
+from llm_mediator_simulations.utils.json import json_prompt, parse_llm_json
+from llm_mediator_simulations.utils.types import LLMMessage
 
-###################################################################################################
-#                                     INTERVENTION DECISION                                       #
-###################################################################################################
+LLM_RESPONSE_FORMAT: dict[str, str] = {
+    "do_intervene": "bool",
+    "intervention_justification": "a string justification of why you want to intervene or not",
+    "text": "the text message for your intervention. Leave empty if you decide not to intervene",
+}
 
 
-def should_participant_intervene(
+@retry(retry=5, verbose=True)
+def debater_intervention(
     model: LanguageModel,
     config: DebateConfig,
     summary: SummaryHandler,
     debater: Debater,
-) -> bool:
-    """Decide whether to intervene in the debate.
+) -> LLMMessage:
+    """Debater intervention: decision, motivation for the intervention, and intervention content."""
 
-    Args:
-        model (LanguageModel): The language model to use.
-        config (DebateConfig): The debate configuration.
-        debater (Debater): The debater instance.
-    """
-
-    # Closed question prompt
-    prompt = f"""{config.to_prompt()}. {debater.to_prompt()} 
-
-    {summary.to_prompt()}
+    prompt = f"""{config.to_prompt()}. {debater.to_prompt()} {summary.to_prompt()}
 
     Do you want to add a comment to the online debate right now?
     You should often add a comment when the previous context is empty or not in the favor of your \
     position. However, you should almost never add a comment when the previous context already \
     supports your position.
+
+    {json_prompt(LLM_RESPONSE_FORMAT)}
     """
-    return ask_closed_question(model, prompt)
+
+    response = model.sample(prompt)
+    return parse_llm_json(response, LLMMessage)
 
 
-def should_mediator_intervene(
+@retry(retry=5, verbose=True)
+def mediator_intervention(
     model: LanguageModel,
     config: DebateConfig,
     mediator: Mediator,
     summary: SummaryHandler,
-):
-    """Decide whether to intervene in the debate.
+) -> LLMMessage:
+    """Mediator intervention: decision, motivation for the intervention, and intervention content."""
 
-    Args:
-        model (LanguageModel): The language model to use.
-        config (DebateConfig): The debate configuration.
+    prompt = f"""{config.to_prompt()}. {summary.to_prompt()} {mediator.to_prompt()}
+
+    {json_prompt(LLM_RESPONSE_FORMAT)}
     """
 
-    # Closed question prompt
-    prompt = f"""{config.to_prompt()}. 
-
-    {summary.to_prompt()}
-
-    {mediator.to_prompt()}
-    {mediator.detection_instructions}
-    """
-
-    return ask_closed_question(model, prompt)
-
-
-###################################################################################################
-#                                         COMMENT PROMPT                                          #
-###################################################################################################
-
-
-def debater_comment(
-    model: LanguageModel,
-    config: DebateConfig,
-    debater: Debater,
-    summary: SummaryHandler,
-) -> str:
-    """Prompt a debater to add a comment to the debate."""
-
-    # Prepare the prompt.
-    prompt = f"""{config.to_prompt()}. {debater.to_prompt()} 
-    {config.instructions}
-    
-    {summary.to_prompt()}
-    """
-
-    return model.sample(prompt)
-
-
-def mediator_comment(
-    model: LanguageModel,
-    config: DebateConfig,
-    mediator: Mediator,
-    summary: SummaryHandler,
-) -> str:
-    """Prompt a mediator to add a comment to the debate."""
-
-    # Prepare the prompt.
-    prompt = f"""{config.to_prompt()}.
-    {config.instructions}
-    
-    {summary.to_prompt()}
-    
-    {mediator.to_prompt()}
-    {mediator.intervention_instructions}
-    """
-
-    return model.sample(prompt)
+    response = model.sample(prompt)
+    return parse_llm_json(response, LLMMessage)

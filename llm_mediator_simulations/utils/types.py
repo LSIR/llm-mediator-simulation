@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import TypedDict
 
 from llm_mediator_simulations.metrics.criteria import ArgumentQuality
 from llm_mediator_simulations.utils.model_utils import Agreement
@@ -34,3 +35,11 @@ class Metrics:
 
     perspective: float | None = None
     argument_qualities: dict[ArgumentQuality, Agreement] | None = None
+
+
+class LLMMessage(TypedDict):
+    """LLM message intervention response format."""
+
+    do_intervene: bool
+    intervention_justification: str
+    text: str

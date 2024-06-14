@@ -14,13 +14,11 @@ from llm_mediator_simulations.simulation.configuration import (
     Mediator,
 )
 from llm_mediator_simulations.simulation.prompt import (
-    debater_comment,
-    mediator_comment,
-    should_mediator_intervene,
-    should_participant_intervene,
+    debater_intervention,
+    mediator_intervention,
 )
 from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
-from llm_mediator_simulations.utils.types import Message
+from llm_mediator_simulations.utils.types import LLMMessage, Message
 
 
 class Debate:
@@ -75,11 +73,15 @@ class Debate:
         for _ in track(range(rounds)):
             for index, debater in enumerate(self.debaters):
 
-                if not self.should_participant_intervene(debater):
+                intervention = self.debater_intervention(debater)
+
+                if not intervention["do_intervene"]:
+                    # TODO: log the motivation for not intervening
                     continue
 
-                # Generate debater comment
-                message = self.generate_debater_comment(debater)
+                # Extract the debater comment
+                # TODO: still take into account the motivation for the intervention
+                message = intervention["text"]
 
                 # Compute metrics if a handler is provided
                 metrics = (
@@ -90,9 +92,11 @@ class Debate:
                 self.messages.append(Message(index, message, datetime.now(), metrics))
                 self.summary_handler.update_with_message(message)
 
-                if self.should_mediator_intervene():
-                    # Generate mediator comment
-                    message = self.generate_mediator_comment()
+                intervention = self.mediator_intervention()
+
+                if intervention["do_intervene"]:
+                    # Extract the mediator comment
+                    message = intervention["text"]
 
                     self.messages.append(
                         Message(None, message, datetime.now(), metrics)
@@ -106,47 +110,24 @@ class Debate:
     #                                     HELPERS & SHORTHANDS                                    #
     ###############################################################################################
 
-    def should_participant_intervene(self, debater: Debater) -> bool:
-        """Shorthand helper to decide whether a participant should intervene in the debate."""
+    def debater_intervention(self, debater: Debater) -> LLMMessage:
+        """Shorthand helper to decide whether a debater should intervene in the debate."""
 
-        return should_participant_intervene(
+        return debater_intervention(
             model=self.model,
             config=self.config,
             summary=self.summary_handler,
             debater=debater,
         )
 
-    def generate_debater_comment(self, debater: Debater) -> str:
-        """Shorthand helper to generate a comment for the debater."""
-
-        return debater_comment(
-            model=self.model,
-            config=self.config,
-            debater=debater,
-            summary=self.summary_handler,
-        )
-
-    def should_mediator_intervene(self) -> bool:
-        """Decide whether the mediator should intervene in the debate."""
-
-        if self.mediator is None:
-            return False
-
-        return should_mediator_intervene(
-            model=self.model,
-            config=self.config,
-            mediator=self.mediator,
-            summary=self.summary_handler,
-        )
-
-    def generate_mediator_comment(self) -> str:
-        """Generate a comment for the mediator."""
+    def mediator_intervention(self) -> LLMMessage:
+        """Shorthand helper to decide whether the mediator should intervene in the debate."""
 
         assert (
             self.mediator is not None
         ), "Trying to generate a mediator comment without mediator config"
 
-        return mediator_comment(
+        return mediator_intervention(
             model=self.model,
             config=self.config,
             mediator=self.mediator,

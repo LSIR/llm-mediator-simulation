@@ -1,6 +1,7 @@
 """Helper module for LLM JSON answer processing."""
 
 import json
+from typing import TypedDict, TypeVar
 
 
 def json_prompt(format: dict[str, str]) -> str:
@@ -39,7 +40,11 @@ def validate_shallow_json(data: dict, typedDict) -> bool:
     return True
 
 
-def parse_llm_json(llm_json: str, typedDict=None) -> dict:
+# Generic TypedDict type
+T = TypeVar("T")
+
+
+def parse_llm_json(llm_json: str, typedDict: type[T] | None = None) -> T:
     """Parse a LMM JSON response, and ensure that the resulting response can be coerced to the
     given TypedDict instance. Excess fields are allowed.
 

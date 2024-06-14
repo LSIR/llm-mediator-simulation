@@ -65,10 +65,7 @@ class DebateConfig(Promptable):
 
     @override
     def to_prompt(self) -> str:
-        # NOTE: the default prompt does not include the answer `instructions`, as this prompt
-        # can be used for tasks that do not require generating a text message
-        # (such as intervention decision)
-        return f"""{self.context} {self.statement}"""
+        return f"{self.context} {self.statement} {self.instructions}"
 
 
 @dataclass
@@ -100,23 +97,21 @@ class Mediator(Promptable):
     """
 
     mediator_preprompt: str = (
-        "You are a debate mediator. Your job is to ensure that the debate "
-        "remains civil and respectful, all the while encouraging the "
-        "keeping of high debating standard regarding argumentation and fair-play"
+        "You are a moderator for a group chat. Your goal is to make sure that participants in the "
+        "following conversation speak for an equal amount of time, and that participants are "
+        "polite to one another. You would like to intervene minimally."
     )
     detection_instructions: str = (
-        "Considering the debate summary and the last messages, do you think you should intervene "
-        "with a comment to ensure the debate remains civil and respectful, while maintaining a "
-        "high standard of argumentation and debating?"
+        "Considering the debate summary and the last messages, do you think you should intervene?"
     )
     intervention_instructions: str = (
-        "You have chosen to intervene in the debate with a comment in order to ensure that the "
-        "debate remains civil and respectful, while maintaining a high standard of argumentation "
-        "and debating. Write a comment that will help the debaters to keep the debate on track "
-        "make it remain respectful. Adapt your comment depending on the behaviors you can observe "
-        "from the debate summary and the last messages."
+        "If you have chosen to intervene, write a comment that will help the debaters to keep the "
+        "debate on track make it remain respectful. Adapt your comment depending on the behaviors "
+        "you can observe from the debate summary and the last messages."
     )
 
     @override
     def to_prompt(self) -> str:
-        return self.mediator_preprompt
+        return f"""{self.mediator_preprompt}
+{self.detection_instructions}
+{self.intervention_instructions}"""
