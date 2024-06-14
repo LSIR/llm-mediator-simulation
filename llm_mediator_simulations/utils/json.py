@@ -1,7 +1,7 @@
 """Helper module for LLM JSON answer processing."""
 
 import json
-from typing import TypedDict, TypeVar
+from typing import TypeVar
 
 
 def json_prompt(format: dict[str, str]) -> str:

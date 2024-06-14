@@ -7,7 +7,13 @@
 from enum import Enum
 
 from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.utils.model_utils import Agreement, measure_statement
+from llm_mediator_simulations.utils.decorators import retry
+from llm_mediator_simulations.utils.json import json_prompt, parse_llm_json
+from llm_mediator_simulations.utils.model_utils import (
+    Agreement,
+    measure_statement,
+    scale_description,
+)
 
 ###################################################################################################
 #                                      METRICS DEFINITIONS                                        #
@@ -61,12 +67,34 @@ class ArgumentQuality(Enum):
 ###################################################################################################
 
 
-def measure_argument_quality(
+@retry(attempts=5, verbose=True)
+def measure_argument_qualities(
     model: LanguageModel,
     text: str,
-    argument_quality: ArgumentQuality,
-) -> Agreement:
+    argument_quality: list[ArgumentQuality],
+) -> dict[ArgumentQuality, Agreement]:
     """Measure the argument quality of the given text based on the given criteria.
     Returns an agreement score."""
 
-    return measure_statement(model, text, argument_quality.value[1])
+    json_format: dict[str, str] = {}
+
+    for quality in argument_quality:
+        json_format[quality.name] = quality.value[1]
+
+    prompt = f"""{text}
+
+    Judge the text above based on the following qualities:
+
+    {json_prompt(json_format)}
+
+    Each JSON value should be on a scale from 0 to 4, where: {', '.join(scale_description())}
+    """
+
+    response = parse_llm_json(model.sample(prompt))
+
+    parsed_response: dict[ArgumentQuality, Agreement] = {}
+
+    for key, value in response.items():
+        parsed_response[ArgumentQuality[key]] = Agreement(value)
+
+    return parsed_response

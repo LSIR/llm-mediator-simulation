@@ -64,17 +64,23 @@ class Agreement(Enum):
     STRONGLY_AGREE = 4
 
 
-def measure_statement(model: LanguageModel, text: str, statement: str) -> Agreement:
-    """Scale the correctness of a statement regarding the given text on a scale from 0 to 10."""
+def scale_description() -> list[str]:
+    """Return the scale description for agreement levels."""
 
     scale_description: list[str] = []
 
     for member in Agreement:
         scale_description.append(f"{member.value} is {member.name}")
 
+    return scale_description
+
+
+def measure_statement(model: LanguageModel, text: str, statement: str) -> Agreement:
+    """Scale the correctness of a statement regarding the given text on a scale from 0 to 10."""
+
     prompt = f"""{text}
 
-    On a scale from 0 to 4, {', '.join(scale_description)}, how much do you agree with the following statement about the text above?
+    On a scale from 0 to 4, {', '.join(scale_description())}, how much do you agree with the following statement about the text above?
     {statement}
     Answer with a single digit.
     """

@@ -2,7 +2,7 @@
 
 from llm_mediator_simulations.metrics.criteria import (
     ArgumentQuality,
-    measure_argument_quality,
+    measure_argument_qualities,
 )
 from llm_mediator_simulations.metrics.perspective_api import PerspectiveScorer
 from llm_mediator_simulations.models.language_model import LanguageModel
@@ -53,10 +53,8 @@ class MetricsHandler:
 
         # Measure custom LLM-based metrics
         if self.model is not None and self.argument_qualities is not None:
-            metrics.argument_qualities = {}
-            for argument_quality in self.argument_qualities:
-                metrics.argument_qualities[argument_quality] = measure_argument_quality(
-                    self.model, text, argument_quality
-                )
+            metrics.argument_qualities = measure_argument_qualities(
+                self.model, text, self.argument_qualities
+            )
 
         return metrics
