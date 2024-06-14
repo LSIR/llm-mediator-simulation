@@ -7,7 +7,7 @@
 from enum import Enum
 
 from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.utils.decorators import retry
+from llm_mediator_simulations.utils.decorators import benchmark, retry
 from llm_mediator_simulations.utils.json import json_prompt, parse_llm_json
 from llm_mediator_simulations.utils.model_utils import (
     Agreement,
@@ -68,6 +68,7 @@ class ArgumentQuality(Enum):
 
 
 @retry(attempts=5, verbose=True)
+@benchmark(name="Argument Qualities", verbose=False)
 def measure_argument_qualities(
     model: LanguageModel,
     text: str,

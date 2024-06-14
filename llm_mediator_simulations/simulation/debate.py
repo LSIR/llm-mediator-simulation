@@ -19,6 +19,7 @@ from llm_mediator_simulations.simulation.prompt import (
     mediator_intervention,
 )
 from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
+from llm_mediator_simulations.utils.decorators import benchmark
 from llm_mediator_simulations.utils.types import Intervention, LLMMessage
 
 
@@ -140,6 +141,7 @@ class Debate:
     #                                     HELPERS & SHORTHANDS                                    #
     ###############################################################################################
 
+    @benchmark(name="Debater Intervention", verbose=False)
     def debater_intervention(self, debater: Debater) -> LLMMessage:
         """Shorthand helper to decide whether a debater should intervene in the debate."""
 
@@ -150,6 +152,7 @@ class Debate:
             debater=debater,
         )
 
+    @benchmark(name="Mediator Intervention", verbose=False)
     def mediator_intervention(self) -> LLMMessage:
         """Shorthand helper to decide whether the mediator should intervene in the debate."""
 

@@ -1,8 +1,10 @@
 """Example script to run a debate simulation on nuclear energy."""
 
 import os
+import pickle
 
 from dotenv import load_dotenv
+from rich import print as rprint
 
 from llm_mediator_simulations.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulations.metrics.perspective_api import PerspectiveScorer
@@ -11,9 +13,12 @@ from llm_mediator_simulations.simulation.configuration import (
     DebateConfig,
     DebatePosition,
     Debater,
+    Mediator,
+    Personality,
 )
 from llm_mediator_simulations.simulation.debate import Debate, Debater
 from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
+from llm_mediator_simulations.utils.decorators import BENCHMARKS, print_benchmarks
 
 load_dotenv()
 
@@ -27,6 +32,12 @@ model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 debaters = [
     Debater(
         position=DebatePosition.AGAINST,
+        personality=[
+            Personality.TOXIC,
+            Personality.AGGRESSIVE,
+            Personality.INFORMAL,
+            Personality.INSULTING,
+        ],
     ),
     Debater(
         position=DebatePosition.FOR,
@@ -43,6 +54,8 @@ configuration = DebateConfig(
     statement="We should use nuclear power.",
 )
 
+mediator = Mediator()
+
 # The debate runner
 debate = Debate(
     model=model,
@@ -50,17 +63,12 @@ debate = Debate(
     configuration=configuration,
     summary_handler=summary,
     metrics_handler=metrics,
+    mediator=mediator,
 )
 
 debate.run(rounds=3)
 
-print()
-print("Debate messages:")
-print("----------------")
-
-for message in debate.messages:
-    debater = debate.debaters[message.authorId]
-    print(debater.position, "-", message.text)
-    print()
+print_benchmarks()
 
 debate.pickle("debate.pkl")
+pickle.dump(BENCHMARKS, open("benchmarks.pkl", "wb"))
