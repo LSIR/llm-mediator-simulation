@@ -25,12 +25,15 @@ print()
 print("Debate messages:")
 print("----------------")
 for message in data["messages"]:
-    debater = data["debaters"][message.authorId]
-    print(
-        debater.position,
-        "-",
-        message.metrics.perspective if message.metrics else "None",
-        "-",
-        message.text,
-    )
+    if message.authorId is None:
+        print("Mediator -", message.text)
+    else:
+        debater = data["debaters"][message.authorId]
+        print(
+            debater.position,
+            "-",
+            message.metrics.perspective if message.metrics else "None",
+            "-",
+            message.text,
+        )
     print()
