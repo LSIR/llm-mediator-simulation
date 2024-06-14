@@ -20,6 +20,7 @@ def json_prompt(format: dict[str, str]) -> str:
 
 def validate_shallow_json(data: dict, typedDict) -> bool:
     """Validate that a shallow JSON object can be coerced to the given TypedDict instance.
+    Excess fields are allowed.
 
     Args:
         data (dict): The JSON object to validate.
