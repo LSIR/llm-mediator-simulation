@@ -9,18 +9,20 @@ from llm_mediator_simulations.utils.model_utils import Agreement
 
 
 @dataclass
-class Message:
-    """Basic message type for the debate simulation
+class Intervention:
+    """Basic intervention data type for the debate simulation
 
     Attributes:
-        authorId (int): The author's index in the debater config list. If None, the message is from a mediator.
-        text (str): The text content of the message.
-        timestamp (datetime): The timestamp of the message.
-        metrics (Metrics | None): The metrics associated with the message.
+        authorId (int): The author's index in the debater config list. If None, the intervention is from a mediator.
+        text (str | None): The text content of the intervention. If None, the author decided not to intervene.
+        justification (str): The justification for the intervention.
+        timestamp (datetime): The timestamp of the intervention.
+        metrics (Metrics | None): The metrics associated with the intervention.
     """
 
     authorId: int | None
-    text: str
+    text: str | None
+    justification: str
     timestamp: datetime
     metrics: "Metrics | None" = None
 

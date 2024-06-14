@@ -18,7 +18,7 @@ from llm_mediator_simulations.simulation.prompt import (
     mediator_intervention,
 )
 from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
-from llm_mediator_simulations.utils.types import LLMMessage, Message
+from llm_mediator_simulations.utils.types import Intervention, LLMMessage
 
 
 class Debate:
@@ -56,7 +56,7 @@ class Debate:
         self.mediator = mediator
 
         # Conversation detailed logs
-        self.messages: list[Message] = []
+        self.interventions: list[Intervention] = []
 
         self.model = model
         self.metrics_handler = metrics_handler
@@ -76,11 +76,17 @@ class Debate:
                 intervention = self.debater_intervention(debater)
 
                 if not intervention["do_intervene"]:
-                    # TODO: log the motivation for not intervening
+                    self.interventions.append(
+                        Intervention(
+                            index,
+                            None,
+                            intervention["intervention_justification"],
+                            datetime.now(),
+                        )
+                    )
                     continue
 
                 # Extract the debater comment
-                # TODO: still take into account the motivation for the intervention
                 message = intervention["text"]
 
                 # Compute metrics if a handler is provided
@@ -89,7 +95,15 @@ class Debate:
                     if self.metrics_handler
                     else None
                 )
-                self.messages.append(Message(index, message, datetime.now(), metrics))
+                self.interventions.append(
+                    Intervention(
+                        index,
+                        message,
+                        intervention["intervention_justification"],
+                        datetime.now(),
+                        metrics,
+                    )
+                )
                 self.summary_handler.update_with_message(message)
 
                 intervention = self.mediator_intervention()
@@ -98,12 +112,27 @@ class Debate:
                     # Extract the mediator comment
                     message = intervention["text"]
 
-                    self.messages.append(
-                        Message(None, message, datetime.now(), metrics)
+                    self.interventions.append(
+                        Intervention(
+                            None,
+                            message,
+                            intervention["intervention_justification"],
+                            datetime.now(),
+                            metrics,
+                        )
                     )
                     # Include mediator messages in the summary
                     self.summary_handler.update_with_message(
                         f"Message from a mediator: {message}"
+                    )
+                else:
+                    self.interventions.append(
+                        Intervention(
+                            None,
+                            None,
+                            intervention["intervention_justification"],
+                            datetime.now(),
+                        )
                     )
 
     ###############################################################################################
@@ -149,7 +178,7 @@ class Debate:
         data: "DebatePickle" = {
             "config": self.config,
             "debaters": self.debaters,
-            "messages": self.messages,
+            "messages": self.interventions,
         }
 
         with open(path, "wb") as file:
@@ -175,4 +204,4 @@ class DebatePickle(TypedDict):
 
     config: DebateConfig
     debaters: list[Debater]
-    messages: list[Message]
+    messages: list[Intervention]
