@@ -3,7 +3,6 @@
 import pickle
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TypedDict
 
 from rich.progress import track
 
@@ -64,7 +63,7 @@ class Debate:
         self.metrics_handler = metrics_handler
 
         if summary_handler is None:
-            self.summary_handler = SummaryHandler(model=model)
+            self.summary_handler = SummaryHandler(model=model, debaters=debaters)
         else:
             self.summary_handler = summary_handler
 
@@ -97,16 +96,16 @@ class Debate:
                     if self.metrics_handler
                     else None
                 )
-                self.interventions.append(
-                    Intervention(
-                        index,
-                        message,
-                        intervention["intervention_justification"],
-                        datetime.now(),
-                        metrics,
-                    )
+                intervention = Intervention(
+                    index,
+                    message,
+                    intervention["intervention_justification"],
+                    datetime.now(),
+                    metrics,
                 )
-                self.summary_handler.update_with_message(message)
+
+                self.interventions.append(intervention)
+                self.summary_handler.update_with_message(intervention)
 
                 intervention = self.mediator_intervention()
 
@@ -114,19 +113,17 @@ class Debate:
                     # Extract the mediator comment
                     message = intervention["text"]
 
-                    self.interventions.append(
-                        Intervention(
-                            None,
-                            message,
-                            intervention["intervention_justification"],
-                            datetime.now(),
-                            metrics,
-                        )
+                    intervention = Intervention(
+                        None,
+                        message,
+                        intervention["intervention_justification"],
+                        datetime.now(),
+                        metrics,
                     )
+
+                    self.interventions.append(intervention)
                     # Include mediator messages in the summary
-                    self.summary_handler.update_with_message(
-                        f"Message from a mediator: {message}"
-                    )
+                    self.summary_handler.update_with_message(intervention)
                 else:
                     self.interventions.append(
                         Intervention(

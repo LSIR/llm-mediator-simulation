@@ -32,7 +32,7 @@ def debater_intervention(
     Do you want to add a comment to the online debate right now?
     You should often add a comment when the previous context is empty or not in the favor of your \
     position. However, you should almost never add a comment when the previous context already \
-    supports your position.
+    supports your position. Use short chat messages, no more than 3 sentences.
 
     {json_prompt(LLM_RESPONSE_FORMAT)}
     """
@@ -49,10 +49,16 @@ def mediator_intervention(
     summary: SummaryHandler,
 ) -> LLMMessage:
     """Mediator intervention: decision, motivation for the intervention, and intervention content."""
+    prompt = f"""{config.to_prompt()}. 
 
-    prompt = f"""{config.to_prompt()}. {summary.to_prompt()} {mediator.to_prompt()}
+{summary.debaters_prompt()}
 
-    {json_prompt(LLM_RESPONSE_FORMAT)}
+CONVERSATION HISTORY WITH TIMESTAMPS:
+{summary.raw_history_prompt()} 
+
+{mediator.to_prompt()}
+
+{json_prompt(LLM_RESPONSE_FORMAT)}
     """
 
     response = model.sample(prompt)

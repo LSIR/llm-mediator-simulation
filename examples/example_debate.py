@@ -4,7 +4,6 @@ import os
 import pickle
 
 from dotenv import load_dotenv
-from rich import print as rprint
 
 from llm_mediator_simulations.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulations.metrics.perspective_api import PerspectiveScorer
@@ -31,6 +30,7 @@ model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 # Debater participants
 debaters = [
     Debater(
+        name="Alice",
         position=DebatePosition.AGAINST,
         personality=[
             Personality.TOXIC,
@@ -40,6 +40,7 @@ debaters = [
         ],
     ),
     Debater(
+        name="Bob",
         position=DebatePosition.FOR,
     ),
 ]

@@ -57,15 +57,12 @@ class DebateConfig(Promptable):
         instructions (str): The instructions for the debate and how to answer.
     """
 
-    statement: str
+    statement: str = ""
     context: str = "You are taking part in an online debate about the following topic:"
-    instructions: str = (
-        "Answer with short chat messages (ranging from one to three sentences maximum)."
-    )
 
     @override
     def to_prompt(self) -> str:
-        return f"{self.context} {self.statement} {self.instructions}"
+        return f"{self.context} {self.statement}"
 
 
 @dataclass
@@ -77,6 +74,7 @@ class Debater(Promptable):
         personality (str | None, optional): The personality of the debater (as a list of qualifiers). Defaults to None.
     """
 
+    name: str
     position: DebatePosition
     personality: list[Personality] | None = None
 
@@ -92,26 +90,20 @@ class Mediator(Promptable):
 
     Args:
         mediator_preprompt (str): Mediator role description for the LLM prompt.
-        detection_instructions (str): Instructions for LLMs to decide whether to intervene with a comment or not.
-        intervention_instructions (str): Instructions for LLMs to write an intervention comment.
     """
 
     mediator_preprompt: str = (
-        "You are a moderator for a group chat. Your goal is to make sure that participants in the "
-        "following conversation speak for an equal amount of time, and that participants are "
-        "polite to one another. You would like to intervene minimally."
-    )
-    detection_instructions: str = (
-        "Considering the debate summary and the last messages, do you think you should intervene?"
-    )
-    intervention_instructions: str = (
-        "If you have chosen to intervene, write a comment that will help the debaters to keep the "
-        "debate on track make it remain respectful. Adapt your comment depending on the behaviors "
-        "you can observe from the debate summary and the last messages."
+        "You are an expert mediator for a group chat. Your guidelines are the following:\n"
+        "\n"
+        "1. Clarify Messages: Ensure clear communication by asking for clarification if any message is unclear or ambiguous.\n"
+        "2. Maintain Respect: Ensure a respectful atmosphere; intervene if the conversation becomes heated or disrespectful.\n"
+        "3. Facilitate Turn-Taking: Ensure all participants have equal opportunities to speak and express their views.\n"
+        "4. Encourage Constructive Feedback: Prompt participants to provide solutions and constructive feedback rather than focusing solely on problems.\n"
+        "5. Summarize Key Points: Periodically summarize discussion points to ensure mutual understanding and agreement.\n"
+        "6. Encourage Consensus and Move On: Guide the conversation towards alignment where possible. When participants seem to agree on which item "
+        "is more important or if the conversation has reached a standstill, explicitly tell participants to consider moving to the next topic."
     )
 
     @override
     def to_prompt(self) -> str:
-        return f"""{self.mediator_preprompt}
-{self.detection_instructions}
-{self.intervention_instructions}"""
+        return f"""{self.mediator_preprompt}"""
