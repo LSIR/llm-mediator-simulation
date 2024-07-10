@@ -9,3 +9,11 @@ class LanguageModel(ABC):
     @abstractmethod
     def sample(self, prompt: str) -> str:
         """Generate text based on the given prompt."""
+
+
+class AsyncLanguageModel(ABC):
+    """Abstract base class for async language models."""
+
+    @abstractmethod
+    async def sample(self, prompt: str) -> str:
+        """Generate text based on the given prompt."""
