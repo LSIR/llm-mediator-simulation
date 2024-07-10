@@ -5,7 +5,7 @@ from typing import Literal, override
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 
-from llm_mediator_simulations.models.language_model import LanguageModel
+from llm_mediator_simulation.models.language_model import LanguageModel
 
 
 class GPTModel(LanguageModel):
@@ -15,7 +15,7 @@ class GPTModel(LanguageModel):
         self,
         *,
         api_key: str,
-        model_name: Literal["gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"]
+        model_name: Literal["gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"],
     ):
         """Initialize a GPT model.
 

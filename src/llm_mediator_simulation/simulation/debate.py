@@ -6,20 +6,20 @@ from datetime import datetime
 
 from rich.progress import track
 
-from llm_mediator_simulations.metrics.metrics_handler import MetricsHandler
-from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.simulation.configuration import (
+from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
+from llm_mediator_simulation.models.language_model import LanguageModel
+from llm_mediator_simulation.simulation.configuration import (
     DebateConfig,
     Debater,
     Mediator,
 )
-from llm_mediator_simulations.simulation.prompt import (
+from llm_mediator_simulation.simulation.prompt import (
     debater_intervention,
     mediator_intervention,
 )
-from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
-from llm_mediator_simulations.utils.decorators import benchmark
-from llm_mediator_simulations.utils.types import Intervention, LLMMessage
+from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
+from llm_mediator_simulation.utils.decorators import benchmark
+from llm_mediator_simulation.utils.types import Intervention, LLMMessage
 
 
 class Debate:

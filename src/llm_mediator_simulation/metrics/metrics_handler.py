@@ -1,12 +1,12 @@
 """Handler class to compute metrics for given input texts."""
 
-from llm_mediator_simulations.metrics.criteria import (
+from llm_mediator_simulation.metrics.criteria import (
     ArgumentQuality,
     measure_argument_qualities,
 )
-from llm_mediator_simulations.metrics.perspective_api import PerspectiveScorer
-from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.utils.types import Metrics
+from llm_mediator_simulation.metrics.perspective_api import PerspectiveScorer
+from llm_mediator_simulation.models.language_model import LanguageModel
+from llm_mediator_simulation.utils.types import Metrics
 
 
 class MetricsHandler:

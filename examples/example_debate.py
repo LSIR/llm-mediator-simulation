@@ -5,19 +5,19 @@ import pickle
 
 from dotenv import load_dotenv
 
-from llm_mediator_simulations.metrics.metrics_handler import MetricsHandler
-from llm_mediator_simulations.metrics.perspective_api import PerspectiveScorer
-from llm_mediator_simulations.models.gpt_models import GPTModel
-from llm_mediator_simulations.simulation.configuration import (
+from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
+from llm_mediator_simulation.metrics.perspective_api import PerspectiveScorer
+from llm_mediator_simulation.models.gpt_models import GPTModel
+from llm_mediator_simulation.simulation.configuration import (
     DebateConfig,
     DebatePosition,
     Debater,
     Mediator,
     Personality,
 )
-from llm_mediator_simulations.simulation.debate import Debate, Debater
-from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
-from llm_mediator_simulations.utils.decorators import BENCHMARKS, print_benchmarks
+from llm_mediator_simulation.simulation.debate import Debate, Debater
+from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
+from llm_mediator_simulation.utils.decorators import BENCHMARKS, print_benchmarks
 
 load_dotenv()
 

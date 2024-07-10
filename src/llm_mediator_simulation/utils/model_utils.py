@@ -2,7 +2,7 @@
 
 from enum import Enum
 
-from llm_mediator_simulations.models.language_model import LanguageModel
+from llm_mediator_simulation.models.language_model import LanguageModel
 
 ###################################################################################################
 #                                         SUMMARIZATION                                           #

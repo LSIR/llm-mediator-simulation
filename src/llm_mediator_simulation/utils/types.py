@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import TypedDict
 
-from llm_mediator_simulations.metrics.criteria import ArgumentQuality
-from llm_mediator_simulations.utils.model_utils import Agreement
+from llm_mediator_simulation.metrics.criteria import ArgumentQuality
+from llm_mediator_simulation.utils.model_utils import Agreement
 
 
 @dataclass

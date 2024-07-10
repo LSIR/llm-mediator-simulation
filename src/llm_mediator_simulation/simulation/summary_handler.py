@@ -2,13 +2,13 @@
 
 from typing import override
 
-from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.simulation.configuration import Debater
-from llm_mediator_simulations.utils.interfaces import Promptable
-from llm_mediator_simulations.utils.model_utils import (
+from llm_mediator_simulation.models.language_model import LanguageModel
+from llm_mediator_simulation.simulation.configuration import Debater
+from llm_mediator_simulation.utils.interfaces import Promptable
+from llm_mediator_simulation.utils.model_utils import (
     summarize_conversation_with_last_messages,
 )
-from llm_mediator_simulations.utils.types import Intervention
+from llm_mediator_simulation.utils.types import Intervention
 
 
 class SummaryHandler(Promptable):
@@ -33,11 +33,7 @@ class SummaryHandler(Promptable):
         self._model = model
         self._latest_messages_limit = latest_messages_limit
 
-        self.debaters: dict[int, Debater] = {}
-
-        if debaters is not None:
-            for index, debater in enumerate(debaters):
-                self.debaters[index] = debater
+        self.debaters = debaters or []
 
     def update_with_messages(self, messages: list[Intervention]) -> str:
         """Update the summary with the given messages."""
@@ -85,8 +81,11 @@ class SummaryHandler(Promptable):
 
         for message in self.latest_messages:
             if message.text is not None and message.authorId is not None:
-                debater = self.debaters[message.authorId]
-                debater_id = debater.name if debater is not None else message.authorId
+                debater_id = (
+                    self.debaters[message.authorId].name
+                    if message.authorId in self.debaters
+                    else message.authorId
+                )
 
                 messages.append(f"[{message.timestamp}] {debater_id}: {message.text}")
 
@@ -97,7 +96,7 @@ class SummaryHandler(Promptable):
 
         debater_strings: list[str] = []
 
-        for index, debater in self.debaters.items():
+        for index, debater in enumerate(self.debaters):
             debater_strings.append(f"{debater.name or index}: {debater.name}")
 
         sep = "\n"

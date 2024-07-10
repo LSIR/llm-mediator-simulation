@@ -5,7 +5,7 @@ from typing import Literal, override
 import google.generativeai as genai
 from google.generativeai.types import HarmBlockThreshold, HarmCategory
 
-from llm_mediator_simulations.models.language_model import LanguageModel
+from llm_mediator_simulation.models.language_model import LanguageModel
 
 
 class GoogleModel(LanguageModel):

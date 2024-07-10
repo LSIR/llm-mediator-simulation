@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import override
 
-from llm_mediator_simulations.utils.interfaces import Promptable
+from llm_mediator_simulation.utils.interfaces import Promptable
 
 ###################################################################################################
 #                                              ENUMS                                              #

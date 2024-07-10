@@ -5,7 +5,7 @@ from typing import Literal, override
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 
-from llm_mediator_simulations.models.language_model import LanguageModel
+from llm_mediator_simulation.models.language_model import LanguageModel
 
 
 class MistralModel(LanguageModel):
@@ -15,7 +15,7 @@ class MistralModel(LanguageModel):
         self,
         *,
         api_key: str,
-        model_name: Literal["mistral-large-latest", "mistral-small-latest"]
+        model_name: Literal["mistral-large-latest", "mistral-small-latest"],
     ):
         """Initialize a Mistral model.
 

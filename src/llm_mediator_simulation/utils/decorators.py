@@ -16,7 +16,7 @@ def retry(attempts=5, verbose=False):
                     return fn(*args, **kwargs)
                 except Exception as e:
                     if verbose:
-                        print(f"Failed: {e}")
+                        print(f"Failed: {type(e).__name__}: {e}")
             raise RuntimeError(f"Function {fn.__name__} failed {attempts} times.")
 
         return wrapper

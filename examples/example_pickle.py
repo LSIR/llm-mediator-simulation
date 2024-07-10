@@ -4,8 +4,8 @@ import pickle
 
 from rich import print as rprint
 
-from llm_mediator_simulations.simulation.debate import Debate
-from llm_mediator_simulations.utils.decorators import print_benchmarks
+from llm_mediator_simulation.simulation.debate import Debate
+from llm_mediator_simulation.utils.decorators import print_benchmarks
 
 data = Debate.unpickle("debate.pkl")
 

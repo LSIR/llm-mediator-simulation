@@ -1,15 +1,15 @@
 """Prompt utilities for the debate simulation."""
 
-from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.simulation.configuration import (
+from llm_mediator_simulation.models.language_model import LanguageModel
+from llm_mediator_simulation.simulation.configuration import (
     DebateConfig,
     Debater,
     Mediator,
 )
-from llm_mediator_simulations.simulation.summary_handler import SummaryHandler
-from llm_mediator_simulations.utils.decorators import retry
-from llm_mediator_simulations.utils.json import json_prompt, parse_llm_json
-from llm_mediator_simulations.utils.types import LLMMessage
+from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
+from llm_mediator_simulation.utils.decorators import retry
+from llm_mediator_simulation.utils.json import json_prompt, parse_llm_json
+from llm_mediator_simulation.utils.types import LLMMessage
 
 LLM_RESPONSE_FORMAT: dict[str, str] = {
     "do_intervene": "bool",

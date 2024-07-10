@@ -6,10 +6,10 @@
 
 from enum import Enum
 
-from llm_mediator_simulations.models.language_model import LanguageModel
-from llm_mediator_simulations.utils.decorators import benchmark, retry
-from llm_mediator_simulations.utils.json import json_prompt, parse_llm_json
-from llm_mediator_simulations.utils.model_utils import (
+from llm_mediator_simulation.models.language_model import LanguageModel
+from llm_mediator_simulation.utils.decorators import benchmark, retry
+from llm_mediator_simulation.utils.json import json_prompt, parse_llm_json
+from llm_mediator_simulation.utils.model_utils import (
     Agreement,
     measure_statement,
     scale_description,
