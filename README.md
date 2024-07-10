@@ -28,13 +28,12 @@ See the [overview](/docs/OVERVIEW.md) for more details.
 
 ## Get Started
 
-You must ensure that Python 3.12 is available on your machine.
+This project was setup using [hatch](https://hatch.pypa.io/latest/).
 
 ```bash
-python --version  # Python 3.12.x
-python -m venv venv  # Create a virtual environment
+pip install --user hatch
+hatch env create
 source venv/bin/activate  # Activate the python virtual environment
-pip install -r requirements.txt  # Install the dependencies
 ```
 
 ## Examples

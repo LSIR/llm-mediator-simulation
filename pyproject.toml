@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-mediator-simulation"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [{ name = "Thibaut de Saivre", email = "thibaut2saivre@gmail.com" }]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "ipykernel",
+  "python-dotenv",
+  "google-cloud-aiplatform",
+  "mistralai",
+  "perspective",
+  "rich",
+  "huggingface_hub[cli]",
+  "accelerate",
+  "bitsandbytes",
+]
+
+[project.urls]
+Documentation = "https://github.com/LSIR/llm-mediator-simulation#readme"
+Issues = "https://github.com/LSIR/llm-mediator-simulation/issues"
+Source = "https://github.com/LSIR/llm-mediator-simulation"
+
+[tool.hatch.version]
+path = "src/llm_mediator_simulation/__about__.py"
+
+[tool.hatch.envs.default]
+type = "virtual"
+path = "venv"
+
+[tool.hatch.envs.types]
+extra-dependencies = ["pyright>=1.1.0"]
+[tool.hatch.envs.types.scripts]
+check = "pyright {args:src/llm_mediator_simulation tests}"
+
+[tool.coverage.run]
+source_pkgs = ["llm_mediator_simulation", "tests"]
+branch = true
+parallel = true
+omit = ["src/llm_mediator_simulation/__about__.py"]
+
+[tool.coverage.paths]
+llm_mediator_simulation = [
+  "src/llm_mediator_simulation",
+  "*/llm-mediator-simulation/src/llm_mediator_simulation",
+]
+tests = ["tests", "*/llm-mediator-simulation/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
