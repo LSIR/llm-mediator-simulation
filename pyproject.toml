@@ -29,6 +29,7 @@ dependencies = [
   "huggingface_hub[cli]",
   "accelerate",
   "bitsandbytes",
+  "transformers",
 ]
 
 [project.urls]

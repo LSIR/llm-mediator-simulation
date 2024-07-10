@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulation.metrics.perspective_api import PerspectiveScorer
 from llm_mediator_simulation.models.gpt_models import GPTModel
+from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
 from llm_mediator_simulation.simulation.configuration import (
     DebateConfig,
     DebatePosition,
@@ -24,7 +25,8 @@ load_dotenv()
 gpt_key = os.getenv("GPT_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
-model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
+mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
+debater_model = MistralLocalModel()
 
 
 # Debater participants
@@ -48,7 +50,7 @@ debaters = [
 metrics = MetricsHandler(perspective=PerspectiveScorer(api_key=perspective_key))
 
 # The conversation summary handler (keep track of the general history and of the n latest messages)
-summary = SummaryHandler(model=model, latest_messages_limit=1)
+summary = SummaryHandler(model=mediator_model, latest_messages_limit=1)
 
 # The debate configuration (which topic to discuss, and customisable instructions)
 configuration = DebateConfig(
@@ -59,7 +61,8 @@ mediator = Mediator()
 
 # The debate runner
 debate = Debate(
-    model=model,
+    debater_model=debater_model,
+    mediator_model=mediator_model,
     debaters=debaters,
     configuration=configuration,
     summary_handler=summary,

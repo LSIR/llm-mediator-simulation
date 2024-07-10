@@ -28,7 +28,8 @@ class Debate:
     def __init__(
         self,
         *,
-        model: LanguageModel,
+        debater_model: LanguageModel,
+        mediator_model: LanguageModel,
         debaters: list[Debater],
         configuration: DebateConfig,
         summary_handler: SummaryHandler | None = None,
@@ -59,11 +60,14 @@ class Debate:
         # Conversation detailed logs
         self.interventions: list[Intervention] = []
 
-        self.model = model
+        self.debater_model = debater_model
+        self.mediator_model = mediator_model
         self.metrics_handler = metrics_handler
 
         if summary_handler is None:
-            self.summary_handler = SummaryHandler(model=model, debaters=debaters)
+            self.summary_handler = SummaryHandler(
+                model=mediator_model, debaters=debaters
+            )
         else:
             self.summary_handler = summary_handler
 
@@ -143,7 +147,7 @@ class Debate:
         """Shorthand helper to decide whether a debater should intervene in the debate."""
 
         return debater_intervention(
-            model=self.model,
+            model=self.debater_model,
             config=self.config,
             summary=self.summary_handler,
             debater=debater,
@@ -158,7 +162,7 @@ class Debate:
         ), "Trying to generate a mediator comment without mediator config"
 
         return mediator_intervention(
-            model=self.model,
+            model=self.mediator_model,
             config=self.config,
             mediator=self.mediator,
             summary=self.summary_handler,
