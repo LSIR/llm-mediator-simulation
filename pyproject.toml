@@ -19,9 +19,11 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
+  "asyncio",
   "ipykernel",
   "python-dotenv",
   "google-cloud-aiplatform",
+  "google-generativeai",
   "openai",
   "mistralai",
   "perspective",

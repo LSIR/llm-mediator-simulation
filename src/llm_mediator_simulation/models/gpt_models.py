@@ -1,5 +1,6 @@
 """OpenAI GPT model wrapper."""
 
+import asyncio
 from typing import Literal, override
 
 from openai import AsyncOpenAI, OpenAI
@@ -65,15 +66,22 @@ class AsyncGPTModel(AsyncLanguageModel):
         self.client = AsyncOpenAI(api_key=api_key)
 
     @override
-    async def sample(self, prompt: str) -> str:
-
-        messages: list[ChatCompletionMessageParam] = [
-            {"role": "user", "content": prompt}
+    async def sample(self, prompts: list[str]) -> list[str]:
+        # Prepare prompts
+        messages: list[list[ChatCompletionMessageParam]] = [
+            [{"role": "user", "content": prompt}] for prompt in prompts
         ]
 
-        result = await self.client.chat.completions.create(
-            messages=messages, model=self.model_name, n=1
+        # Await all completions asynchronously
+        results = await asyncio.gather(
+            *[
+                self.client.chat.completions.create(
+                    messages=message, model=self.model_name, n=1
+                )
+                for message in messages
+            ]
         )
-        content = result.choices[0].message.content
 
-        return content if content else ""
+        contents = [result.choices[0].message.content or "" for result in results]
+
+        return contents
