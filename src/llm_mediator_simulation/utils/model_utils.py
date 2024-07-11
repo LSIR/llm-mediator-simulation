@@ -2,7 +2,10 @@
 
 from enum import Enum
 
-from llm_mediator_simulation.models.language_model import LanguageModel
+from llm_mediator_simulation.models.language_model import (
+    AsyncLanguageModel,
+    LanguageModel,
+)
 
 ###################################################################################################
 #                                         SUMMARIZATION                                           #
@@ -47,6 +50,29 @@ def summarize_conversation_with_last_messages(
     """
 
     return model.sample(prompt)
+
+
+async def summarize_conversation_with_last_messages_async(
+    model: AsyncLanguageModel,
+    previous_summaries: list[str],
+    latest_messages: list[list[str]],
+) -> list[str]:
+    """Generate summaries of the given conversations, with an emphasis on the latest messages, asynchronously."""
+
+    separator = "\n\n"
+    prompts: list[str] = []
+
+    for previous_summary, messages in zip(previous_summaries, latest_messages):
+        prompt = f"""Conversation summary: {previous_summary}
+
+        Latest messages:
+        {separator.join(messages)}
+
+        Summarize the conversation above, with an emphasis on the latest messages.
+        """
+        prompts.append(prompt)
+
+    return await model.sample(prompts)
 
 
 ###################################################################################################

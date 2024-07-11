@@ -39,11 +39,12 @@ class Debate:
         """Initialize the debate instance.
 
         Args:
-            model (LanguageModel): The language model to use.
-            debaters (list[Debater]): The debaters participating in the debate.
-            configuration (str, optional): The context of the debate.
-            summary_handler (Summary | None, optional): The summary handler to use. Defaults to None.
-            metrics_handler (MetricsHandler | None, optional): The metrics handler to use to compute message metrics. Defaults to None.
+            debater_model: The language model to use for debaters.
+            mediator_model: The language model to use for the mediator.
+            debaters: The debaters participating in the debate.
+            configuration: The context of the debate.
+            summary_handler: The summary handler to use. Defaults to None.
+            metrics_handler: The metrics handler to use to compute message metrics. Defaults to None.
         """
 
         # Prompt context and metadata
