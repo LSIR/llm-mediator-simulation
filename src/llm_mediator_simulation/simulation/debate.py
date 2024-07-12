@@ -179,14 +179,14 @@ class Debate:
         This does not include the model, summary handler, and other non data-relevant attributes.
 
         Args:
-            path (str): The path to the pickle file.
+            path (str): The path to the pickle file, without file extension.
         """
 
         data: "DebatePickle" = DebatePickle(
             self.config, self.debaters, self.interventions
         )
 
-        with open(path, "wb") as file:
+        with open(f"{path}.pkl", "wb") as file:
             pickle.dump(
                 data,
                 file,

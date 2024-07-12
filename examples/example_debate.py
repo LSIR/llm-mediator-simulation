@@ -74,5 +74,5 @@ debate.run(rounds=3)
 
 print_benchmarks()
 
-debate.pickle("debate.pkl")
+debate.pickle("debate")
 pickle.dump(BENCHMARKS, open("benchmarks.pkl", "wb"))

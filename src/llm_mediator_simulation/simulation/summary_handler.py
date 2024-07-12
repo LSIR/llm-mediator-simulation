@@ -149,22 +149,22 @@ class AsyncSummaryHandler(AsyncPromptable):
         """Add new messages to the latest messages list.
 
         Args:
-            messages: The messages to add, 1 per debate.
-            active: The indices of the debates that need to be updated.
+            messages: The messages to add, 1 per debate. It is assumed that it contains 1 intervention per debate, \
+                active or not.
+            active: The indices of the debates that need to be updated. It is used to filter the messages.
         """
 
         if active is None:
             active = list(range(self.parallel_debates))
-        else:
-            assert (
-                len(messages) == self.parallel_debates
-            ), "The number of messages must match the number of debates."
 
-        assert len(active) == len(
-            messages
-        ), "The number of messages must match the number of active debates."
+        assert (
+            len(messages) == self.parallel_debates
+        ), "The number of messages must match the number of debates."
 
-        for index, message in zip(active, messages):
+        for index, message in enumerate(messages):
+            if index not in active:
+                continue
+
             self.latest_messages[index] = (self.latest_messages[index] + [message])[
                 -self._latest_messages_limit :
             ]
@@ -172,20 +172,25 @@ class AsyncSummaryHandler(AsyncPromptable):
     def add_new_messages(
         self, messages: list[list[Intervention]], active: list[int] | None = None
     ) -> None:
-        """Add new messages to the latest messages list."""
+        """Add new messages to the latest messages list.
+
+        Args:
+            messages: The messages to add, 1 list of them per debate. It is assumed that it contains 1 list per debate, \
+                active or not.
+            active: The indices of the debates that need to be updated. It is used to filter the messages.
+        """
 
         if active is None:
             active = list(range(self.parallel_debates))
-        else:
-            assert (
-                len(messages) == self.parallel_debates
-            ), "The number of messages must match the number of debates."
 
-        assert self.parallel_debates == len(
-            messages
-        ), "The number of messages must match the number of active debates."
+        assert (
+            len(messages) == self.parallel_debates
+        ), "The number of messages must match the number of debates."
 
-        for index, message_list in zip(active, messages):
+        for index, message_list in enumerate(messages):
+            if index not in active:
+                continue
+
             self.latest_messages[index] = (self.latest_messages[index] + message_list)[
                 -self._latest_messages_limit :
             ]
