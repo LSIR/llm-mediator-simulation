@@ -60,11 +60,6 @@ class SummaryHandler(Promptable):
 
         return self.summary
 
-    def update_with_message(self, message: Intervention) -> str:
-        """Update the summary with the given message."""
-
-        return self.update_with_messages([message])
-
     @override
     def to_prompt(self) -> str:
         msg_sep = "\n\n"
@@ -148,26 +143,71 @@ class AsyncSummaryHandler(AsyncPromptable):
         self.debaters = debaters or []
         self.parallel_debates = parallel_debates
 
-    async def update_with_messages(
-        self, messages: list[list[Intervention]]
-    ) -> list[str]:
-        """Update the summaries with the given messages."""
+    def add_new_message(
+        self, messages: list[Intervention], active: list[int] | None = None
+    ) -> None:
+        """Add new messages to the latest messages list.
 
-        # 1. Update the latest messages
-        self.latest_messages = (self.latest_messages + messages)[
-            -self._latest_messages_limit :
-        ]
+        Args:
+            messages: The messages to add, 1 per debate.
+            active: The indices of the debates that need to be updated.
+        """
 
-        self.summaries = await summarize_conversation_with_last_messages_async(
-            self._model, self.summaries, self.message_strings()
+        if active is None:
+            active = list(range(self.parallel_debates))
+        else:
+            assert (
+                len(messages) == self.parallel_debates
+            ), "The number of messages must match the number of debates."
+
+        assert len(active) == len(
+            messages
+        ), "The number of messages must match the number of active debates."
+
+        for index, message in zip(active, messages):
+            self.latest_messages[index] = (self.latest_messages[index] + [message])[
+                -self._latest_messages_limit :
+            ]
+
+    def add_new_messages(
+        self, messages: list[list[Intervention]], active: list[int] | None = None
+    ) -> None:
+        """Add new messages to the latest messages list."""
+
+        if active is None:
+            active = list(range(self.parallel_debates))
+        else:
+            assert (
+                len(messages) == self.parallel_debates
+            ), "The number of messages must match the number of debates."
+
+        assert self.parallel_debates == len(
+            messages
+        ), "The number of messages must match the number of active debates."
+
+        for index, message_list in zip(active, messages):
+            self.latest_messages[index] = (self.latest_messages[index] + message_list)[
+                -self._latest_messages_limit :
+            ]
+
+    async def regenerate_summaries(self, active: list[int] | None = None) -> None:
+        """Regenerate the debate summaries. If `active` is set, only the debate with the given
+        indices will have their summaries updated."""
+
+        summaries = self.summaries
+
+        if active:
+            summaries = [self.summaries[i] for i in active]
+
+        summaries = await summarize_conversation_with_last_messages_async(
+            self._model, summaries, self.message_strings(active)
         )
 
-        return self.summaries
-
-    async def update_with_message(self, message: list[Intervention]) -> list[str]:
-        """Update every summary with one additional message each."""
-
-        return await self.update_with_messages([message])
+        if active:
+            for i, summary in zip(active, summaries):
+                self.summaries[i] = summary
+        else:
+            self.summaries = summaries
 
     @override
     async def to_prompts(self) -> list[str]:
@@ -186,12 +226,21 @@ class AsyncSummaryHandler(AsyncPromptable):
             )
         return prompts
 
-    def message_strings(self) -> list[list[str]]:
-        """Return the filtered message strings."""
+    def message_strings(self, active: list[int] | None = None) -> list[list[str]]:
+        """Return the filtered message strings.
+
+        Args:
+            active: The indices of the debates to consider. If None, all debates are considered.
+        """
+
+        debates = self.latest_messages
+
+        if active:
+            debates = [self.latest_messages[i] for i in active]
 
         return [
             [message.text for message in debate if message.text is not None]
-            for debate in self.latest_messages
+            for debate in debates
         ]
 
     def raw_history_prompts(self) -> list[str]:
