@@ -81,13 +81,15 @@ class AsyncDebate:
         The debaters will all send one message per round, in the order they are listed in the debaters list.
         """
         for _ in track(range(rounds)):
-            for index in range(len(self.debaters)):
+            for debater_index in range(len(self.debaters)):
 
                 ###################################################################################
                 #                                Debater intervention                             #
                 ###################################################################################
 
-                llm_response = await self.debater_interventions()
+                llm_response = await self.debater_interventions(
+                    self.debaters[debater_index]
+                )
                 interventions: list[Intervention] = []
 
                 # Add intervention to every debate, and extract the indices of the debates that need to be updated
@@ -118,7 +120,7 @@ class AsyncDebate:
                 else:
                     interventions = [
                         Intervention(
-                            index,
+                            debater_index,
                             intervention["text"],
                             intervention["intervention_justification"],
                             datetime.now(),
@@ -135,6 +137,10 @@ class AsyncDebate:
                 ###################################################################################
                 #                               Mediator intervention                             #
                 ###################################################################################
+
+                if self.mediator is None:
+                    await self.summary_handler.regenerate_summaries(active_debates)
+                    continue
 
                 llm_response = await self.mediator_interventions()
                 interventions = []
@@ -163,14 +169,14 @@ class AsyncDebate:
     #                                     HELPERS & SHORTHANDS                                    #
     ###############################################################################################
 
-    async def debater_interventions(self) -> list[LLMMessage]:
+    async def debater_interventions(self, debater: Debater) -> list[LLMMessage]:
         """Shorthand helper to generate debater interventions for all debaters, asynchronously."""
 
         return await async_debater_interventions(
             model=self.debater_model,
             config=self.config,
             summary=self.summary_handler,
-            debaters=self.debaters,
+            debaters=[debater] * self.parallel_debates,
         )
 
     async def mediator_interventions(self) -> list[LLMMessage]:

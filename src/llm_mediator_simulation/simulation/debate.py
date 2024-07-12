@@ -112,6 +112,10 @@ class Debate:
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)
 
+                if self.mediator is None:
+                    self.summary_handler.regenerate_summary()
+                    continue
+
                 intervention = self.mediator_intervention()
 
                 if intervention["do_intervene"]:

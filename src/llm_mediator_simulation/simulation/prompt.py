@@ -82,7 +82,15 @@ async def async_debater_interventions(
     debaters: list[Debater],
     retry_attempts: int = 5,
 ) -> list[LLMMessage]:
-    """Debater intervention: decision, motivation for the intervention, and intervention content. Asynchonous / batched."""
+    """Debater intervention: decision, motivation for the intervention, and intervention content. Asynchonous / batched.
+
+    Args:
+        model: The language model to use.
+        config: The debate configuration.
+        summary: The conversation summary handler for the parallel debates.
+        debaters: The debaters participating the respective debates (1 per debate. They can be the same repeated).
+        retry_attempts: The number of retry attempts in case of parsing failure. Defaults to 5.
+    """
 
     prompts: list[str] = []
     summary_prompts = await summary.to_prompts()
