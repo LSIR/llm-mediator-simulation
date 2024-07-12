@@ -110,7 +110,7 @@ class Debate:
                 )
 
                 self.interventions.append(intervention)
-                self.summary_handler.update_with_message(intervention)
+                self.summary_handler.add_new_message(intervention)
 
                 intervention = self.mediator_intervention()
 
@@ -128,7 +128,8 @@ class Debate:
 
                     self.interventions.append(intervention)
                     # Include mediator messages in the summary
-                    self.summary_handler.update_with_message(intervention)
+                    self.summary_handler.add_new_message(intervention)
+                    self.summary_handler.regenerate_summary()
                 else:
                     self.interventions.append(
                         Intervention(

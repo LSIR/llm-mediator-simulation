@@ -39,12 +39,20 @@ class SummaryHandler(Promptable):
 
         self.debaters = debaters or []
 
-    def update_with_messages(self, messages: list[Intervention]) -> str:
-        """Update the summary with the given messages."""
+    def add_new_messages(self, messages: list[Intervention]) -> None:
+        """Add new messages to the latest messages list."""
 
         self.latest_messages = (self.latest_messages + messages)[
             -self._latest_messages_limit :
         ]
+
+    def add_new_message(self, message: Intervention) -> None:
+        """Add a new message to the latest messages list."""
+
+        self.add_new_messages([message])
+
+    def regenerate_summary(self) -> str:
+        """Regenerate the summary with the latest messages."""
 
         self.summary = summarize_conversation_with_last_messages(
             self._model, self.summary, self.message_strings()
