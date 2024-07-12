@@ -6,9 +6,16 @@
 
 from enum import Enum
 
-from llm_mediator_simulation.models.language_model import LanguageModel
+from llm_mediator_simulation.models.language_model import (
+    AsyncLanguageModel,
+    LanguageModel,
+)
 from llm_mediator_simulation.utils.decorators import benchmark, retry
-from llm_mediator_simulation.utils.json import json_prompt, parse_llm_json
+from llm_mediator_simulation.utils.json import (
+    json_prompt,
+    parse_llm_json,
+    parse_llm_jsons,
+)
 from llm_mediator_simulation.utils.model_utils import (
     Agreement,
     measure_statement,
@@ -99,3 +106,43 @@ def measure_argument_qualities(
         parsed_response[ArgumentQuality[key]] = Agreement(value)
 
     return parsed_response
+
+
+async def async_measure_argument_qualities(
+    model: AsyncLanguageModel,
+    texts: list[str],
+    argument_quality: list[ArgumentQuality],
+) -> list[dict[ArgumentQuality, Agreement]]:
+    """Measure the argument quality of the given text based on the given criteria asynchronously."""
+
+    json_format: dict[str, str] = {}
+
+    for quality in argument_quality:
+        json_format[quality.name] = quality.value[1]
+
+    prompts: list[str] = []
+
+    for text in texts:
+        prompt = f"""{text}
+
+        Judge the text above based on the following qualities:
+
+        {json_prompt(json_format)}
+
+        Each JSON value should be on a scale from 0 to 4, where: {', '.join(scale_description())}
+        """
+        prompts.append(prompt)
+
+    responses, *_ = parse_llm_jsons(await model.sample(prompts))
+
+    parsed_responses: list[dict[ArgumentQuality, Agreement]] = []
+
+    for response in responses:
+        parsed_response: dict[ArgumentQuality, Agreement] = {}
+
+        for key, value in response.items():
+            parsed_response[ArgumentQuality[key]] = Agreement(value)
+
+        parsed_responses.append(parsed_response)
+
+    return parsed_responses

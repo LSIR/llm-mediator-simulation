@@ -186,7 +186,7 @@ class AsyncSummaryHandler(AsyncPromptable):
             for debate in self.latest_messages
         ]
 
-    def raw_history_prompt(self) -> list[str]:
+    def raw_history_prompts(self) -> list[str]:
         """Return the last messages "as is" in a list of prompts.
         The messages are separated by a newline character."""
         prompts: list[str] = []

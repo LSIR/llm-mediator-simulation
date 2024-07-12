@@ -45,7 +45,7 @@ T = TypeVar("T")
 
 
 def parse_llm_json(llm_json: str, typedDict: type[T] | None = None) -> T:
-    """Parse a LMM JSON response, and ensure that the resulting response can be coerced to the
+    """Parse a LLM JSON response, and ensure that the resulting response can be coerced to the
     given TypedDict instance. Excess fields are allowed.
 
     Args:
@@ -67,3 +67,27 @@ If None, no validation is performed.
         )
 
     return data
+
+
+def parse_llm_jsons(
+    llm_jsons: list[str], typedDict: type[T] | None = None
+) -> tuple[list[T], list[int]]:
+    """Parse a list of LLM JSON responses, and ensure that the resulting responses can be coerced to the
+    given TypedDict instance. Excess fields are allowed.
+
+    Args:
+        llm_jsons (list[str]): The list of LLM JSON responses.
+        typedDict (TypedDict | None): The TypedDict instance to which the responses should be coerced. \
+If None, no validation is performed.
+    """
+
+    coerced: list[T] = []
+    failed: list[int] = []
+
+    for i, llm_json in enumerate(llm_jsons):
+        try:
+            coerced.append(parse_llm_json(llm_json, typedDict))
+        except ValueError:
+            failed.append(i)
+
+    return coerced, failed
