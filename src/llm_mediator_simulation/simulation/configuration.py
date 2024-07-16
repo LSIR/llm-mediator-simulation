@@ -54,7 +54,6 @@ class DebateConfig(Promptable):
     Args:
         statement (str): The debate statement (an affirmation).
         context (str): The context of the debate.
-        instructions (str): The instructions for the debate and how to answer.
     """
 
     statement: str = ""
