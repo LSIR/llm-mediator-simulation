@@ -12,6 +12,7 @@ import os
 
 from dotenv import load_dotenv
 
+from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from llm_mediator_simulation.metrics.metrics_handler import AsyncMetricsHandler
 from llm_mediator_simulation.metrics.perspective_api import PerspectiveScorer
 from llm_mediator_simulation.models.gpt_models import AsyncGPTModel
@@ -67,12 +68,15 @@ summary = AsyncSummaryHandler(
 )
 
 # Metrics
-# metrics = AsyncMetricsHandler(
-#     perspective=PerspectiveScorer(api_key=perspective_key, rate_limit=0),
-#     model=mediator_model,
-#     argument_qualities=[],
-# )
-metrics = None
+metrics = AsyncMetricsHandler(
+    perspective=PerspectiveScorer(api_key=perspective_key, rate_limit=0),
+    model=mediator_model,
+    argument_qualities=[
+        ArgumentQuality.LOCAL_ACCEPTABILITY,
+        ArgumentQuality.CLARITY,
+        ArgumentQuality.CREDIBILITY,
+    ],
+)
 
 mediator = Mediator()
 
