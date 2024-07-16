@@ -122,6 +122,18 @@ async def async_debater_interventions(
         attempts += 1
 
     if len(failed) > 0:
+        # Print the prompt and response of one of the failed attempts
+        prompt = prompts[failed[0]]
+        response = responses[failed[0]]
+
+        print("Prompt for last failed invocation:")
+        print(prompt)
+        print()
+
+        print("Response for last failed invocation:")
+        print(response)
+        print()
+
         raise ValueError(
             f"Failed to parse {len(failed)} LLM responses after {retry_attempts} attempts"
         )
@@ -168,6 +180,18 @@ async def async_mediator_interventions(
         attempts += 1
 
     if len(failed) > 0:
+        # Print the prompt and response of one of the failed attempts
+        prompt = prompts[failed[0]]
+        response = responses[failed[0]]
+
+        print("Prompt for last failed invocation:")
+        print(prompt)
+        print()
+
+        print("Response for last failed invocation:")
+        print(response)
+        print()
+
         raise ValueError(
             f"Failed to parse {len(failed)} LLM responses after {retry_attempts} attempts"
         )
