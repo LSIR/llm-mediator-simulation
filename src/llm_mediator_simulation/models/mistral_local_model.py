@@ -109,7 +109,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         with torch.no_grad():
             outputs = self.model.generate(
                 inputs.input_ids,
-                max_length=self.max_length,
+                # max_length=self.max_length,
                 num_return_sequences=self.num_return_sequences,
                 temperature=self.temperature,
                 top_p=self.top_p,
