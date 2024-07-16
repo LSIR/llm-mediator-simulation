@@ -1,12 +1,3 @@
-# TODO : test async debate, with only 1 debate and only gpt api.
-
-# 1 debate, 1 gpt model, no metrics
-# 1 debate, 1 gpt model, metrics + perspective
-# 2 debates, 1 gpt model, metrics + perspective
-
-# tester l'output pickle
-
-
 import asyncio
 import os
 
@@ -16,6 +7,7 @@ from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from llm_mediator_simulation.metrics.metrics_handler import AsyncMetricsHandler
 from llm_mediator_simulation.metrics.perspective_api import PerspectiveScorer
 from llm_mediator_simulation.models.gpt_models import AsyncGPTModel
+from llm_mediator_simulation.models.mistral_local_model import BatchedMistralLocalModel
 from llm_mediator_simulation.simulation.async_debate import AsyncDebate
 from llm_mediator_simulation.simulation.configuration import (
     DebateConfig,
@@ -33,6 +25,7 @@ gpt_key = os.getenv("GPT_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
 mediator_model = AsyncGPTModel(api_key=gpt_key, model_name="gpt-3.5-turbo")
+debater_model = BatchedMistralLocalModel()
 PARALLEL_DEBATES = 2
 
 # Debater participants
@@ -81,7 +74,7 @@ metrics = AsyncMetricsHandler(
 mediator = Mediator()
 
 debate = AsyncDebate(
-    debater_model=mediator_model,
+    debater_model=debater_model,
     mediator_model=mediator_model,
     debaters=debaters,
     configuration=configuration,
