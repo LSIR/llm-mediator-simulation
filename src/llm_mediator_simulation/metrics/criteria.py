@@ -79,14 +79,17 @@ class ArgumentQuality(Enum):
 def measure_argument_qualities(
     model: LanguageModel,
     text: str,
-    argument_quality: list[ArgumentQuality],
+    argument_qualities: list[ArgumentQuality],
 ) -> dict[ArgumentQuality, Agreement]:
     """Measure the argument quality of the given text based on the given criteria.
     Returns an agreement score."""
 
+    if len(argument_qualities) == 0:
+        return {}
+
     json_format: dict[str, str] = {}
 
-    for quality in argument_quality:
+    for quality in argument_qualities:
         json_format[quality.name] = quality.value[1]
 
     prompt = f"""{text}
@@ -111,13 +114,16 @@ def measure_argument_qualities(
 async def async_measure_argument_qualities(
     model: AsyncLanguageModel,
     texts: list[str],
-    argument_quality: list[ArgumentQuality],
+    argument_qualities: list[ArgumentQuality],
 ) -> list[dict[ArgumentQuality, Agreement]]:
     """Measure the argument quality of the given text based on the given criteria asynchronously."""
 
+    if len(argument_qualities) == 0:
+        return [{}] * len(texts)
+
     json_format: dict[str, str] = {}
 
-    for quality in argument_quality:
+    for quality in argument_qualities:
         json_format[quality.name] = quality.value[1]
 
     prompts: list[str] = []
