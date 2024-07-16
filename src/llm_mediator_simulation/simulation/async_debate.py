@@ -108,7 +108,7 @@ class AsyncDebate:
 
                     interventions = [
                         Intervention(
-                            i,
+                            debater_index,
                             llm_response[i]["text"],
                             llm_response[i]["intervention_justification"],
                             datetime.now(),

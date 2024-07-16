@@ -31,6 +31,7 @@ dependencies = [
   "huggingface_hub[cli]",
   "accelerate",
   "bitsandbytes",
+  "matplotlib",
   "transformers",
 ]
 
@@ -45,7 +46,7 @@ path = "src/llm_mediator_simulation/__about__.py"
 [tool.hatch.envs.default]
 type = "virtual"
 path = "venv"
-python="3.12"
+python = "3.12"
 
 [tool.hatch.envs.types]
 extra-dependencies = ["pyright>=1.1.0"]
