@@ -25,7 +25,7 @@ gpt_key = os.getenv("GPT_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
 mediator_model = AsyncGPTModel(api_key=gpt_key, model_name="gpt-3.5-turbo")
-debater_model = BatchedMistralLocalModel()
+debater_model = BatchedMistralLocalModel(max_length=500)
 PARALLEL_DEBATES = 2
 
 # Debater participants
