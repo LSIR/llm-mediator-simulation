@@ -4,7 +4,6 @@ from typing import Literal, override
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers.utils import quantization_config
 
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
@@ -38,6 +37,11 @@ class MistralLocalModel(LanguageModel):
 
         self.model_name = "mistralai/Mistral-7B-v0.1"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.pad_token_id = (
+            self.tokenizer.pad_token_id
+            if self.tokenizer.pad_token_id is not None
+            else self.tokenizer.eos_token_id
+        )
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             device_map="auto",
@@ -58,11 +62,13 @@ class MistralLocalModel(LanguageModel):
         with torch.no_grad():
             outputs = self.model.generate(
                 inputs.input_ids,
+                attention_mask=inputs.attention_mask,
                 max_length=self.max_length,
                 num_return_sequences=self.num_return_sequences,
                 temperature=self.temperature,
                 top_p=self.top_p,
                 do_sample=self.do_sample,
+                pad_token_id=self.pad_token_id,
             )
 
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -96,6 +102,11 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
 
         self.model_name = "mistralai/Mistral-7B-v0.1"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.pad_token_id = (
+            self.tokenizer.pad_token_id
+            if self.tokenizer.pad_token_id is not None
+            else self.tokenizer.eos_token_id
+        )
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             device_map="auto",
@@ -116,11 +127,13 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         with torch.no_grad():
             outputs = self.model.generate(
                 inputs.input_ids,
+                attention_mask=inputs.attention_mask,
                 max_length=self.max_length,
                 num_return_sequences=self.num_return_sequences,
                 temperature=self.temperature,
                 top_p=self.top_p,
                 do_sample=self.do_sample,
+                pad_token_id=self.pad_token_id,
             )
 
         generated_texts = [
