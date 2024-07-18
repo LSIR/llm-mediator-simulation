@@ -1,9 +1,10 @@
 """Mistral local-running model wrapper"""
 
-from typing import override
+from typing import Literal, override
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.utils import quantization_config
 
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
@@ -22,6 +23,7 @@ class MistralLocalModel(LanguageModel):
         temperature: float = 0.7,
         top_p: float = 0.9,
         do_sample: bool = True,
+        quantization: Literal["4_bits"] | None = None,
     ):
         """Initialize a Mistral model.
 
@@ -37,7 +39,9 @@ class MistralLocalModel(LanguageModel):
         self.model_name = "mistralai/Mistral-7B-v0.1"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_name, device_map="auto"
+            self.model_name,
+            device_map="auto",
+            quantization_config=QUANTIZATION_CONFIG[quantization],
         )
 
         # Parameters
@@ -77,6 +81,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         temperature: float = 0.7,
         top_p: float = 0.9,
         do_sample: bool = True,
+        quantization: Literal["4_bits"] | None = None,
     ):
         """Initialize a Mistral model.
 
@@ -92,7 +97,9 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         self.model_name = "mistralai/Mistral-7B-v0.1"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_name, device_map="auto"
+            self.model_name,
+            device_map="auto",
+            quantization_config=QUANTIZATION_CONFIG[quantization],
         )
 
         # Parameters
@@ -122,3 +129,20 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         ]
 
         return generated_texts
+
+
+# Quantization configs
+from transformers import BitsAndBytesConfig
+
+# 4 bit precision
+config_4bits = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_compute_dtype=torch.bfloat16,
+)
+
+QUANTIZATION_CONFIG = {
+    None: None,
+    "4_bits": config_4bits,
+}

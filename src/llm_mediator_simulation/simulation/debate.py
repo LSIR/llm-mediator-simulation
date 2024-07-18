@@ -127,7 +127,6 @@ class Debate:
                         message,
                         intervention["intervention_justification"],
                         datetime.now(),
-                        metrics,
                     )
 
                     self.interventions.append(intervention)
