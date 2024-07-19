@@ -1,4 +1,48 @@
-"""Local server to run a model locally and keep it loaded for faster prompting."""
+"""Local server to run a model locally and keep it loaded for faster prompting.
+
+Usage guide:
+
+## Run the server in the foreground (debug)
+
+```bash
+python -m examples.example_server server
+```
+
+## Run the server in the background
+
+```bash
+python -m examples.example_server start
+```
+
+You can test if the server is available by running the following command:
+
+```bash
+curl localhost:8000
+watch -n 1 curl localhost:8000  # To check every second
+```
+
+The server may take a few seconds to start because it must load the model first.
+
+## Stop the server
+
+```bash
+python -m examples.example_server stop
+```
+
+## Call the server
+
+### With an inline prompt
+
+```bash
+python -m examples.example_server call -p "Hello, how are you ?"
+```
+
+### With a prompt from a file
+
+```bash
+python -m examples.example_server call -f prompt.txt
+```
+"""
 
 import click
 import httpx
