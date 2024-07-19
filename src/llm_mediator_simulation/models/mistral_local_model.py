@@ -35,7 +35,7 @@ class MistralLocalModel(LanguageModel):
             do_sample: Whether to sample or not.
         """
 
-        self.model_name = "mistralai/Mistral-7B-Instruct-v0.1"
+        self.model_name = "mistralai/Mistral-7B-Instruct-v0.2"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.pad_token_id = (
             self.tokenizer.pad_token_id
@@ -100,7 +100,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
             do_sample: Whether to sample or not.
         """
 
-        self.model_name = "mistralai/Mistral-7B-Instruct-v0.1"
+        self.model_name = "mistralai/Mistral-7B-Instruct-v0.2"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.pad_token_id = (
             self.tokenizer.pad_token_id
