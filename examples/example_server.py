@@ -3,8 +3,6 @@
 import click
 import httpx
 
-from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
-
 PORT = 8000
 
 
@@ -94,6 +92,7 @@ def main():
 @click.command("server")
 def server():
     """Start a Flask server to keep the LLM loaded"""
+    from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
 
     # Load the model
     model = MistralLocalModel(max_length=500)
