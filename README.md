@@ -34,13 +34,13 @@ This project was setup using [hatch](https://hatch.pypa.io/latest/).
 pip install --user hatch
 hatch env create
 source venv/bin/activate  # Activate the python virtual environment
+pip install -e .  # Install the current package
 ```
 
 ## Examples
 
 Example scripts are located in the [`examples/`](./examples) folder.
-Run them using the `python -m examples.<script>` command to properly resolve the `llm_mediator_simulations` package.
 
 ```bash
-python -m examples.example_debate
+python examples/example_async.py
 ```
