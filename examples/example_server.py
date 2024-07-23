@@ -117,6 +117,7 @@ def call(prompt: str | None, file: str | None):
         response = httpx.post(
             f"http://localhost:{PORT}/call",
             json={"text": prompt},
+            timeout=40,
         )
         click.echo(response.text)
     except httpx.ConnectError:
