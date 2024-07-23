@@ -87,7 +87,7 @@ class AsyncDebate:
                 #                                Debater intervention                             #
                 ###################################################################################
 
-                llm_response = await self.debater_interventions(
+                llm_response, prompts = await self.debater_interventions(
                     self.debaters[debater_index]
                 )
                 interventions: list[Intervention] = []
@@ -110,6 +110,7 @@ class AsyncDebate:
                         Intervention(
                             debater_index,
                             llm_response[i]["text"],
+                            prompts[i],
                             llm_response[i]["intervention_justification"],
                             datetime.now(),
                             metrics.pop(0) if i in active_debates else None,
@@ -122,10 +123,11 @@ class AsyncDebate:
                         Intervention(
                             debater_index,
                             intervention["text"],
+                            prompt,
                             intervention["intervention_justification"],
                             datetime.now(),
                         )
-                        for intervention in llm_response
+                        for intervention, prompt in zip(llm_response, prompts)
                     ]
 
                 for i, intervention in zip(active_debates, interventions):
@@ -142,7 +144,7 @@ class AsyncDebate:
                     await self.summary_handler.regenerate_summaries(active_debates)
                     continue
 
-                llm_response = await self.mediator_interventions()
+                llm_response, prompts = await self.mediator_interventions()
                 interventions = []
 
                 # Add intervention to every debate, and extract the indices of the debates that need to be updated
@@ -156,6 +158,7 @@ class AsyncDebate:
                         Intervention(
                             None,
                             None,
+                            prompts[i],
                             intervention["intervention_justification"],
                             datetime.now(),
                         )
@@ -169,7 +172,9 @@ class AsyncDebate:
     #                                     HELPERS & SHORTHANDS                                    #
     ###############################################################################################
 
-    async def debater_interventions(self, debater: Debater) -> list[LLMMessage]:
+    async def debater_interventions(
+        self, debater: Debater
+    ) -> tuple[list[LLMMessage], list[str]]:
         """Shorthand helper to generate debater interventions for all debaters, asynchronously."""
 
         return await async_debater_interventions(
@@ -179,7 +184,7 @@ class AsyncDebate:
             debaters=[debater] * self.parallel_debates,
         )
 
-    async def mediator_interventions(self) -> list[LLMMessage]:
+    async def mediator_interventions(self) -> tuple[list[LLMMessage], list[str]]:
         """Shorthand helper to generate mediator interventions, asynchronously."""
 
         assert (

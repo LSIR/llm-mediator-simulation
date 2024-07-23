@@ -79,13 +79,14 @@ class Debate:
         for _ in track(range(rounds)):
             for index, debater in enumerate(self.debaters):
 
-                intervention = self.debater_intervention(debater)
+                intervention, prompt = self.debater_intervention(debater)
 
                 if not intervention["do_intervene"]:
                     self.interventions.append(
                         Intervention(
                             index,
                             None,
+                            prompt,
                             intervention["intervention_justification"],
                             datetime.now(),
                         )
@@ -104,6 +105,7 @@ class Debate:
                 intervention = Intervention(
                     index,
                     message,
+                    prompt,
                     intervention["intervention_justification"],
                     datetime.now(),
                     metrics,
@@ -116,7 +118,7 @@ class Debate:
                     self.summary_handler.regenerate_summary()
                     continue
 
-                intervention = self.mediator_intervention()
+                intervention, prompt = self.mediator_intervention()
 
                 if intervention["do_intervene"]:
                     # Extract the mediator comment
@@ -125,6 +127,7 @@ class Debate:
                     intervention = Intervention(
                         None,
                         message,
+                        prompt,
                         intervention["intervention_justification"],
                         datetime.now(),
                     )
@@ -138,6 +141,7 @@ class Debate:
                         Intervention(
                             None,
                             None,
+                            prompt,
                             intervention["intervention_justification"],
                             datetime.now(),
                         )
@@ -148,7 +152,7 @@ class Debate:
     ###############################################################################################
 
     @benchmark(name="Debater Intervention", verbose=False)
-    def debater_intervention(self, debater: Debater) -> LLMMessage:
+    def debater_intervention(self, debater: Debater) -> tuple[LLMMessage, str]:
         """Shorthand helper to decide whether a debater should intervene in the debate."""
 
         return debater_intervention(
@@ -159,7 +163,7 @@ class Debate:
         )
 
     @benchmark(name="Mediator Intervention", verbose=False)
-    def mediator_intervention(self) -> LLMMessage:
+    def mediator_intervention(self) -> tuple[LLMMessage, str]:
         """Shorthand helper to decide whether the mediator should intervene in the debate."""
 
         assert (

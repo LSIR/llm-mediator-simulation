@@ -34,7 +34,7 @@ def debater_intervention(
     config: DebateConfig,
     summary: SummaryHandler,
     debater: Debater,
-) -> LLMMessage:
+) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
 
     prompt = f"""{config.to_prompt()}. {debater.to_prompt()} {summary.to_prompt()}
@@ -48,7 +48,7 @@ def debater_intervention(
     """
 
     response = model.sample(prompt)
-    return parse_llm_json(response, LLMMessage)
+    return parse_llm_json(response, LLMMessage), prompt
 
 
 @retry(attempts=5, verbose=True)
@@ -57,7 +57,7 @@ def mediator_intervention(
     config: DebateConfig,
     mediator: Mediator,
     summary: SummaryHandler,
-) -> LLMMessage:
+) -> tuple[LLMMessage, str]:
     """Mediator intervention: decision, motivation for the intervention, and intervention content."""
     prompt = f"""{config.to_prompt()}. 
 
@@ -72,7 +72,7 @@ CONVERSATION HISTORY WITH TIMESTAMPS:
     """
 
     response = model.sample(prompt)
-    return parse_llm_json(response, LLMMessage)
+    return parse_llm_json(response, LLMMessage), prompt
 
 
 async def async_debater_interventions(
@@ -81,7 +81,7 @@ async def async_debater_interventions(
     summary: AsyncSummaryHandler,
     debaters: list[Debater],
     retry_attempts: int = 5,
-) -> list[LLMMessage]:
+) -> tuple[list[LLMMessage], list[str]]:
     """Debater intervention: decision, motivation for the intervention, and intervention content. Asynchonous / batched.
 
     Args:
@@ -138,7 +138,7 @@ async def async_debater_interventions(
             f"Failed to parse {len(failed)} LLM responses after {retry_attempts} attempts"
         )
 
-    return coerced
+    return coerced, prompts
 
 
 async def async_mediator_interventions(
@@ -147,7 +147,7 @@ async def async_mediator_interventions(
     mediator: Mediator,
     summary: AsyncSummaryHandler,
     retry_attempts: int = 5,
-) -> list[LLMMessage]:
+) -> tuple[list[LLMMessage], list[str]]:
 
     prompts: list[str] = []
     summary_prompts = summary.raw_history_prompts()
@@ -196,4 +196,4 @@ async def async_mediator_interventions(
             f"Failed to parse {len(failed)} LLM responses after {retry_attempts} attempts"
         )
 
-    return coerced
+    return coerced, prompts
