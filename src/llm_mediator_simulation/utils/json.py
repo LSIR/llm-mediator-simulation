@@ -44,6 +44,18 @@ def validate_shallow_json(data: dict, typedDict) -> bool:
 T = TypeVar("T")
 
 
+def extract_json(string: str) -> str:
+    """Extract the last JSON code block from a string. It is delimited by triple backticks."""
+
+    start = string.rfind("```json")
+    end = string.rfind("```")
+
+    if start == -1 or end == -1:
+        raise ValueError("No JSON code block found.")
+
+    return string[start + len("```json") : end]
+
+
 def parse_llm_json(llm_json: str, typedDict: type[T] | None = None) -> T:
     """Parse a LLM JSON response, and ensure that the resulting response can be coerced to the
     given TypedDict instance. Excess fields are allowed.
@@ -57,7 +69,7 @@ If None, no validation is performed.
         ValueError: If the response cannot be coerced to the given TypedDict instance.
         JsonDecodeError: If the response is not valid JSON.
     """
-    sanitized_json = llm_json.replace("```json", "").replace("```", "")
+    sanitized_json = extract_json(llm_json)
 
     data = json.loads(sanitized_json)
 
