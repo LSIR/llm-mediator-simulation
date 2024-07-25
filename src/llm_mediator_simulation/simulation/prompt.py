@@ -39,13 +39,13 @@ def debater_intervention(
 
     prompt = f"""{config.to_prompt()}. {debater.to_prompt()} {summary.to_prompt()}
 
-    Do you want to add a comment to the online debate right now?
-    You should often add a comment when the previous context is empty or not in the favor of your \
-    position. However, you should almost never add a comment when the previous context already \
-    supports your position. Use short chat messages, no more than 3 sentences.
+Do you want to add a comment to the online debate right now?
+You should often add a comment when the previous context is empty or not in the favor of your \
+position. However, you should almost never add a comment when the previous context already \
+supports your position. Use short chat messages, no more than 3 sentences.
 
-    {json_prompt(LLM_RESPONSE_FORMAT)}
-    """
+{json_prompt(LLM_RESPONSE_FORMAT)}
+"""
 
     response = model.sample(prompt)
     return parse_llm_json(response, LLMMessage), prompt
@@ -100,13 +100,13 @@ async def async_debater_interventions(
         prompts.append(
             f"""{config.to_prompt()}. {debater.to_prompt()} {debate_summary}
 
-        Do you want to add a comment to the online debate right now?
-        You should often add a comment when the previous context is empty or not in the favor of your \
-        position. However, you should almost never add a comment when the previous context already \
-        supports your position. Use short chat messages, no more than 3 sentences.
+Do you want to add a comment to the online debate right now?
+You should often add a comment when the previous context is empty or not in the favor of your \
+position. However, you should almost never add a comment when the previous context already \
+supports your position. Use short chat messages, no more than 3 sentences.
 
-        {json_prompt(LLM_RESPONSE_FORMAT)}
-        """
+{json_prompt(LLM_RESPONSE_FORMAT)}
+"""
         )
 
     responses = await model.sample(prompts)

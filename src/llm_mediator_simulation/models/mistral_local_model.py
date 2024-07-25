@@ -61,7 +61,7 @@ class MistralLocalModel(LanguageModel):
         inputs = self.tokenizer(prompt, return_tensors="pt")
         with torch.no_grad():
             outputs = self.model.generate(
-                inputs.input_ids,
+                inputs.input_ids.to("cuda"),
                 attention_mask=inputs.attention_mask,
                 max_length=self.max_length,
                 num_return_sequences=self.num_return_sequences,
@@ -126,7 +126,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
 
         with torch.no_grad():
             outputs = self.model.generate(
-                inputs.input_ids,
+                inputs.input_ids.to("cuda"),
                 attention_mask=inputs.attention_mask,
                 max_length=self.max_length,
                 num_return_sequences=self.num_return_sequences,
