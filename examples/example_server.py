@@ -5,13 +5,13 @@ Usage guide:
 ## Run the server in the foreground (debug)
 
 ```bash
-python -m examples.example_server server
+python examples/example_server.py server
 ```
 
 ## Run the server in the background
 
 ```bash
-python -m examples.example_server start
+python examples/example_server.py start
 ```
 
 You can test if the server is available by running the following command:
@@ -26,7 +26,7 @@ The server may take a few seconds to start because it must load the model first.
 ## Stop the server
 
 ```bash
-python -m examples.example_server stop
+python examples/example_server.py stop
 ```
 
 ## Call the server
@@ -34,13 +34,13 @@ python -m examples.example_server stop
 ### With an inline prompt
 
 ```bash
-python -m examples.example_server call -p "Hello, how are you ?"
+python examples/example_server.py call -p "Hello, how are you ?"
 ```
 
 ### With a prompt from a file
 
 ```bash
-python -m examples.example_server call -f prompt.txt
+python examples/example_server.py call -f prompt.txt
 ```
 """
 
