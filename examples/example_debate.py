@@ -19,6 +19,7 @@ from llm_mediator_simulation.simulation.configuration import (
 from llm_mediator_simulation.simulation.debate import Debate, Debater
 from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
 from llm_mediator_simulation.utils.decorators import BENCHMARKS, print_benchmarks
+from llm_mediator_simulation.visualization.transcript import debate_transcript
 
 load_dotenv()
 
@@ -26,7 +27,7 @@ gpt_key = os.getenv("GPT_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
 mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
-debater_model = MistralLocalModel(max_length=200, debug=True, json = True)
+debater_model = MistralLocalModel(max_length=200, debug=False, json=True)
 
 
 # Debater participants
