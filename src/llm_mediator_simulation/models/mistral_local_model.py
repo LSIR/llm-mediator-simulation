@@ -10,6 +10,12 @@ from llm_mediator_simulation.models.language_model import (
     LanguageModel,
 )
 
+# Taken from the HuggingFace api
+FEW_SHOT_PREPROMPT = """User: What is yout favorite condiment?
+Assistant: I don't have a favorite condiment as I don't consume food or condiments. However, I can tell you that some common favorite condiments among people include ketchup, mayonnaise, hot sauce, mustard, and soy sauce. These condiments can add flavor, texture, and enhancement to various dishes.
+
+User:"""
+
 
 class MistralLocalModel(LanguageModel):
     """Mistral local-running model wrapper"""
@@ -61,12 +67,14 @@ class MistralLocalModel(LanguageModel):
     @override
     def sample(self, prompt: str) -> str:
 
+        prompt = f"{FEW_SHOT_PREPROMPT}{prompt}"
+
         if self.debug:
             print("Prompt:")
             print("----------------------")
             print(prompt)
             print()
-    
+
         inputs = self.tokenizer(prompt, return_tensors="pt")
         with torch.no_grad():
             outputs = self.model.generate(
@@ -137,6 +145,9 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
 
     @override
     async def sample(self, prompts: list[str]) -> list[str]:
+
+        prompts = [f"{FEW_SHOT_PREPROMPT}{prompt}" for prompt in prompts]
+
         inputs = self.tokenizer(prompts, return_tensors="pt")
 
         with torch.no_grad():
