@@ -16,6 +16,7 @@ Assistant: I don't have a favorite condiment as I don't consume food or condimen
 
 User:"""
 
+# Preprompt for language models in JSON mode
 JSON_FEW_SHOT_PREPROMPT = """User: Do you want to add a message to the conversation?
 
 Answer in JSON format with the following structure only:
@@ -42,13 +43,14 @@ class MistralLocalModel(LanguageModel):
     def __init__(
         self,
         *,
-        max_length: int = 50,
+        max_length: int = 100,
         num_return_sequences: int = 1,
         temperature: float = 0.7,
         top_p: float = 0.9,
         do_sample: bool = True,
         quantization: Literal["4_bits"] | None = None,
         debug: bool = False,
+        json: bool = False,
     ):
         """Initialize a Mistral model.
 
@@ -60,6 +62,7 @@ class MistralLocalModel(LanguageModel):
             top_p: Top-p sampling ratio.
             do_sample: Whether to sample or not.
             debug: Displays verbose prompts and responses.
+            json: Whether to enforce JSON generation.
         """
 
         self.model_name = "mistralai/Mistral-7B-Instruct-v0.2"
@@ -82,11 +85,15 @@ class MistralLocalModel(LanguageModel):
         self.top_p = top_p
         self.do_sample = do_sample
         self.debug = debug
+        self.json = json
 
     @override
     def sample(self, prompt: str) -> str:
 
-        prompt = f"{JSON_FEW_SHOT_PREPROMPT}{prompt}\nAssistant: "
+        preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
+        postprompt = "Assistant:```json" if self.json else "Assistant: "
+        
+        prompt = f"{preprompt}{prompt}{postprompt}"
 
         if self.debug:
             print("Prompt:")
@@ -99,12 +106,16 @@ class MistralLocalModel(LanguageModel):
             outputs = self.model.generate(
                 inputs.input_ids.to("cuda"),
                 attention_mask=inputs.attention_mask,
-                max_length=self.max_length,
                 num_return_sequences=self.num_return_sequences,
                 temperature=self.temperature,
                 top_p=self.top_p,
                 do_sample=self.do_sample,
                 pad_token_id=self.pad_token_id,
+
+                # Stop conditions
+                stop_strings=["```"] if self.json else ["User:"],
+                tokenizer=self.tokenizer,
+                max_new_tokens=self.max_length,
             )
 
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -130,6 +141,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         top_p: float = 0.9,
         do_sample: bool = True,
         quantization: Literal["4_bits"] | None = None,
+        json: bool = False,
     ):
         """Initialize a Mistral model.
 
@@ -140,6 +152,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
             temperature: Sampling temperature.
             top_p: Top-p sampling ratio.
             do_sample: Whether to sample or not.
+            json: Whether to enforce JSON generation.
         """
 
         self.model_name = "mistralai/Mistral-7B-Instruct-v0.2"
@@ -165,7 +178,11 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
     @override
     async def sample(self, prompts: list[str]) -> list[str]:
 
-        prompts = [f"{FEW_SHOT_PREPROMPT}{prompt}\nAssistant: " for prompt in prompts]
+
+        preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
+        postprompt = "Assistant:```json" if self.json else "Assistant: "
+        
+        prompts = [f"{preprompt}{prompt}{postprompt}" for prompt in prompts]
 
         inputs = self.tokenizer(prompts, return_tensors="pt")
 
@@ -179,6 +196,11 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
                 top_p=self.top_p,
                 do_sample=self.do_sample,
                 pad_token_id=self.pad_token_id,
+
+                # Stop conditions
+                stop_strings=["```"] if self.json else ["User:"],
+                tokenizer=self.tokenizer,
+                max_new_tokens=self.max_length,
             )
 
         generated_texts = [

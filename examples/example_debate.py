@@ -26,7 +26,7 @@ gpt_key = os.getenv("GPT_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
 mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
-debater_model = MistralLocalModel()
+debater_model = MistralLocalModel(max_length=200, debug=True, json = True)
 
 
 # Debater participants
