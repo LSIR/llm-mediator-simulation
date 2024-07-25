@@ -80,7 +80,7 @@ class Debater(Promptable):
     @override
     def to_prompt(self) -> str:
         return f"""You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
-    Your personality is {', '.join(map(lambda x: x.value, self.personality or []))}."""
+Your personality is {', '.join(map(lambda x: x.value, self.personality or []))}."""
 
 
 @dataclass

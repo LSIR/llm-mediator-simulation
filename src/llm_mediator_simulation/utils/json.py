@@ -52,7 +52,7 @@ def extract_json(string: str) -> str:
     start = string.rfind("```json")
     end = string.rfind("```")
 
-    if start == -1 or end == -1:
+    if start == -1 or end == -1 or start >= end:
         raise ValueError("No JSON code block found.")
 
     return string[start + len("```json") : end]
