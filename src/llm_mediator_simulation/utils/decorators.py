@@ -65,7 +65,7 @@ def print_benchmarks(benchmarks: dict[str, list[float]] | None = None) -> None:
 
     table.add_column("Function")
     table.add_column("Total time (s)")
-    table.add_column("Average timei (s)")
+    table.add_column("Average time (s)")
     table.add_column("Standard deviation (s)")
 
     benchmarks = benchmarks or BENCHMARKS
