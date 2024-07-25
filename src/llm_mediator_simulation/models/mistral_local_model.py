@@ -23,6 +23,7 @@ class MistralLocalModel(LanguageModel):
         top_p: float = 0.9,
         do_sample: bool = True,
         quantization: Literal["4_bits"] | None = None,
+        debug: bool = False,
     ):
         """Initialize a Mistral model.
 
@@ -33,6 +34,7 @@ class MistralLocalModel(LanguageModel):
             temperature: Sampling temperature.
             top_p: Top-p sampling ratio.
             do_sample: Whether to sample or not.
+            debug: Displays verbose prompts and responses.
         """
 
         self.model_name = "mistralai/Mistral-7B-Instruct-v0.2"
@@ -54,10 +56,17 @@ class MistralLocalModel(LanguageModel):
         self.temperature = temperature
         self.top_p = top_p
         self.do_sample = do_sample
+        self.debug = debug
 
     @override
     def sample(self, prompt: str) -> str:
 
+        if self.debug:
+            print("Prompt:")
+            print("----------------------")
+            print(prompt)
+            print()
+    
         inputs = self.tokenizer(prompt, return_tensors="pt")
         with torch.no_grad():
             outputs = self.model.generate(
@@ -72,6 +81,12 @@ class MistralLocalModel(LanguageModel):
             )
 
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        if self.debug:
+            print("Response:")
+            print("---------------------")
+            print(generated_text)
+            print()
 
         return generated_text
 
