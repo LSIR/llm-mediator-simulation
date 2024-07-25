@@ -86,7 +86,7 @@ class MistralLocalModel(LanguageModel):
     @override
     def sample(self, prompt: str) -> str:
 
-        prompt = f"{JSON_FEW_SHOT_PREPROMPT}{prompt}"
+        prompt = f"{JSON_FEW_SHOT_PREPROMPT}{prompt}\nAssistant: "
 
         if self.debug:
             print("Prompt:")
@@ -165,7 +165,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
     @override
     async def sample(self, prompts: list[str]) -> list[str]:
 
-        prompts = [f"{FEW_SHOT_PREPROMPT}{prompt}" for prompt in prompts]
+        prompts = [f"{FEW_SHOT_PREPROMPT}{prompt}\nAssistant: " for prompt in prompts]
 
         inputs = self.tokenizer(prompts, return_tensors="pt")
 
