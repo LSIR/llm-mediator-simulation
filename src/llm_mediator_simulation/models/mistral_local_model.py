@@ -16,6 +16,25 @@ Assistant: I don't have a favorite condiment as I don't consume food or condimen
 
 User:"""
 
+JSON_FEW_SHOT_PREPROMPT = """User: Do you want to add a message to the conversation?
+
+Answer in JSON format with the following structure only:
+```json
+{
+    "do_intervene": bool,
+    "intervention_justification": a string justification of why you want to intervene or not,
+    "text": the text message for your intervention. Leave empty if you decide not to intervene
+}
+```
+Assistant:```json
+{
+    "do_intervene": true,
+    "intervention_justification": "I think it is important to add a comment to the debate to clarify a point.",
+    "text": "I think it is important to clarify that the data presented in the previous message is outdated and no longer accurate."
+}
+```
+User:"""
+
 
 class MistralLocalModel(LanguageModel):
     """Mistral local-running model wrapper"""
@@ -67,7 +86,7 @@ class MistralLocalModel(LanguageModel):
     @override
     def sample(self, prompt: str) -> str:
 
-        prompt = f"{FEW_SHOT_PREPROMPT}{prompt}"
+        prompt = f"{JSON_FEW_SHOT_PREPROMPT}{prompt}"
 
         if self.debug:
             print("Prompt:")
