@@ -65,11 +65,11 @@ class SummaryHandler(Promptable):
         msg_sep = "\n\n"
 
         return f"""Here is a summary of the last exchanges (if empty, the conversation just started):
-        {self.summary}
+{self.summary}
 
-        Here are the last messages exchanged (you should focus your argumentation on them):
-        {msg_sep.join(self.message_strings())}
-        """
+Here are the last messages exchanged (you should focus your argumentation on them):
+{msg_sep.join(self.message_strings())}
+"""
 
     def message_strings(self) -> list[str]:
         """Return the filtered message strings."""
@@ -223,11 +223,11 @@ class AsyncSummaryHandler(AsyncPromptable):
         for messages, summary in zip(self.message_strings(), self.summaries):
             prompts.append(
                 f"""Here is a summary of the last exchanges (if empty, the conversation just started):
-            {summary}
+{summary}
 
-            Here are the last messages exchanged (you should focus your argumentation on them):
-            {msg_sep.join(messages)}
-            """
+Here are the last messages exchanged (you should focus your argumentation on them):
+{msg_sep.join(messages)}
+"""
             )
         return prompts
 

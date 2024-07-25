@@ -13,9 +13,11 @@ def json_prompt(format: dict[str, str]) -> str:
     sep = "\n"
 
     return f"""Answer in JSON format with the following structure:
+```json
 {{
     {f",{sep}    ".join(f'"{key}": {value}' for key, value in format.items())}
 }}
+```
 """
 
 
