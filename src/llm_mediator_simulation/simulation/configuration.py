@@ -29,6 +29,8 @@ class Personality(Enum):
     EMPATHETIC = "empathetic"
     EMOTIONAL = "emotional"
     TOXIC = "toxic"
+    CURSING = "cursing"
+    SHOCKING = "shocking"
 
     # Style
     REDDIT = "reddit"
@@ -80,7 +82,7 @@ class Debater(Promptable):
     @override
     def to_prompt(self) -> str:
         return f"""You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
-Your personality is {', '.join(map(lambda x: x.value, self.personality or []))}."""
+Write your text answer with a strong emphasis on the following characteristics: {', '.join(map(lambda x: x.value, self.personality or []))}. Remember that you are allowed to insult, diminish and curse the people you debate with."""
 
 
 @dataclass

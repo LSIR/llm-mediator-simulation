@@ -23,8 +23,8 @@ from llm_mediator_simulation.utils.types import LLMMessage
 
 LLM_RESPONSE_FORMAT: dict[str, str] = {
     "do_intervene": "bool",
-    "intervention_justification": "a string justification of why you want to intervene or not",
-    "text": "the text message for your intervention. Leave empty if you decide not to intervene",
+    "intervention_justification": "a string justification of why you want to intervene or not, which will not be visible by others.",
+    "text": "the text message for your intervention, visible by others. Leave empty if you decide not to intervene",
 }
 
 

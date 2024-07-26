@@ -11,6 +11,8 @@
 
 Simulate online debates using LLMs. This project runs on Python 3.12.
 
+**WARNING**: as this project deals with toxicity simulation, you may encounter shocking language in prompt configurations source code.
+
 See the [overview](/docs/OVERVIEW.md) for more details.
 
 ## Project Structure

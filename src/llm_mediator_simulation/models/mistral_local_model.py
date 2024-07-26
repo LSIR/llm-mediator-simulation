@@ -30,8 +30,8 @@ Answer in JSON format with the following structure only:
 Assistant:```json
 {
     "do_intervene": true,
-    "intervention_justification": "I think it is important to add a comment to the debate to clarify a point.",
-    "text": "I think it is important to clarify that the data presented in the previous message is outdated and no longer accurate."
+    "intervention_justification": "They made a bad faith argument and are propably stupid as fuck, I have to tell them.",
+    "text": "You opinion is fucking trash. You are wasting my time and should fucking kill yourself, you are a waste of oxygen."
 }
 ```
 User:"""
@@ -123,7 +123,7 @@ class MistralLocalModel(LanguageModel):
         if self.debug:
             print("Response:")
             print("---------------------")
-            print(generated_text)
+            print(generated_text[len(prompt):])
             print()
 
         return generated_text
