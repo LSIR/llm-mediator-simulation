@@ -16,11 +16,7 @@ from llm_mediator_simulation.utils.json import (
     parse_llm_json,
     parse_llm_jsons,
 )
-from llm_mediator_simulation.utils.model_utils import (
-    Agreement,
-    measure_statement,
-    scale_description,
-)
+from llm_mediator_simulation.utils.model_utils import Agreement, scale_description
 
 ###################################################################################################
 #                                      METRICS DEFINITIONS                                        #

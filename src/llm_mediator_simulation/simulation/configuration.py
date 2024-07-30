@@ -18,30 +18,39 @@ class DebatePosition(Enum):
     FOR = 1
 
 
-class Personality(Enum):
-    """Debater personality qualifiers."""
+class PersonalityAxis(Enum):
+    """Debater personality axis, judged on a likert scale."""
 
-    # Mood
-    ANGRY = "angry"
-    AGGRESSIVE = "aggressive"
-    CALM = "calm"
-    INSULTING = "insulting"
-    EMPATHETIC = "empathetic"
-    EMOTIONAL = "emotional"
-    TOXIC = "toxic"
-    CURSING = "cursing"
-    SHOCKING = "shocking"
+    CIVILITY = ("civility", "civil", "toxic")
+    POLITENESS = ("politeness", "polite", "rude")
+    POLITICAL_ORIENTATION = ("political orientation", "conservative", "liberal")
+    EMOTIONAL_STATE = ("emotional state", "calm", "angry")
 
-    # Style
-    REDDIT = "reddit"
-    TWITTER = "twitter"
-    FORMAL = "formal"
-    INFORMAL = "informal"
 
-    # Political
-    CONSERVATIVE = "conservative"
-    LIBERAL = "liberal"
-    LIBERTARIAN = "libertarian"
+class AxisPosition(Enum):
+    """Position on a likert scale axis (FIRST, SECOND)."""
+
+    VERY_FIRST = 0
+    FIRST = 1
+    NEUTRAL = 2
+    SECOND = 3
+    VERY_SECOND = 4
+
+
+def axis_to_string(axis: PersonalityAxis, position: AxisPosition) -> str:
+    """Convert a debater position on a likert scale axis to a string for prompting."""
+
+    match position:
+        case AxisPosition.VERY_FIRST:
+            return f"very {axis.value[1]}"
+        case AxisPosition.FIRST:
+            return f"moderately {axis.value[1]}"
+        case AxisPosition.NEUTRAL:
+            return f"neutral {axis.value[0]}"
+        case AxisPosition.SECOND:
+            return f"moderately {axis.value[2]}"
+        case AxisPosition.VERY_SECOND:
+            return f"very {axis.value[2]}"
 
 
 ###################################################################################################
@@ -77,12 +86,18 @@ class Debater(Promptable):
 
     name: str
     position: DebatePosition
-    personality: list[Personality] | None = None
+    personalities: dict[PersonalityAxis, AxisPosition] | None = None
 
     @override
     def to_prompt(self) -> str:
+
+        personalities: list[str] = []
+        for personality, position in (self.personalities or {}).items():
+            personalities.append(axis_to_string(personality, position))
+
         return f"""You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
-Write your text answer with a strong emphasis on the following characteristics: {', '.join(map(lambda x: x.value, self.personality or []))}. Remember that you are allowed to insult, diminish and curse the people you debate with."""
+Write your text answer with a strong emphasis on the following characteristics: {', '.join(personalities)}.
+Remember that you are allowed to insult, diminish and curse the people you debate with."""
 
 
 @dataclass

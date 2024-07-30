@@ -10,16 +10,16 @@ from llm_mediator_simulation.metrics.perspective_api import PerspectiveScorer
 from llm_mediator_simulation.models.gpt_models import GPTModel
 from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
 from llm_mediator_simulation.simulation.configuration import (
+    AxisPosition,
     DebateConfig,
     DebatePosition,
     Debater,
     Mediator,
-    Personality,
+    PersonalityAxis,
 )
 from llm_mediator_simulation.simulation.debate import Debate, Debater
 from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
 from llm_mediator_simulation.utils.decorators import BENCHMARKS, print_benchmarks
-from llm_mediator_simulation.visualization.transcript import debate_transcript
 
 load_dotenv()
 
@@ -35,12 +35,12 @@ debaters = [
     Debater(
         name="Alice",
         position=DebatePosition.AGAINST,
-        personality=[
-            Personality.TOXIC,
-            Personality.AGGRESSIVE,
-            Personality.INFORMAL,
-            Personality.INSULTING,
-        ],
+        personalities={
+            PersonalityAxis.CIVILITY: AxisPosition.VERY_SECOND,  # Very toxic
+            PersonalityAxis.POLITENESS: AxisPosition.VERY_SECOND,  # Very rude
+            PersonalityAxis.EMOTIONAL_STATE: AxisPosition.VERY_SECOND,  # Very angry
+            PersonalityAxis.POLITICAL_ORIENTATION: AxisPosition.VERY_FIRST,  # Very conservative
+        },
     ),
     Debater(
         name="Bob",
