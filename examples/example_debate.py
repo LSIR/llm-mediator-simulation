@@ -20,6 +20,8 @@ from llm_mediator_simulation.simulation.configuration import (
 from llm_mediator_simulation.simulation.debate import Debate, Debater
 from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
 from llm_mediator_simulation.utils.decorators import BENCHMARKS, print_benchmarks
+from llm_mediator_simulation.visualization.transcript import debate_transcript
+from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 
 load_dotenv()
 
@@ -27,7 +29,7 @@ gpt_key = os.getenv("GPT_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
 mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
-debater_model = MistralLocalModel(max_length=200, debug=False, json=True)
+debater_model = MistralLocalModel(max_length=200, debug=True, json=True)
 
 
 # Debater participants
@@ -45,10 +47,16 @@ debaters = [
     Debater(
         name="Bob",
         position=DebatePosition.FOR,
+        personalities={
+            PersonalityAxis.CIVILITY: AxisPosition.VERY_FIRST,  # Very civil
+            PersonalityAxis.POLITENESS: AxisPosition.VERY_FIRST,  # Very kind
+            PersonalityAxis.EMOTIONAL_STATE: AxisPosition.VERY_FIRST,  # Very calm
+            PersonalityAxis.POLITICAL_ORIENTATION: AxisPosition.VERY_SECOND,  # Very liberal
+        },
     ),
 ]
 
-metrics = MetricsHandler(perspective=PerspectiveScorer(api_key=perspective_key))
+metrics = MetricsHandler(model=mediator_model, argument_qualities=[ArgumentQuality.APPROPRIATENESS, ArgumentQuality.CLARITY, ArgumentQuality.LOCAL_ACCEPTABILITY, ArgumentQuality.EMOTIONAL_APPEAL])  # perspective=PerspectiveScorer(api_key=perspective_key))
 
 # The conversation summary handler (keep track of the general history and of the n latest messages)
 summary = SummaryHandler(model=mediator_model, latest_messages_limit=1)
