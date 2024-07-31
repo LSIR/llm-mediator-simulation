@@ -5,6 +5,7 @@ from llm_mediator_simulation.models.language_model import (
     LanguageModel,
 )
 from llm_mediator_simulation.simulation.configuration import (
+    AxisPosition,
     DebateConfig,
     Debater,
     Mediator,
@@ -19,7 +20,8 @@ from llm_mediator_simulation.utils.json import (
     parse_llm_json,
     parse_llm_jsons,
 )
-from llm_mediator_simulation.utils.types import LLMMessage
+from llm_mediator_simulation.utils.model_utils import clip
+from llm_mediator_simulation.utils.types import Intervention, LLMMessage
 
 LLM_RESPONSE_FORMAT: dict[str, str] = {
     "do_intervene": "bool",
@@ -49,6 +51,60 @@ supports your position. Use short chat messages, no more than 3 sentences.
 
     response = model.sample(prompt)
     return parse_llm_json(response, LLMMessage), prompt
+
+
+@retry(attempts=5, verbose=True)
+def debater_personality_update(
+    model: LanguageModel,
+    debater: Debater,
+    interventions: list[Intervention],
+) -> str:
+    """Update a debater's personality based on the interventions passed as arguments.
+    The debater configuration personality is updated in place."""
+
+    if debater.personalities is None:
+        return ""
+
+    sep = "\n"
+
+    positions: list[str] = []
+    for axis, position in (debater.personalities or {}).items():
+        positions.append(
+            f"{axis.value.name}: from {axis.value.left} to {axis.value.right} on a scale from 0 to 4, you are currently at {position.value}"
+        )
+
+    answer_format: dict[str, str] = {
+        axis.value.name: "an integer (-1, 0, 1) to update this axis"
+        for axis in (debater.personalities or {}).keys()
+    }
+
+    prompt = f"""You have the opportunity to make your personality evolve based on the things people have said after your last intervention.
+
+Here is your current personality:
+{sep.join(positions)}
+
+Here are the last messages:
+{sep.join([intervention.text for intervention in interventions if intervention.text ])}
+
+You can choose to evolve your personality on all axes by +1, -1 or 0.
+{json_prompt(answer_format)}
+"""
+    response = model.sample(prompt)
+    data: dict[str, str] = parse_llm_json(response)
+
+    # Process the axis updates
+    for axis, update in data.items():
+        update = int(update)  # Fails on error
+        if update not in [-1, 0, 1]:
+            raise ValueError("Personality update must be -1, 0 or 1.")
+        if axis not in debater.personalities:
+            raise ValueError(f"Unknown personality axis: {axis}")
+
+        new_value = clip(debater.personalities[axis].value + update, 0, 4)
+        new_position = AxisPosition(new_value)
+        debater.personalities[axis] = new_position
+
+    return prompt
 
 
 @retry(attempts=5, verbose=True)

@@ -128,3 +128,13 @@ def ask_closed_question(model: LanguageModel, question: str) -> bool:
     You must answer exactly with 0 or 1, nothing more.
     """
     return model.sample(prompt) == "1"
+
+
+###################################################################################################
+#                                             MATHS                                               #
+###################################################################################################
+
+
+def clip(value: float, min_value: float, max_value: float) -> float:
+    """Clip a value between a minimum and a maximum value."""
+    return max(min(value, max_value), min_value)

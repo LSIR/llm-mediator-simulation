@@ -92,7 +92,7 @@ class MistralLocalModel(LanguageModel):
 
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
-        
+
         prompt = f"{preprompt}{prompt}{postprompt}"
 
         if self.debug:
@@ -111,7 +111,6 @@ class MistralLocalModel(LanguageModel):
                 top_p=self.top_p,
                 do_sample=self.do_sample,
                 pad_token_id=self.pad_token_id,
-
                 # Stop conditions
                 stop_strings=["```"] if self.json else ["User:"],
                 tokenizer=self.tokenizer,
@@ -123,7 +122,7 @@ class MistralLocalModel(LanguageModel):
         if self.debug:
             print("Response:")
             print("---------------------")
-            print(generated_text[len(prompt):])
+            print(generated_text[len(prompt) :])
             print()
 
         return generated_text
@@ -174,14 +173,14 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         self.temperature = temperature
         self.top_p = top_p
         self.do_sample = do_sample
+        self.json = json
 
     @override
     async def sample(self, prompts: list[str]) -> list[str]:
 
-
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
-        
+
         prompts = [f"{preprompt}{prompt}{postprompt}" for prompt in prompts]
 
         inputs = self.tokenizer(prompts, return_tensors="pt")
@@ -196,7 +195,6 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
                 top_p=self.top_p,
                 do_sample=self.do_sample,
                 pad_token_id=self.pad_token_id,
-
                 # Stop conditions
                 stop_strings=["```"] if self.json else ["User:"],
                 tokenizer=self.tokenizer,

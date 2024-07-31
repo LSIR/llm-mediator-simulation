@@ -1,6 +1,7 @@
 """Online debate simulation handler class"""
 
 import pickle
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -15,6 +16,7 @@ from llm_mediator_simulation.simulation.configuration import (
 )
 from llm_mediator_simulation.simulation.prompt import (
     debater_intervention,
+    debater_personality_update,
     mediator_intervention,
 )
 from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
@@ -77,14 +79,14 @@ class Debate:
         The debaters will all send one message per round, in the order they are listed in the debaters list.
         """
         for _ in track(range(rounds)):
-            for index, debater in enumerate(self.debaters):
+            for debater in self.debaters:
 
                 intervention, prompt = self.debater_intervention(debater)
 
                 if not intervention["do_intervene"]:
                     self.interventions.append(
                         Intervention(
-                            index,
+                            deepcopy(debater),
                             None,
                             prompt,
                             intervention["intervention_justification"],
@@ -103,7 +105,7 @@ class Debate:
                     else None
                 )
                 intervention = Intervention(
-                    index,
+                    deepcopy(debater),
                     message,
                     prompt,
                     intervention["intervention_justification"],
@@ -154,6 +156,16 @@ class Debate:
     @benchmark(name="Debater Intervention", verbose=False)
     def debater_intervention(self, debater: Debater) -> tuple[LLMMessage, str]:
         """Shorthand helper to decide whether a debater should intervene in the debate."""
+
+        # Get the interventions of other debaters after this one
+        last_interventions = self.interventions[1 - 2 * len(self.debaters) :]
+
+        # Update the debater personality
+        debater_personality_update(
+            model=self.debater_model,
+            debater=debater,
+            interventions=last_interventions,
+        )
 
         return debater_intervention(
             model=self.debater_model,

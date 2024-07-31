@@ -18,39 +18,50 @@ class DebatePosition(Enum):
     FOR = 1
 
 
+@dataclass
+class PersonalityAxisValue:
+    """Typing for the values of a personality axis."""
+
+    name: str
+    left: str
+    right: str
+
+
 class PersonalityAxis(Enum):
     """Debater personality axis, judged on a likert scale."""
 
-    CIVILITY = ("civility", "civil", "toxic")
-    POLITENESS = ("politeness", "polite", "rude")
-    POLITICAL_ORIENTATION = ("political orientation", "conservative", "liberal")
-    EMOTIONAL_STATE = ("emotional state", "calm", "angry")
+    CIVILITY = PersonalityAxisValue("civility", "civil", "toxic")
+    POLITENESS = PersonalityAxisValue("politeness", "polite", "rude")
+    POLITICAL_ORIENTATION = PersonalityAxisValue(
+        "political orientation", "liberal", "conservative"
+    )
+    EMOTIONAL_STATE = PersonalityAxisValue("emotional state", "calm", "angry")
 
 
 class AxisPosition(Enum):
     """Position on a likert scale axis (FIRST, SECOND)."""
 
-    VERY_FIRST = 0
-    FIRST = 1
+    VERY_LEFT = 0
+    LEFT = 1
     NEUTRAL = 2
-    SECOND = 3
-    VERY_SECOND = 4
+    RIGHT = 3
+    VERY_RIGHT = 4
 
 
 def axis_to_string(axis: PersonalityAxis, position: AxisPosition) -> str:
     """Convert a debater position on a likert scale axis to a string for prompting."""
 
     match position:
-        case AxisPosition.VERY_FIRST:
-            return f"very {axis.value[1]}"
-        case AxisPosition.FIRST:
-            return f"moderately {axis.value[1]}"
+        case AxisPosition.VERY_LEFT:
+            return f"very {axis.value.left}"
+        case AxisPosition.LEFT:
+            return f"moderately {axis.value.left}"
         case AxisPosition.NEUTRAL:
-            return f"neutral {axis.value[0]}"
-        case AxisPosition.SECOND:
-            return f"moderately {axis.value[2]}"
-        case AxisPosition.VERY_SECOND:
-            return f"very {axis.value[2]}"
+            return f"neutral {axis.value.name}"
+        case AxisPosition.RIGHT:
+            return f"moderately {axis.value.right}"
+        case AxisPosition.VERY_RIGHT:
+            return f"very {axis.value.right}"
 
 
 ###################################################################################################

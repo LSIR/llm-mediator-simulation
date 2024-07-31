@@ -9,9 +9,7 @@ from llm_mediator_simulation.simulation.debate import DebatePickle
 from llm_mediator_simulation.utils.types import Intervention
 
 
-def debate_interventions_transcript(
-    interventions: list[Intervention], debaters: list[Debater]
-) -> str:
+def debate_interventions_transcript(interventions: list[Intervention]) -> str:
     """Write a list of interventions into a text transcript"""
 
     lines: list[str] = []
@@ -20,12 +18,7 @@ def debate_interventions_transcript(
         if intervention.text is None or intervention.text == "":
             continue
 
-        authorId = intervention.authorId
-        author = (
-            debaters[authorId].name
-            if authorId is not None and authorId < len(debaters)
-            else "Mediator"
-        )
+        author = intervention.debater.name if intervention.debater else "Mediator"
 
         line = f"{intervention.timestamp.strftime('%H:%M:%S')} - {author}: {intervention.text}"
         lines.append(line)
@@ -61,7 +54,7 @@ Participants:
 {debate_participants_transcript(debate.debaters)}
 
 Transcript:
-{debate_interventions_transcript(debate.messages, debate.debaters)}
+{debate_interventions_transcript(debate.messages)}
 """
 
 
