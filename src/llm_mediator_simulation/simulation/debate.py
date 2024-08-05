@@ -291,3 +291,53 @@ def aggregate_personalities(personnalities: list[dict[PersonalityAxis, AxisPosit
             aggregate[axis].append(position)
 
     return aggregate
+
+
+def aggregate_average_personalities(debate: DebatePickle):
+    """Aggregate the average of personalities for each round of interventions"""
+
+    debaters = debate.debaters
+    n = len(debaters)
+
+    aggregate: dict[PersonalityAxis, list[float]] = {}
+
+    # Compute initial average
+    for debater in debaters:
+        if debater.personalities is None:
+            continue
+
+        for axis, position in debater.personalities.items():
+            if axis not in aggregate:
+                aggregate[axis] = [position.value]
+            else:
+                aggregate[axis][0] += position.value
+
+    # Compute average for each round
+    round = 1
+    debater_count = 0
+    for intervention in debate.interventions:
+
+        if intervention.debater is None:
+            continue
+
+        debater_count += 1
+
+        if intervention.debater.personalities is None:
+            continue
+
+        for axis, position in intervention.debater.personalities.items():
+            if len(aggregate[axis]) <= round:
+                aggregate[axis].append(position.value)
+            else:
+                aggregate[axis][round] += position.value
+
+        # Go to to next round
+        if debater_count == n:
+            round += 1
+            debater_count = 0
+
+    # Compute the average for every axis
+    for axis, values in aggregate.items():
+        aggregate[axis] = [v / n for v in values]
+
+    return aggregate

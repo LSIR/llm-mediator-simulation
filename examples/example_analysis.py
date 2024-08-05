@@ -10,6 +10,7 @@ from llm_mediator_simulation.simulation.configuration import (
 )
 from llm_mediator_simulation.simulation.debate import (
     Debate,
+    aggregate_average_personalities,
     aggregate_personalities,
     personalities_of_name,
 )
@@ -45,8 +46,10 @@ def personalities(debate: str, average: bool):
     n = len(data.debaters)
 
     if average:
-        pass
-        # TODO
+        aggregate = aggregate_average_personalities(data)
+        axes = plt.gca()
+        helper_plot(axes, aggregate, "Average personalities")  # type: ignore
+
     else:
         _, axs = plt.subplots(n, 1)
         for i in range(n):
@@ -55,29 +58,35 @@ def personalities(debate: str, average: bool):
             aggregate = aggregate_personalities(debater_personalities)
 
             ax: Axes = axs[i]  # type: ignore
-            helper_plot(ax, aggregate, f"Personalities of {data.debaters[i].name}")
+            helper_plot(ax, aggregate, f"Personalities of {data.debaters[i].name}")  # type: ignore
 
     plt.tight_layout()
     plt.show()
 
 
 def helper_plot(
-    axes: Axes, personalities: dict[PersonalityAxis, list[AxisPosition]], title: str
+    axes: Axes,
+    personalities: dict[PersonalityAxis, list[AxisPosition | float]],
+    title: str,
 ):
     """Helper function to plot personalities on a given axis."""
 
     axes.set_title(title)
     axes.set_xlabel("Interventions")
     axes.set_ylabel("Value (0 = left, 4 = right)")
+    axes.set_ylim(0, 4)
 
     for axis, positions in personalities.items():
-        values = [p.value for p in positions]
+        values = [p if isinstance(p, (int, float)) else p.value for p in positions]
         axes.plot(
             range(len(positions)),
             values,
             label=f"{axis.value.name}: {axis.value.left} ↗ {axis.value.right}",
         )
         axes.legend()
+
+    # Plot a middle line at 2 (the middle value)
+    axes.axhline(y=2, color="k", linestyle="--")
 
 
 @click.group()
