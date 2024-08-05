@@ -10,9 +10,11 @@ from rich.progress import track
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulation.models.language_model import LanguageModel
 from llm_mediator_simulation.simulation.configuration import (
+    AxisPosition,
     DebateConfig,
     Debater,
     Mediator,
+    PersonalityAxis,
 )
 from llm_mediator_simulation.simulation.prompt import (
     debater_intervention,
@@ -229,4 +231,63 @@ class DebatePickle:
 
     config: DebateConfig
     debaters: list[Debater]
-    messages: list[Intervention]
+    interventions: list[Intervention]
+
+
+###################################################################################################
+#                                           UTILITIES                                             #
+###################################################################################################
+
+
+def interventions_of_name(debate: DebatePickle, name: str) -> list[Intervention]:
+    """Filter interventions from a debate, only keeping those from a specific debater."""
+    return [
+        intervention
+        for intervention in debate.interventions
+        if intervention.debater and intervention.debater.name == name
+    ]
+
+
+def personalities_of_name(
+    debate: DebatePickle, name: str
+) -> list[dict[PersonalityAxis, AxisPosition]]:
+    """Extract a single debater's personalities from a debate."""
+
+    debater = None
+    for d in debate.debaters:
+        if d.name == name:
+            debater = d
+            break
+
+    if debater is None:
+        raise ValueError(f"Debater {name} not found in the debate.")
+
+    if not debater.personalities:
+        raise ValueError(f"Debater {name} has no personalities.")
+
+    personalities = [debater.personalities]
+
+    for intervention in debate.interventions:
+        if (
+            intervention.debater
+            and intervention.debater.name == name
+            and intervention.debater.personalities
+        ):
+            personalities.append(intervention.debater.personalities)
+
+    return personalities
+
+
+def aggregate_personalities(personnalities: list[dict[PersonalityAxis, AxisPosition]]):
+    """Aggregate a list of personalities into lists of personality positions for every personality
+    (for plotting)"""
+
+    aggregate: dict[PersonalityAxis, list[AxisPosition]] = {}
+
+    for p in personnalities:
+        for axis, position in p.items():
+            if axis not in aggregate:
+                aggregate[axis] = []
+            aggregate[axis].append(position)
+
+    return aggregate

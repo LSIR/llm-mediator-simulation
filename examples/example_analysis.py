@@ -1,6 +1,18 @@
 """An example analysis script run via CLI to analyze a pickled debate simulation."""
 
 import click
+from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
+
+from llm_mediator_simulation.simulation.configuration import (
+    AxisPosition,
+    PersonalityAxis,
+)
+from llm_mediator_simulation.simulation.debate import (
+    Debate,
+    aggregate_personalities,
+    personalities_of_name,
+)
 
 
 def common_options(func):
@@ -19,6 +31,8 @@ def common_options(func):
 def metrics(debate: str, average: bool):
     """Plot the debater metrics"""
 
+    data = Debate.unpickle(debate)
+
     print(debate, average)
 
 
@@ -27,7 +41,43 @@ def metrics(debate: str, average: bool):
 def personalities(debate: str, average: bool):
     """Plot the debater personalities"""
 
-    print(debate, average)
+    data = Debate.unpickle(debate)
+    n = len(data.debaters)
+
+    if average:
+        pass
+        # TODO
+    else:
+        _, axs = plt.subplots(n, 1)
+        for i in range(n):
+            # Compute personalities
+            debater_personalities = personalities_of_name(data, data.debaters[i].name)
+            aggregate = aggregate_personalities(debater_personalities)
+
+            ax: Axes = axs[i]  # type: ignore
+            helper_plot(ax, aggregate, f"Personalities of {data.debaters[i].name}")
+
+    plt.tight_layout()
+    plt.show()
+
+
+def helper_plot(
+    axes: Axes, personalities: dict[PersonalityAxis, list[AxisPosition]], title: str
+):
+    """Helper function to plot personalities on a given axis."""
+
+    axes.set_title(title)
+    axes.set_xlabel("Interventions")
+    axes.set_ylabel("Value (0 = left, 4 = right)")
+
+    for axis, positions in personalities.items():
+        values = [p.value for p in positions]
+        axes.plot(
+            range(len(positions)),
+            values,
+            label=f"{axis.value.name}: {axis.value.left} ↗ {axis.value.right}",
+        )
+        axes.legend()
 
 
 @click.group()
