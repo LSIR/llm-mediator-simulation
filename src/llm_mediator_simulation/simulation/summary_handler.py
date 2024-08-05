@@ -87,14 +87,10 @@ Here are the last messages exchanged (you should focus your argumentation on the
         messages: list[str] = []
 
         for message in self.latest_messages:
-            if message.text is not None and message.authorId is not None:
-                debater_id = (
-                    self.debaters[message.authorId].name
-                    if message.authorId in self.debaters
-                    else message.authorId
-                )
+            if message.text:
+                debater_name = message.debater.name if message.debater else "Mediator"
 
-                messages.append(f"[{message.timestamp}] {debater_id}: {message.text}")
+                messages.append(f"[{message.timestamp}] {debater_name}: {message.text}")
 
         return "\n".join(messages)
 
@@ -256,15 +252,13 @@ Here are the last messages exchanged (you should focus your argumentation on the
         for debate in self.latest_messages:
             prompt_messages: list[str] = []
             for message in debate:
-                if message.text is not None and message.authorId is not None:
-                    debater_id = (
-                        self.debaters[message.authorId].name
-                        if message.authorId in self.debaters
-                        else message.authorId
+                if message.text:
+                    debater_name = (
+                        message.debater.name if message.debater else "Mediator"
                     )
 
                     prompt_messages.append(
-                        f"[{message.timestamp}] {debater_id}: {message.text}"
+                        f"[{message.timestamp}] {debater_name}: {message.text}"
                     )
             prompts.append("\n".join(prompt_messages))
 

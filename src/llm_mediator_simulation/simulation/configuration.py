@@ -37,6 +37,16 @@ class PersonalityAxis(Enum):
     )
     EMOTIONAL_STATE = PersonalityAxisValue("emotional state", "calm", "angry")
 
+    @staticmethod
+    def from_string(value: str) -> "PersonalityAxis":
+        """Convert a string to a PersonalityAxis enum value."""
+
+        for axis in PersonalityAxis:
+            if axis.value.name == value:
+                return axis
+
+        raise ValueError(f"Unknown personality axis: {value}")
+
 
 class AxisPosition(Enum):
     """Position on a likert scale axis (FIRST, SECOND)."""

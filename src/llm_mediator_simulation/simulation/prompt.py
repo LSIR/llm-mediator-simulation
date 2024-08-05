@@ -9,6 +9,7 @@ from llm_mediator_simulation.simulation.configuration import (
     DebateConfig,
     Debater,
     Mediator,
+    PersonalityAxis,
 )
 from llm_mediator_simulation.simulation.summary_handler import (
     AsyncSummaryHandler,
@@ -89,12 +90,14 @@ Here are the last messages:
 You can choose to evolve your personality on all axes by +1, -1 or 0.
 {json_prompt(answer_format)}
 """
+
     response = model.sample(prompt)
     data: dict[str, str] = parse_llm_json(response)
 
     # Process the axis updates
     for axis, update in data.items():
         update = int(update)  # Fails on error
+        axis = PersonalityAxis.from_string(axis)
         if update not in [-1, 0, 1]:
             raise ValueError("Personality update must be -1, 0 or 1.")
         if axis not in debater.personalities:
