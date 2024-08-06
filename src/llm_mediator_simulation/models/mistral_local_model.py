@@ -43,6 +43,7 @@ class MistralLocalModel(LanguageModel):
     def __init__(
         self,
         *,
+        model_name: str = "mistralai/Mistral-7B-Instruct-v0.2",
         max_length: int = 100,
         num_return_sequences: int = 1,
         temperature: float = 0.7,
@@ -55,7 +56,7 @@ class MistralLocalModel(LanguageModel):
         """Initialize a Mistral model.
 
         Args:
-            model_name: Mistral model name.
+            model_name: Mistral model name, or path to such a model.
             max_length: Maximum token length of the generated text.
             num_return_sequences: Number of generated sentences.
             temperature: Sampling temperature.
@@ -65,7 +66,7 @@ class MistralLocalModel(LanguageModel):
             json: Whether to enforce JSON generation.
         """
 
-        self.model_name = "mistralai/Mistral-7B-Instruct-v0.2"
+        self.model_name = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.pad_token_id = (
             self.tokenizer.pad_token_id

@@ -54,7 +54,7 @@ Participants:
 {debate_participants_transcript(debate.debaters)}
 
 Transcript:
-{debate_interventions_transcript(debate.messages)}
+{debate_interventions_transcript(debate.interventions)}
 """
 
 

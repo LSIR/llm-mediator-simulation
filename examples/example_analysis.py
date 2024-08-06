@@ -4,16 +4,15 @@ import click
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 
-from llm_mediator_simulation.simulation.configuration import (
-    AxisPosition,
-    PersonalityAxis,
-)
-from llm_mediator_simulation.simulation.debate import (
-    Debate,
+from llm_mediator_simulation.simulation.debate import Debate
+from llm_mediator_simulation.utils.analysis import (
     aggregate_average_personalities,
     aggregate_personalities,
+    interventions_of_name,
     personalities_of_name,
 )
+from llm_mediator_simulation.utils.plotting import plot_metrics, plot_personalities
+from llm_mediator_simulation.utils.types import Metrics
 
 
 def common_options(func):
@@ -33,6 +32,26 @@ def metrics(debate: str, average: bool):
     """Plot the debater metrics"""
 
     data = Debate.unpickle(debate)
+    n = len(data.debaters)
+
+    if average:
+        pass  # TODO
+    else:
+        _, axs = plt.subplots(n, 1)
+        for i, debater in enumerate(data.debaters):
+            interventions = interventions_of_name(data, debater.name)
+            axes: Axes = axs[i]  # type: ignore
+
+            metrics = [
+                intervention.metrics
+                for intervention in interventions
+                if intervention.metrics is not None
+            ]
+
+            plot_metrics(axes, metrics, f"Metrics of {debater.name}")
+
+    plt.tight_layout()
+    plt.show()
 
     print(debate, average)
 
@@ -48,7 +67,7 @@ def personalities(debate: str, average: bool):
     if average:
         aggregate = aggregate_average_personalities(data)
         axes = plt.gca()
-        helper_plot(axes, aggregate, "Average personalities")  # type: ignore
+        plot_personalities(axes, aggregate, "Average personalities")
 
     else:
         _, axs = plt.subplots(n, 1)
@@ -57,36 +76,12 @@ def personalities(debate: str, average: bool):
             debater_personalities = personalities_of_name(data, data.debaters[i].name)
             aggregate = aggregate_personalities(debater_personalities)
 
-            ax: Axes = axs[i]  # type: ignore
-            helper_plot(ax, aggregate, f"Personalities of {data.debaters[i].name}")  # type: ignore
-
+            axes: Axes = axs[i]  # type: ignore
+            plot_personalities(
+                axes, aggregate, f"Personalities of {data.debaters[i].name}"
+            )
     plt.tight_layout()
     plt.show()
-
-
-def helper_plot(
-    axes: Axes,
-    personalities: dict[PersonalityAxis, list[AxisPosition | float]],
-    title: str,
-):
-    """Helper function to plot personalities on a given axis."""
-
-    axes.set_title(title)
-    axes.set_xlabel("Interventions")
-    axes.set_ylabel("Value (0 = left, 4 = right)")
-    axes.set_ylim(0, 4)
-
-    for axis, positions in personalities.items():
-        values = [p if isinstance(p, (int, float)) else p.value for p in positions]
-        axes.plot(
-            range(len(positions)),
-            values,
-            label=f"{axis.value.name}: {axis.value.left} ↗ {axis.value.right}",
-        )
-        axes.legend()
-
-    # Plot a middle line at 2 (the middle value)
-    axes.axhline(y=2, color="k", linestyle="--")
 
 
 @click.group()
