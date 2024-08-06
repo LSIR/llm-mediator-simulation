@@ -6,7 +6,9 @@ from matplotlib.axes import Axes
 
 from llm_mediator_simulation.simulation.debate import Debate
 from llm_mediator_simulation.utils.analysis import (
+    aggregate_average_metrics,
     aggregate_average_personalities,
+    aggregate_metrics,
     aggregate_personalities,
     interventions_of_name,
     personalities_of_name,
@@ -35,7 +37,12 @@ def metrics(debate: str, average: bool):
     n = len(data.debaters)
 
     if average:
-        pass  # TODO
+        perspective, qualities = aggregate_average_metrics(data)
+
+        axes = plt.gca()
+
+        plot_metrics(axes, perspective, qualities, "Average metrics")
+
     else:
         _, axs = plt.subplots(n, 1)
         for i, debater in enumerate(data.debaters):
@@ -48,12 +55,11 @@ def metrics(debate: str, average: bool):
                 if intervention.metrics is not None
             ]
 
-            plot_metrics(axes, metrics, f"Metrics of {debater.name}")
+            perspective, qualities = aggregate_metrics(metrics)
+            plot_metrics(axes, perspective, qualities, f"Metrics of {debater.name}")
 
     plt.tight_layout()
     plt.show()
-
-    print(debate, average)
 
 
 @click.command("personalities")

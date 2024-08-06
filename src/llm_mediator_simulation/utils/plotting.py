@@ -4,6 +4,7 @@ from typing import Mapping, Sequence
 
 from matplotlib.axes import Axes
 
+from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from llm_mediator_simulation.simulation.configuration import (
     AxisPosition,
     PersonalityAxis,
@@ -41,16 +42,21 @@ def plot_personalities(
     axes.axhline(y=2, color="k", linestyle="--")
 
 
-def plot_metrics(axes: Axes, metrics: list[Metrics], title: str):
+def plot_metrics(
+    axes: Axes,
+    perspective: list[float] | None,
+    qualities: dict[ArgumentQuality, list[float]],
+    title: str,
+):
     """Helper function to plot metrics on a given axis."""
 
-    perspective, qualities = aggregate_metrics(metrics)
+    n_interventions = max(len(perspective or []), len(next(iter(qualities.values()))))
 
     axes.set_title(title)
     axes.set_xlabel("Interventions")
     axes.set_ylabel("Intensity")
     axes.set_ylim(-0.5, 4.5)
-    axes.set_xticks(range(len(metrics)))
+    axes.set_xticks(range(n_interventions))
     axes.set_yticks(range(5))
 
     if perspective is not None:

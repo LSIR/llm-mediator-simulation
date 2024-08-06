@@ -137,3 +137,54 @@ def aggregate_metrics(metrics: list[Metrics]):
             qualities[quality].append(agreement.value)
 
     return perspective, qualities
+
+
+def aggregate_average_metrics(debate: DebatePickle):
+    """Aggregate a debate's metrics into an average among all debaters per round of interventions."""
+
+    n = len(debate.debaters)
+
+    round = 0
+    debater_count = 0
+    perspective: list[float] | None = []
+    aggregate: dict[ArgumentQuality, list[float]] = {}
+
+    for intervention in debate.interventions:
+
+        if intervention.debater is None:
+            continue
+
+        debater_count += 1
+
+        if intervention.metrics is None:
+            continue
+
+        if intervention.metrics.perspective is not None:
+            if len(perspective) <= round:
+                perspective.append(intervention.metrics.perspective)
+            else:
+                perspective[round] += intervention.metrics.perspective
+
+        if intervention.metrics.argument_qualities is not None:
+            for quality, agreement in intervention.metrics.argument_qualities.items():
+                if quality not in aggregate:
+                    aggregate[quality] = [agreement.value]
+                elif len(aggregate[quality]) <= round:
+                    aggregate[quality].append(agreement.value)
+                else:
+                    aggregate[quality][round] += agreement.value
+
+        if debater_count == n:
+            round += 1
+            debater_count = 0
+
+    # Compute the average for every axis
+    perspective = [p / n for p in perspective]
+
+    for quality, values in aggregate.items():
+        aggregate[quality] = [v / n for v in values]
+
+    if len(perspective) == 0:
+        perspective = None
+
+    return perspective, aggregate
