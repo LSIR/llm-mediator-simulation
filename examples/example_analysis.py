@@ -1,8 +1,34 @@
-"""An example analysis script run via CLI to analyze a pickled debate simulation."""
+"""An example analysis script run via CLI to analyze a pickled debate simulation.
+
+The following commands are available:
+
+Plot the metrics of a debate:
+```bash
+python examples/example_analysis.py metrics -d debate.pickle
+python examples/example_analysis.py metrics -d debate.pickle -a  # Averaged over debaters
+```
+
+Plot the personalities of debaters over time:
+```bash
+python examples/example_analysis.py personalities -d debate.pickle
+python examples/example_analysis.py personalities -d debate.pickle -a  # Averaged over debaters
+```
+
+Generate a transcript of the debate:
+```bash
+python examples/example_analysis.py transcript -d debate.pickle
+```
+
+Print the debate data in a pretty format:
+```bash
+python examples/example_analysis.py print -d debate.pickle
+```
+"""
 
 import click
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+from rich.pretty import pprint
 
 from llm_mediator_simulation.simulation.debate import Debate
 from llm_mediator_simulation.utils.analysis import (
@@ -14,14 +40,19 @@ from llm_mediator_simulation.utils.analysis import (
     personalities_of_name,
 )
 from llm_mediator_simulation.utils.plotting import plot_metrics, plot_personalities
-from llm_mediator_simulation.utils.types import Metrics
+from llm_mediator_simulation.visualization.transcript import debate_transcript
+
+
+def pickle_options(func):
+    """Add a pickle option to the command."""
+    return click.option(
+        "--debate", "-d", help="The pickled debate to analyze.", required=True
+    )(func)
 
 
 def common_options(func):
     """Common options for the analysis commands."""
-    func = click.option(
-        "--debate", "-d", help="The pickled debate to analyze.", required=True
-    )(func)
+    func = pickle_options(func)
     func = click.option(
         "--average", "-a", help="Average the values among debaters.", is_flag=True
     )(func)
@@ -90,6 +121,25 @@ def personalities(debate: str, average: bool):
     plt.show()
 
 
+@click.command("print")
+@pickle_options
+def pretty_print(debate: str):
+    """Print the debate data in a pretty format."""
+
+    data = Debate.unpickle(debate)
+    pprint(data)
+
+
+@click.command("transcript")
+@pickle_options
+def transcript(debate: str):
+    """Print the debate transcript.
+    You can pipe it to a file to save it."""
+    data = Debate.unpickle(debate)
+
+    print(debate_transcript(data))
+
+
 @click.group()
 def main():
     pass
@@ -97,6 +147,8 @@ def main():
 
 main.add_command(metrics)
 main.add_command(personalities)
+main.add_command(pretty_print)
+main.add_command(transcript)
 
 
 if __name__ == "__main__":
