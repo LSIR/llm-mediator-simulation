@@ -47,3 +47,6 @@ Example scripts are located in the [`examples/`](./examples) folder.
 ```bash
 python examples/example_async.py
 ```
+
+Run a local LLM with the `example_server.py` script.
+Analyze generated debates with the `example_analysis.py` script.
