@@ -21,7 +21,11 @@ from llm_mediator_simulation.simulation.prompt import (
 )
 from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
 from llm_mediator_simulation.utils.decorators import benchmark
-from llm_mediator_simulation.utils.types import Intervention, LLMMessage
+from llm_mediator_simulation.utils.types import (
+    Intervention,
+    LLMMessage,
+    LLMProbaMessage,
+)
 
 
 class Debate:
@@ -78,10 +82,10 @@ class Debate:
         """Run the debate simulation for the given amount of rounds.
         The debaters will all send one message per round, in the order they are listed in the debaters list.
         """
-        for _ in track(range(rounds)):
+        for i in track(range(rounds)):
             for debater in self.debaters:
 
-                intervention, prompt = self.debater_intervention(debater)
+                intervention, prompt = self.debater_intervention(debater, i != 0)
 
                 if not intervention["do_intervene"]:
                     self.interventions.append(
@@ -120,9 +124,9 @@ class Debate:
                     self.summary_handler.regenerate_summary()
                     continue
 
-                intervention, prompt = self.mediator_intervention()
+                intervention, prompt, do_intervene = self.mediator_intervention()
 
-                if intervention["do_intervene"]:
+                if do_intervene:
                     # Extract the mediator comment
                     message = intervention["text"]
 
@@ -154,18 +158,23 @@ class Debate:
     ###############################################################################################
 
     @benchmark(name="Debater Intervention", verbose=False)
-    def debater_intervention(self, debater: Debater) -> tuple[LLMMessage, str]:
-        """Shorthand helper to decide whether a debater should intervene in the debate."""
+    def debater_intervention(
+        self, debater: Debater, do_personality=True
+    ) -> tuple[LLMMessage, str]:
+        """Shorthand helper to decide whether a debater should intervene in the debate.
+        do_personality flag is here to avoid updating personalities before the first interventions
+        in the first round."""
 
         # Get the interventions of other debaters after this one
         last_interventions = self.interventions[1 - 2 * len(self.debaters) :]
 
         # Update the debater personality
-        debater_personality_update(
-            model=self.debater_model,
-            debater=debater,
-            interventions=last_interventions,
-        )
+        if do_personality:
+            debater_personality_update(
+                model=self.debater_model,
+                debater=debater,
+                interventions=last_interventions,
+            )
 
         return debater_intervention(
             model=self.debater_model,
@@ -175,7 +184,7 @@ class Debate:
         )
 
     @benchmark(name="Mediator Intervention", verbose=False)
-    def mediator_intervention(self) -> tuple[LLMMessage, str]:
+    def mediator_intervention(self) -> tuple[LLMProbaMessage, str, bool]:
         """Shorthand helper to decide whether the mediator should intervene in the debate."""
 
         assert (

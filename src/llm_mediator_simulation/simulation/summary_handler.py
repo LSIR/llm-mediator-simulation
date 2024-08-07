@@ -2,6 +2,8 @@
 
 from typing import override
 
+from rich.progress import TotalFileSizeColumn
+
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
     LanguageModel,
@@ -38,6 +40,16 @@ class SummaryHandler(Promptable):
         self._latest_messages_limit = latest_messages_limit
 
         self.debaters = debaters or []
+
+        # Mediator intervention rates
+        self.total_mediator_interventions: int = 0
+        self.total_mediator_occasions: int = 0
+
+    @property
+    def mediator_intervention_rate(self) -> float:
+        if self.total_mediator_occasions == 0:
+            return 0.0
+        return self.total_mediator_interventions / self.total_mediator_occasions
 
     def add_new_messages(self, messages: list[Intervention]) -> None:
         """Add new messages to the latest messages list."""

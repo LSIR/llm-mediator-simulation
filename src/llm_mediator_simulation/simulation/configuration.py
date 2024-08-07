@@ -126,7 +126,8 @@ class Mediator(Promptable):
     """Mediator metadata class
 
     Args:
-        mediator_preprompt (str): Mediator role description for the LLM prompt.
+        mediator_preprompt: Mediator role description for the LLM prompt.
+        target_intervention_probability: Target probability of intervention of the mediator after a debater message.
     """
 
     mediator_preprompt: str = (
@@ -140,6 +141,8 @@ class Mediator(Promptable):
         "6. Encourage Consensus and Move On: Guide the conversation towards alignment where possible. When participants seem to agree on which item "
         "is more important or if the conversation has reached a standstill, explicitly tell participants to consider moving to the next topic."
     )
+
+    target_intervention_probability: float = 0.5
 
     @override
     def to_prompt(self) -> str:

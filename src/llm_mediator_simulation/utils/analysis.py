@@ -23,19 +23,7 @@ def personalities_of_name(
 ) -> list[dict[PersonalityAxis, AxisPosition]]:
     """Extract a single debater's personalities from a debate."""
 
-    debater = None
-    for d in debate.debaters:
-        if d.name == name:
-            debater = d
-            break
-
-    if debater is None:
-        raise ValueError(f"Debater {name} not found in the debate.")
-
-    if not debater.personalities:
-        raise ValueError(f"Debater {name} has no personalities.")
-
-    personalities = [debater.personalities]
+    personalities = []
 
     for intervention in debate.interventions:
         if (
@@ -66,21 +54,9 @@ def aggregate_personalities(personnalities: list[dict[PersonalityAxis, AxisPosit
 def aggregate_average_personalities(debate: DebatePickle):
     """Aggregate the average of personalities for each round of interventions"""
 
-    debaters = debate.debaters
-    n = len(debaters)
+    n = len(debate.debaters)
 
     aggregate: dict[PersonalityAxis, list[float]] = {}
-
-    # Compute initial average
-    for debater in debaters:
-        if debater.personalities is None:
-            continue
-
-        for axis, position in debater.personalities.items():
-            if axis not in aggregate:
-                aggregate[axis] = [position.value]
-            else:
-                aggregate[axis][0] += position.value
 
     # Compute average for each round
     round = 1

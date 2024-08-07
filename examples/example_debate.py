@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
-from llm_mediator_simulation.models.gpt_models import GPTModel
+from llm_mediator_simulation.models.google_models import GoogleModel
 from llm_mediator_simulation.simulation.configuration import (
     AxisPosition,
     DebateConfig,
@@ -26,9 +26,9 @@ gpt_key = os.getenv("GPT_API_KEY") or ""
 google_key = os.getenv("VERTEX_AI_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
-mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
+# mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 # debater_model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2" ,max_length=200, debug=True, json=True)
-# mediator_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
+mediator_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
 
 
 # Debater participants

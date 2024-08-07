@@ -1,5 +1,7 @@
 """Prompt utilities for the debate simulation."""
 
+from numpy import random
+
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
     LanguageModel,
@@ -22,10 +24,20 @@ from llm_mediator_simulation.utils.json import (
     parse_llm_jsons,
 )
 from llm_mediator_simulation.utils.model_utils import clip
-from llm_mediator_simulation.utils.types import Intervention, LLMMessage
+from llm_mediator_simulation.utils.types import (
+    Intervention,
+    LLMMessage,
+    LLMProbaMessage,
+)
 
 LLM_RESPONSE_FORMAT: dict[str, str] = {
     "do_intervene": "bool",
+    "intervention_justification": "a string justification of why you want to intervene or not, which will not be visible by others.",
+    "text": "the text message for your intervention, visible by others. Leave empty if you decide not to intervene",
+}
+
+LLM_PROBA_RESPONSE_FORMAT: dict[str, str] = {
+    "do_intervene": "a float probability of intervention",
     "intervention_justification": "a string justification of why you want to intervene or not, which will not be visible by others.",
     "text": "the text message for your intervention, visible by others. Leave empty if you decide not to intervene",
 }
@@ -116,8 +128,15 @@ def mediator_intervention(
     config: DebateConfig,
     mediator: Mediator,
     summary: SummaryHandler,
-) -> tuple[LLMMessage, str]:
-    """Mediator intervention: decision, motivation for the intervention, and intervention content."""
+) -> tuple[LLMProbaMessage, str, bool]:
+    """Mediator intervention: decision, motivation for the intervention, and intervention content.
+
+    Returns:
+        - The parsed LLM response.
+        - The prompt used.
+        - A boolean that determines if the mediator intervenes or not.
+    """
+
     prompt = f"""{config.to_prompt()}. 
 
 {summary.debaters_prompt()}
@@ -127,11 +146,22 @@ CONVERSATION HISTORY WITH TIMESTAMPS:
 
 {mediator.to_prompt()}
 
-{json_prompt(LLM_RESPONSE_FORMAT)}
+{json_prompt(LLM_PROBA_RESPONSE_FORMAT)}
     """
 
     response = model.sample(prompt)
-    return parse_llm_json(response, LLMMessage), prompt
+    parsed_response = parse_llm_json(response, LLMProbaMessage)
+
+    # TODO : use some formula to change the probability of intervention
+    p = parsed_response["do_intervene"]
+    do_intervene = random.rand() < p
+
+    # Update the mediator intervention rate
+    summary.total_mediator_occasions += 1
+    if do_intervene:
+        summary.total_mediator_interventions += 1
+
+    return parsed_response, prompt, do_intervene
 
 
 async def async_debater_interventions(

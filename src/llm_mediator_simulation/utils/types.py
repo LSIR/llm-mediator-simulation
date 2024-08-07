@@ -48,3 +48,12 @@ class LLMMessage(TypedDict):
     do_intervene: bool
     intervention_justification: str
     text: str
+
+
+class LLMProbaMessage(TypedDict):
+    """LLM message intervention response format.
+    Same as LLMMessage, but with a probability of intervention instead of a decision."""
+
+    do_intervene: float
+    intervention_justification: str
+    text: str
