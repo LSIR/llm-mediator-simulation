@@ -72,7 +72,9 @@ def aggregate_average_personalities(debate: DebatePickle):
             continue
 
         for axis, position in intervention.debater.personalities.items():
-            if len(aggregate[axis]) <= round:
+            if axis not in aggregate:
+                aggregate[axis] = [position.value]
+            elif len(aggregate[axis]) <= round:
                 aggregate[axis].append(position.value)
             else:
                 aggregate[axis][round] += position.value
