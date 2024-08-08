@@ -23,6 +23,7 @@ from llm_mediator_simulation.utils.json import (
     parse_llm_json,
     parse_llm_jsons,
 )
+from llm_mediator_simulation.utils.maths import ProbabilityMapper
 from llm_mediator_simulation.utils.model_utils import clip
 from llm_mediator_simulation.utils.types import (
     Intervention,
@@ -128,6 +129,7 @@ def mediator_intervention(
     config: DebateConfig,
     mediator: Mediator,
     summary: SummaryHandler,
+    probability_mapper: ProbabilityMapper | None = None,
 ) -> tuple[LLMProbaMessage, str, bool]:
     """Mediator intervention: decision, motivation for the intervention, and intervention content.
 
@@ -152,8 +154,9 @@ CONVERSATION HISTORY WITH TIMESTAMPS:
     response = model.sample(prompt)
     parsed_response = parse_llm_json(response, LLMProbaMessage)
 
-    # TODO : use some formula to change the probability of intervention
     p = parsed_response["do_intervene"]
+    if probability_mapper is not None:
+        p = probability_mapper.map(p)
     do_intervene = random.rand() < p
 
     # Update the mediator intervention rate

@@ -21,6 +21,7 @@ from llm_mediator_simulation.simulation.prompt import (
 )
 from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
 from llm_mediator_simulation.utils.decorators import benchmark
+from llm_mediator_simulation.utils.maths import ProbabilityMapper
 from llm_mediator_simulation.utils.types import (
     Intervention,
     LLMMessage,
@@ -41,6 +42,7 @@ class Debate:
         summary_handler: SummaryHandler | None = None,
         metrics_handler: MetricsHandler | None = None,
         mediator: Mediator | None = None,
+        probability_mapper: ProbabilityMapper | None = None,
     ) -> None:
         """Initialize the debate instance.
 
@@ -51,6 +53,7 @@ class Debate:
             configuration: The context of the debate.
             summary_handler: The summary handler to use. Defaults to None.
             metrics_handler: The metrics handler to use to compute message metrics. Defaults to None.
+            probability_mapper: The probability mapper to use for mediator intervention monitoring. Default to no monitoring.
         """
 
         # Prompt context and metadata
@@ -70,6 +73,7 @@ class Debate:
         self.debater_model = debater_model
         self.mediator_model = mediator_model
         self.metrics_handler = metrics_handler
+        self.probability_mapper = probability_mapper
 
         if summary_handler is None:
             self.summary_handler = SummaryHandler(
@@ -196,6 +200,7 @@ class Debate:
             config=self.config,
             mediator=self.mediator,
             summary=self.summary_handler,
+            probability_mapper=self.probability_mapper,
         )
 
     ###############################################################################################
