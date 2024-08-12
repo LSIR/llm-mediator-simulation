@@ -1,14 +1,13 @@
-"""Summary class to handle the summary of a conversation"""
+"""Handler class for summaries"""
 
 from typing import override
-
-from rich.progress import TotalFileSizeColumn
 
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
     LanguageModel,
 )
-from llm_mediator_simulation.simulation.configuration import Debater
+from llm_mediator_simulation.simulation.debater.config import DebaterConfig
+from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 from llm_mediator_simulation.utils.interfaces import AsyncPromptable, Promptable
 from llm_mediator_simulation.utils.model_utils import (
     summarize_conversation_with_last_messages,
@@ -23,9 +22,8 @@ class SummaryHandler(Promptable):
     def __init__(
         self,
         *,
+        config: SummaryConfig,
         model: LanguageModel,
-        latest_messages_limit: int = 3,
-        debaters: list[Debater] | None = None,
     ) -> None:
         """Initialize the summary instance.
 
@@ -37,9 +35,9 @@ class SummaryHandler(Promptable):
         self.latest_messages: list[Intervention] = []
 
         self._model = model
-        self._latest_messages_limit = latest_messages_limit
+        self._latest_messages_limit = config.latest_messages_limit
 
-        self.debaters = debaters or []
+        self.debaters = config.debaters or []
 
         # Mediator intervention rates
         self.total_mediator_interventions: int = 0
@@ -120,6 +118,9 @@ Here are the last messages exchanged (you should focus your argumentation on the
          {sep.join(debater_strings)}"""
 
 
+# TODO : update the async handler, and put it in a async.py file
+
+
 class AsyncSummaryHandler(AsyncPromptable):
     """Summary class to handle the summary of a conversation"""
 
@@ -128,7 +129,7 @@ class AsyncSummaryHandler(AsyncPromptable):
         *,
         model: AsyncLanguageModel,
         latest_messages_limit: int = 3,
-        debaters: list[Debater] | None = None,
+        debaters: list[DebaterConfig] | None = None,
         parallel_debates: int = 1,
     ) -> None:
         """Initialize the summary instance.

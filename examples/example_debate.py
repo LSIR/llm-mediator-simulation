@@ -1,7 +1,6 @@
 """Example script to run a debate simulation on nuclear energy."""
 
 import os
-import pickle
 
 from dotenv import load_dotenv
 
@@ -18,7 +17,6 @@ from llm_mediator_simulation.simulation.configuration import (
 )
 from llm_mediator_simulation.simulation.debate import Debate, Debater
 from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
-from llm_mediator_simulation.utils.decorators import BENCHMARKS, print_benchmarks
 
 load_dotenv()
 
@@ -88,7 +86,4 @@ debate = Debate(
 
 debate.run(rounds=3)
 
-print_benchmarks()
-
 debate.pickle("debate")
-pickle.dump(BENCHMARKS, open("benchmarks.pkl", "wb"))
