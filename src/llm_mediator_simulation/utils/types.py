@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TypedDict
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
-from llm_mediator_simulation.simulation.configuration import Debater
+from llm_mediator_simulation.simulation.debater.config import DebaterConfig
 from llm_mediator_simulation.utils.model_utils import Agreement
 
 
@@ -22,7 +22,7 @@ class Intervention:
         metrics: The metrics associated with the intervention.
     """
 
-    debater: Debater | None
+    debater: DebaterConfig | None
     text: str | None
     prompt: str
     justification: str

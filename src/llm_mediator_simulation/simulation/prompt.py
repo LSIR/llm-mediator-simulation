@@ -6,14 +6,14 @@ from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
     LanguageModel,
 )
-from llm_mediator_simulation.simulation.configuration import (
+from llm_mediator_simulation.simulation.debate.config import DebateConfig
+from llm_mediator_simulation.simulation.debater.config import (
     AxisPosition,
-    DebateConfig,
-    Debater,
-    Mediator,
+    DebaterConfig,
     PersonalityAxis,
 )
-from llm_mediator_simulation.simulation.summary_handler import (
+from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
+from llm_mediator_simulation.simulation.summary.handler import (
     AsyncSummaryHandler,
     SummaryHandler,
 )
@@ -23,8 +23,8 @@ from llm_mediator_simulation.utils.json import (
     parse_llm_json,
     parse_llm_jsons,
 )
-from llm_mediator_simulation.utils.maths import ProbabilityMapper
 from llm_mediator_simulation.utils.model_utils import clip
+from llm_mediator_simulation.utils.probabilities import ProbabilityMapper
 from llm_mediator_simulation.utils.types import (
     Intervention,
     LLMMessage,
@@ -49,7 +49,7 @@ def debater_intervention(
     model: LanguageModel,
     config: DebateConfig,
     summary: SummaryHandler,
-    debater: Debater,
+    debater: DebaterConfig,
 ) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
 
@@ -70,7 +70,7 @@ supports your position. Use short chat messages, no more than 3 sentences.
 @retry(attempts=5, verbose=True)
 def debater_personality_update(
     model: LanguageModel,
-    debater: Debater,
+    debater: DebaterConfig,
     interventions: list[Intervention],
 ) -> str:
     """Update a debater's personality based on the interventions passed as arguments.
@@ -127,7 +127,7 @@ You can choose to evolve your personality on all axes by +1, -1 or 0.
 def mediator_intervention(
     model: LanguageModel,
     config: DebateConfig,
-    mediator: Mediator,
+    mediator: MediatorConfig,
     summary: SummaryHandler,
     probability_mapper: ProbabilityMapper | None = None,
 ) -> tuple[LLMProbaMessage, str, bool]:
@@ -171,7 +171,7 @@ async def async_debater_interventions(
     model: AsyncLanguageModel,
     config: DebateConfig,
     summary: AsyncSummaryHandler,
-    debaters: list[Debater],
+    debaters: list[DebaterConfig],
     retry_attempts: int = 5,
 ) -> tuple[list[LLMMessage], list[str]]:
     """Debater intervention: decision, motivation for the intervention, and intervention content. Asynchonous / batched.
@@ -236,7 +236,7 @@ supports your position. Use short chat messages, no more than 3 sentences.
 async def async_mediator_interventions(
     model: AsyncLanguageModel,
     config: DebateConfig,
-    mediator: Mediator,
+    mediator: MediatorConfig,
     summary: AsyncSummaryHandler,
     retry_attempts: int = 5,
 ) -> tuple[list[LLMMessage], list[str]]:

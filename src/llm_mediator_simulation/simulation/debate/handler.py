@@ -1,5 +1,8 @@
 """Full debate simulation handler class"""
 
+import pickle
+from dataclasses import dataclass
+
 from rich.progress import track
 
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
@@ -24,7 +27,7 @@ class DebateHandler:
         mediator_model: LanguageModel,
         debaters: list[DebaterConfig],
         config: DebateConfig,
-        mediator_config: MediatorConfig,
+        mediator_config: MediatorConfig | None = None,
         summary_config: SummaryConfig | None = None,
         metrics_handler: MetricsHandler | None = None,
     ) -> None:
@@ -35,7 +38,8 @@ class DebateHandler:
             mediator_model: The language model to use for the mediator and metrics.
             debaters: The debaters participating in the debate.
             config: The debate configuration.
-            mediator_config: The mediator configuration.
+            mediator_config: The mediator configuration. If None, no mediator will be used. Defaults to None.
+            summary_config: The summary configuration. Defaults to None. A default config will be used.
             metrics_handler: The metrics handler to use. Defaults to None.
         """
 
@@ -47,11 +51,15 @@ class DebateHandler:
             model=mediator_model, config=summary_config or SummaryConfig()
         )
 
-        self.mediator_handler = MediatorHandler(
-            model=mediator_model,
-            config=mediator_config,
-            debate_config=config,
-            summary_handler=self.summary_handler,
+        self.mediator_handler = (
+            MediatorHandler(
+                model=mediator_model,
+                config=mediator_config,
+                debate_config=config,
+                summary_handler=self.summary_handler,
+            )
+            if mediator_config
+            else None
         )
 
         self.debaters = [
@@ -68,6 +76,9 @@ class DebateHandler:
 
         # Logs
         self.interventions: list[Intervention] = []
+        self.initial_debaters = [
+            debater.snapshot_personality() for debater in self.debaters
+        ]
 
     def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
@@ -77,6 +88,10 @@ class DebateHandler:
 
         for i in track(range(rounds)):
             for debater in self.debaters:
+
+                ##############################################################
+                #                    DEBATER INTERVENTION                    #
+                ##############################################################
 
                 intervention = debater.intervention(update_personality=i != 0)
 
@@ -90,4 +105,62 @@ class DebateHandler:
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)
 
-                # TODO: mediator intervention
+                ##############################################################
+                #                    MEDIATOR INTERVENTION                   #
+                ##############################################################
+
+                if not self.mediator_handler:
+                    self.summary_handler.regenerate_summary()
+                    continue
+
+                intervention = self.mediator_handler.intervention()
+                self.interventions.append(intervention)
+
+                if intervention.text:
+                    self.summary_handler.add_new_message(intervention)
+
+                # Regenerate the summary for the next debater
+                # (either way, a debater or mediator has intervened here)
+                self.summary_handler.regenerate_summary()
+
+    ###############################################################################################
+    #                                        SERIALIZATION                                        #
+    ###############################################################################################
+
+    def pickle(self, path: str) -> None:
+        """Serialize the debate configuration and logs to a pickle file.
+        This does not include the model, summary handler, and other non data-relevant attributes.
+
+        Args:
+            path (str): The path to the pickle file, without file extension.
+        """
+
+        data: "DebatePickle" = DebatePickle(
+            self.config, self.initial_debaters, self.interventions
+        )
+
+        with open(f"{path}.pkl", "wb") as file:
+            pickle.dump(
+                data,
+                file,
+            )
+
+    @staticmethod
+    def unpickle(path: str) -> "DebatePickle":
+        """Load a debate configuration and logs from a pickle file.
+
+        Args:
+            path (str): The path to the pickle file.
+        """
+
+        with open(path, "rb") as file:
+            return pickle.load(file)
+
+
+@dataclass
+class DebatePickle:
+    """Pickled debate data"""
+
+    config: DebateConfig
+    debaters: list[DebaterConfig]
+    interventions: list[Intervention]

@@ -5,12 +5,10 @@ from typing import Mapping, Sequence
 from matplotlib.axes import Axes
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
-from llm_mediator_simulation.simulation.configuration import (
+from llm_mediator_simulation.simulation.debater.config import (
     AxisPosition,
     PersonalityAxis,
 )
-from llm_mediator_simulation.utils.analysis import aggregate_metrics
-from llm_mediator_simulation.utils.types import Metrics
 
 
 def plot_personalities(

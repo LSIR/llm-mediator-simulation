@@ -55,7 +55,7 @@ class DebaterHandler:
 
         response, prompt = debater_intervention(
             model=self.model,
-            config=self.config,
+            config=self.debate_config,
             summary=self.summary_handler,
             debater=self.config,
         )
@@ -67,3 +67,7 @@ class DebaterHandler:
             justification=response["intervention_justification"],
             timestamp=datetime.now(),
         )
+
+    def snapshot_personality(self) -> DebaterConfig:
+        """Snapshot the current debater personality."""
+        return deepcopy(self.config)
