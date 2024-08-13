@@ -7,7 +7,10 @@ from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
 from llm_mediator_simulation.simulation.prompt import mediator_intervention
 from llm_mediator_simulation.simulation.summary.handler import SummaryHandler
-from llm_mediator_simulation.utils.probabilities import ProbabilityMapper
+from llm_mediator_simulation.utils.probabilities import (
+    ProbabilityMapper,
+    ProbabilityMappingConfig,
+)
 from llm_mediator_simulation.utils.types import Intervention
 
 
@@ -21,7 +24,7 @@ class MediatorHandler:
         config: MediatorConfig,
         debate_config: DebateConfig,
         summary_handler: SummaryHandler,
-        probability_mapper: ProbabilityMapper | None = None,
+        probability_config: ProbabilityMappingConfig | None = None,
     ) -> None:
         """Initialize the mediator handler.
 
@@ -30,14 +33,16 @@ class MediatorHandler:
             config: The mediator configuration.
             debate_config: The debate configuration.
             summary_handler: The conversation summary handler.
-            probability_mapper: The probability mapper to use for monitoring mediator intervention. Defaults to None.
+            probability_config: The probability mapping config to use for monitoring mediator intervention. Defaults to None.
         """
 
         self.model = model
         self.config = config
         self.debate_config = debate_config
         self.summary_handler = summary_handler
-        self.probability_mapper = probability_mapper
+        self.probability_mapper = (
+            ProbabilityMapper(probability_config) if probability_config else None
+        )
 
     def intervention(self) -> Intervention:
         """Do a mediator intervention."""

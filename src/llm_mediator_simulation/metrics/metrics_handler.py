@@ -12,7 +12,7 @@ from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
     LanguageModel,
 )
-from llm_mediator_simulation.utils.types import Metrics
+from llm_mediator_simulation.utils.types import Intervention, Metrics
 
 
 class MetricsHandler:
@@ -64,6 +64,11 @@ class MetricsHandler:
             )
 
         return metrics
+
+    def inject_metrics(self, intervention: Intervention) -> None:
+        """Inject metrics in place into a given intervention."""
+        if intervention.text is not None:
+            intervention.metrics = self.compute_metrics(intervention.text)
 
 
 class AsyncMetricsHandler:
