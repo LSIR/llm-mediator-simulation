@@ -115,9 +115,7 @@ class DebateHandler:
 
                 intervention = self.mediator_handler.intervention()
                 self.interventions.append(intervention)
-
-                if intervention.text:
-                    self.summary_handler.add_new_message(intervention)
+                self.summary_handler.add_new_message(intervention)
 
                 # Regenerate the summary for the next debater
                 # (either way, a debater or mediator has intervened here)
