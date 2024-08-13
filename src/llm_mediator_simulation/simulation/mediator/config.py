@@ -8,7 +8,7 @@ from llm_mediator_simulation.utils.probabilities import ProbabilityMappingConfig
 
 
 @dataclass
-class Mediator(Promptable):
+class MediatorConfig(Promptable):
     """Mediator metadata class
 
     Args:
