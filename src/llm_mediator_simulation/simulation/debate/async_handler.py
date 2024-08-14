@@ -4,7 +4,7 @@ from copy import deepcopy
 
 from rich.progress import track
 
-from llm_mediator_simulation.metrics.metrics_handler import AsyncMetricsHandler
+from llm_mediator_simulation.metrics.async_metrics_handler import AsyncMetricsHandler
 from llm_mediator_simulation.models.language_model import AsyncLanguageModel
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debater.async_handler import AsyncDebaterHandler
@@ -55,6 +55,7 @@ class AsyncDebateHandler:
         )
 
         # TODO : async mediator handler
+        self.mediator_handler = None
 
         self.debaters = [
             AsyncDebaterHandler(
@@ -67,7 +68,12 @@ class AsyncDebateHandler:
             for debater in debaters
         ]
 
+        self.metrics_handler = metrics_handler
+
         # Logs
+        # NOTE: interventions stores them by round!
+        # self.intervention[0] = list of round 0 interventions
+        # self.intervention[0][1] = intervention of debate 1 in round 0
         self.interventions: list[list[Intervention]] = [
             [] for _ in range(parallel_debates)
         ]
@@ -79,5 +85,25 @@ class AsyncDebateHandler:
         """
 
         for i in track(range(rounds)):
-            for debater_index in range(self.parallel_debates):
-                pass
+            for debater in self.debaters:
+
+                ######################################################################
+                #                        DEBATER INTERVENTION                        #
+                ######################################################################
+
+                interventions = await debater.interventions(update_personality=i != 0)
+
+                if self.metrics_handler:
+                    await self.metrics_handler.inject_metrics(interventions)
+                self.interventions.append(interventions)
+                self.summary_handler.add_new_messages(interventions)
+
+                ######################################################################
+                #                        MEDIATOR INTERVENTION                       #
+                ######################################################################
+
+                if not self.mediator_handler:
+                    await self.summary_handler.regenerate_summaries()
+
+                    # TODO : mediator handler
+                    interventions = []

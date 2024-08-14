@@ -40,7 +40,7 @@ class AsyncDebaterHandler:
         self.debate_config = debate_config
         self.summary_handler = summary_handler
 
-    async def intervention(self, update_personality=False) -> list[Intervention]:
+    async def interventions(self, update_personality=False) -> list[Intervention]:
         """Do a debater intervention for all parallel debates, asynchronously
 
         Args:

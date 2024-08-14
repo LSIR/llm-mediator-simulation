@@ -50,7 +50,7 @@ class AsyncSummaryHandler(AsyncPromptable):
             for debate in self.latest_messages
         ]
 
-    def add_new_message(self, messages: list[Intervention]) -> None:
+    def add_new_messages(self, messages: list[Intervention]) -> None:
         """Add new messages to the latest messages list.
 
         Args:

@@ -95,15 +95,15 @@ class DebateHandler:
 
                 intervention = debater.intervention(update_personality=i != 0)
 
+                self.interventions.append(intervention)
+                self.summary_handler.add_new_message(intervention)
+
                 # If the debater did not intervene, skip to the next debater
                 if not intervention.text:
                     continue
 
                 if self.metrics_handler:
                     self.metrics_handler.inject_metrics(intervention)
-
-                self.interventions.append(intervention)
-                self.summary_handler.add_new_message(intervention)
 
                 ##############################################################
                 #                    MEDIATOR INTERVENTION                   #
