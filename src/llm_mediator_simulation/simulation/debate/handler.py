@@ -14,6 +14,7 @@ from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
 from llm_mediator_simulation.simulation.mediator.handler import MediatorHandler
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 from llm_mediator_simulation.simulation.summary.handler import SummaryHandler
+from llm_mediator_simulation.utils.load_csv import load_csv_chat
 from llm_mediator_simulation.utils.types import Intervention
 
 
@@ -47,6 +48,10 @@ class DebateHandler:
         self.config = config
         self.mediator_config = mediator_config
         self.summary_config = summary_config or SummaryConfig()
+
+        # Models
+        self.debater_model = debater_model
+        self.mediator_model = mediator_model
 
         # Handlers
         self.summary_handler = SummaryHandler(
@@ -159,6 +164,55 @@ class DebateHandler:
 
         with open(path, "rb") as file:
             return pickle.load(file)
+
+    def preload_chat(
+        self, debaters: list[DebaterConfig], interventions: list[Intervention]
+    ):
+        """Preload a debate chat from debaters and interventions."""
+
+        # Regenerate the summary handler
+        self.summary_handler = SummaryHandler(
+            model=self.mediator_model, config=self.summary_config
+        )
+
+        for intervention in interventions:
+            self.summary_handler.add_new_message(intervention)
+        self.summary_handler.regenerate_summary()
+
+        # Regenerate mediator handler
+        self.mediator_handler = (
+            MediatorHandler(
+                model=self.mediator_model,
+                config=self.mediator_config,
+                debate_config=self.config,
+                summary_handler=self.summary_handler,
+            )
+            if self.mediator_config
+            else None
+        )
+
+        # Regenerate debater handlers
+        self.debaters = [
+            DebaterHandler(
+                model=self.debater_model,
+                config=debater,
+                debate_config=self.config,
+                summary_handler=self.summary_handler,
+            )
+            for debater in debaters
+        ]
+
+        # Regenerate logs
+        self.interventions = interventions
+        self.initial_debaters = [
+            debater.snapshot_personality() for debater in self.debaters
+        ]
+
+    def preload_csv_chat(self, path: str):
+        """Preload a debate chat from a CSV file."""
+
+        debaters, interventions = load_csv_chat(path)
+        self.preload_chat(debaters, interventions)
 
 
 @dataclass

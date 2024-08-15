@@ -33,6 +33,7 @@ dependencies = [
   "mistralai",
   "openai",
   "perspective",
+  "polars",
   "python-dotenv",
   "rich",
   "transformers",
