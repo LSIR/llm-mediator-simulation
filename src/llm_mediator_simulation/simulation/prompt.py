@@ -6,25 +6,23 @@ from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
     LanguageModel,
 )
-from llm_mediator_simulation.simulation.configuration import (
+from llm_mediator_simulation.simulation.debate.config import DebateConfig
+from llm_mediator_simulation.simulation.debater.config import (
     AxisPosition,
-    DebateConfig,
-    Debater,
-    Mediator,
+    DebaterConfig,
     PersonalityAxis,
 )
-from llm_mediator_simulation.simulation.summary_handler import (
-    AsyncSummaryHandler,
-    SummaryHandler,
-)
+from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
+from llm_mediator_simulation.simulation.summary.async_handler import AsyncSummaryHandler
+from llm_mediator_simulation.simulation.summary.handler import SummaryHandler
 from llm_mediator_simulation.utils.decorators import retry
 from llm_mediator_simulation.utils.json import (
     json_prompt,
     parse_llm_json,
     parse_llm_jsons,
 )
-from llm_mediator_simulation.utils.maths import ProbabilityMapper
 from llm_mediator_simulation.utils.model_utils import clip
+from llm_mediator_simulation.utils.probabilities import ProbabilityMapper
 from llm_mediator_simulation.utils.types import (
     Intervention,
     LLMMessage,
@@ -49,7 +47,7 @@ def debater_intervention(
     model: LanguageModel,
     config: DebateConfig,
     summary: SummaryHandler,
-    debater: Debater,
+    debater: DebaterConfig,
 ) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
 
@@ -70,11 +68,13 @@ supports your position. Use short chat messages, no more than 3 sentences.
 @retry(attempts=5, verbose=True)
 def debater_personality_update(
     model: LanguageModel,
-    debater: Debater,
+    debater: DebaterConfig,
     interventions: list[Intervention],
 ) -> str:
     """Update a debater's personality based on the interventions passed as arguments.
-    The debater configuration personality is updated in place."""
+    The debater configuration personality is updated in place.
+
+    Returns the prompt used for the personality update."""
 
     if debater.personalities is None:
         return ""
@@ -127,7 +127,7 @@ You can choose to evolve your personality on all axes by +1, -1 or 0.
 def mediator_intervention(
     model: LanguageModel,
     config: DebateConfig,
-    mediator: Mediator,
+    mediator: MediatorConfig,
     summary: SummaryHandler,
     probability_mapper: ProbabilityMapper | None = None,
 ) -> tuple[LLMProbaMessage, str, bool]:
@@ -159,11 +159,6 @@ CONVERSATION HISTORY WITH TIMESTAMPS:
         p = probability_mapper.map(p)
     do_intervene = random.rand() < p
 
-    # Update the mediator intervention rate
-    summary.total_mediator_occasions += 1
-    if do_intervene:
-        summary.total_mediator_interventions += 1
-
     return parsed_response, prompt, do_intervene
 
 
@@ -171,7 +166,7 @@ async def async_debater_interventions(
     model: AsyncLanguageModel,
     config: DebateConfig,
     summary: AsyncSummaryHandler,
-    debaters: list[Debater],
+    debaters: list[DebaterConfig],
     retry_attempts: int = 5,
 ) -> tuple[list[LLMMessage], list[str]]:
     """Debater intervention: decision, motivation for the intervention, and intervention content. Asynchonous / batched.
@@ -236,13 +231,18 @@ supports your position. Use short chat messages, no more than 3 sentences.
 async def async_mediator_interventions(
     model: AsyncLanguageModel,
     config: DebateConfig,
-    mediator: Mediator,
+    mediator: MediatorConfig,
     summary: AsyncSummaryHandler,
+    valid_indexes: list[int] | None = None,
     retry_attempts: int = 5,
 ) -> tuple[list[LLMMessage], list[str]]:
 
     prompts: list[str] = []
+
     summary_prompts = summary.raw_history_prompts()
+
+    if valid_indexes is not None:
+        summary_prompts = [summary_prompts[i] for i in valid_indexes]
 
     for debate_summary in summary_prompts:
         prompts.append(
@@ -289,3 +289,76 @@ async def async_mediator_interventions(
         )
 
     return coerced, prompts
+
+
+@retry(attempts=5, verbose=True)
+async def async_debater_personality_update(
+    model: AsyncLanguageModel,
+    debaters: list[DebaterConfig],
+    interventions: list[list[Intervention]],
+) -> list[str]:
+    """Update multiple debater personalities based on the respective interventions passed as arguments, asynchronously.
+    The debater configuration personality is updated in place.
+
+    Returns the prompts used for the personality updates."""
+
+    assert len(debaters) == len(
+        interventions
+    ), "Debaters and interventions must have the same length."
+
+    if len(debaters) == 0 or debaters[0].personalities is None:
+        return [""] * len(debaters)
+
+    sep = "\n"
+
+    # Build the prompts for every debater variant
+    prompts: list[str] = []
+
+    for debater, debater_interventions in zip(debaters, interventions):
+        positions: list[str] = []
+        for axis, position in (debater.personalities or {}).items():
+            positions.append(
+                f"{axis.value.name}: from {axis.value.left} to {axis.value.right} on a scale from 0 to 4, you are currently at {position.value}"
+            )
+
+        answer_format: dict[str, str] = {
+            axis.value.name: "an integer (-1, 0, 1) to update this axis"
+            for axis in (debater.personalities or {}).keys()
+        }
+
+        prompt = f"""You have the opportunity to make your personality evolve based on the things people have said after your last intervention.
+
+Here is your current personality:
+{sep.join(positions)}
+
+Here are the last messages:
+{sep.join([intervention.text for intervention in debater_interventions if intervention.text ])}
+
+You can choose to evolve your personality on all axes by +1, -1 or 0.
+{json_prompt(answer_format)}
+"""
+
+        prompts.append(prompt)
+
+    responses = await model.sample(prompts)
+
+    datas = [parse_llm_json(response) for response in responses]
+
+    for data, debater in zip(datas, debaters):
+        if debater.personalities is None:
+            continue
+
+        # Process the axis updates
+        for axis, update in data.items():
+            update = int(update)  # Fails on error
+            axis = PersonalityAxis.from_string(axis)
+            if update not in [-1, 0, 1]:
+                raise ValueError("Personality update must be -1, 0 or 1.")
+            if axis not in debater.personalities:
+                raise ValueError(f"Unknown personality axis: {axis}")
+
+            new_value = clip(debater.personalities[axis].value + update, 0, 4)
+            new_position = AxisPosition(new_value)
+            debater.personalities[axis] = new_position
+
+    return prompts

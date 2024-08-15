@@ -30,7 +30,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from rich.pretty import pprint
 
-from llm_mediator_simulation.simulation.debate import Debate
+from llm_mediator_simulation.simulation.debate.handler import DebateHandler
 from llm_mediator_simulation.utils.analysis import (
     aggregate_average_metrics,
     aggregate_average_personalities,
@@ -64,7 +64,7 @@ def common_options(func):
 def metrics(debate: str, average: bool):
     """Plot the debater metrics"""
 
-    data = Debate.unpickle(debate)
+    data = DebateHandler.unpickle(debate)
     n = len(data.debaters)
 
     if average:
@@ -98,7 +98,7 @@ def metrics(debate: str, average: bool):
 def personalities(debate: str, average: bool):
     """Plot the debater personalities"""
 
-    data = Debate.unpickle(debate)
+    data = DebateHandler.unpickle(debate)
     n = len(data.debaters)
 
     if average:
@@ -126,7 +126,7 @@ def personalities(debate: str, average: bool):
 def pretty_print(debate: str):
     """Print the debate data in a pretty format."""
 
-    data = Debate.unpickle(debate)
+    data = DebateHandler.unpickle(debate)
     pprint(data)
 
 
@@ -135,7 +135,7 @@ def pretty_print(debate: str):
 def transcript(debate: str):
     """Print the debate transcript.
     You can pipe it to a file to save it."""
-    data = Debate.unpickle(debate)
+    data = DebateHandler.unpickle(debate)
 
     print(debate_transcript(data))
 

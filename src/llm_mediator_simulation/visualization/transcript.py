@@ -1,11 +1,11 @@
 """Generate a human-readable conversation transcript from a pickled debate."""
 
-from llm_mediator_simulation.simulation.configuration import (
-    DebateConfig,
+from llm_mediator_simulation.simulation.debate.config import DebateConfig
+from llm_mediator_simulation.simulation.debate.handler import DebatePickle
+from llm_mediator_simulation.simulation.debater.config import (
     DebatePosition,
-    Debater,
+    DebaterConfig,
 )
-from llm_mediator_simulation.simulation.debate import DebatePickle
 from llm_mediator_simulation.utils.types import Intervention
 
 
@@ -32,7 +32,7 @@ def debate_config_transcript(config: DebateConfig) -> str:
     return config.statement
 
 
-def debate_participants_transcript(debaters: list[Debater]) -> str:
+def debate_participants_transcript(debaters: list[DebaterConfig]) -> str:
     """Write a list of debaters into a text transcript"""
 
     lines: list[str] = []

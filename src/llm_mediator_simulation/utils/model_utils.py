@@ -65,11 +65,11 @@ async def summarize_conversation_with_last_messages_async(
     for previous_summary, messages in zip(previous_summaries, latest_messages):
         prompt = f"""Conversation summary: {previous_summary}
 
-        Latest messages:
-        {separator.join(messages)}
+Latest messages:
+{separator.join(messages)}
 
-        Summarize the conversation above, with an emphasis on the latest messages.
-        """
+Summarize the conversation above, with an emphasis on the latest messages.
+"""
         prompts.append(prompt)
 
     return await model.sample(prompts)

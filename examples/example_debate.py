@@ -1,24 +1,22 @@
 """Example script to run a debate simulation on nuclear energy."""
 
 import os
-import pickle
 
 from dotenv import load_dotenv
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulation.models.google_models import GoogleModel
-from llm_mediator_simulation.simulation.configuration import (
+from llm_mediator_simulation.simulation.debate.config import DebateConfig
+from llm_mediator_simulation.simulation.debate.handler import DebateHandler
+from llm_mediator_simulation.simulation.debater.config import (
     AxisPosition,
-    DebateConfig,
     DebatePosition,
-    Debater,
-    Mediator,
+    DebaterConfig,
     PersonalityAxis,
 )
-from llm_mediator_simulation.simulation.debate import Debate, Debater
-from llm_mediator_simulation.simulation.summary_handler import SummaryHandler
-from llm_mediator_simulation.utils.decorators import BENCHMARKS, print_benchmarks
+from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
+from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 
 load_dotenv()
 
@@ -33,7 +31,7 @@ mediator_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
 
 # Debater participants
 debaters = [
-    Debater(
+    DebaterConfig(
         name="Alice",
         position=DebatePosition.AGAINST,
         personalities={
@@ -43,7 +41,7 @@ debaters = [
             PersonalityAxis.POLITICAL_ORIENTATION: AxisPosition.VERY_LEFT,  # Very conservative
         },
     ),
-    Debater(
+    DebaterConfig(
         name="Bob",
         position=DebatePosition.FOR,
         personalities={
@@ -66,29 +64,26 @@ metrics = MetricsHandler(
 )  # perspective=PerspectiveScorer(api_key=perspective_key))
 
 # The conversation summary handler (keep track of the general history and of the n latest messages)
-summary = SummaryHandler(model=mediator_model, latest_messages_limit=1)
+summary_config = SummaryConfig(latest_messages_limit=3, debaters=debaters)
 
 # The debate configuration (which topic to discuss, and customisable instructions)
-configuration = DebateConfig(
+debate_config = DebateConfig(
     statement="We should use nuclear power.",
 )
 
-mediator = Mediator()
+mediator_config = MediatorConfig()
 
 # The debate runner
-debate = Debate(
+debate = DebateHandler(
     debater_model=mediator_model,
     mediator_model=mediator_model,
     debaters=debaters,
-    configuration=configuration,
-    summary_handler=summary,
+    config=debate_config,
+    summary_config=summary_config,
     metrics_handler=metrics,
-    mediator=mediator,
+    mediator_config=mediator_config,
 )
 
 debate.run(rounds=3)
 
-print_benchmarks()
-
 debate.pickle("debate")
-pickle.dump(BENCHMARKS, open("benchmarks.pkl", "wb"))
