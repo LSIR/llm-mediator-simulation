@@ -45,10 +45,12 @@ class DebateHandler:
 
         # Configuration
         self.config = config
+        self.mediator_config = mediator_config
+        self.summary_config = summary_config or SummaryConfig()
 
         # Handlers
         self.summary_handler = SummaryHandler(
-            model=mediator_model, config=summary_config or SummaryConfig()
+            model=mediator_model, config=self.summary_config
         )
 
         self.mediator_handler = (
@@ -127,14 +129,18 @@ class DebateHandler:
 
     def pickle(self, path: str) -> None:
         """Serialize the debate configuration and logs to a pickle file.
-        This does not include the model, summary handler, and other non data-relevant attributes.
+        This does not include the model configuration.
 
         Args:
             path (str): The path to the pickle file, without file extension.
         """
 
         data: "DebatePickle" = DebatePickle(
-            self.config, self.initial_debaters, self.interventions
+            self.config,
+            self.summary_config,
+            self.mediator_config,
+            self.initial_debaters,
+            self.interventions,
         )
 
         with open(f"{path}.pkl", "wb") as file:
@@ -160,5 +166,7 @@ class DebatePickle:
     """Pickled debate data"""
 
     config: DebateConfig
+    summary_config: SummaryConfig
+    mediator_config: MediatorConfig | None
     debaters: list[DebaterConfig]
     interventions: list[Intervention]

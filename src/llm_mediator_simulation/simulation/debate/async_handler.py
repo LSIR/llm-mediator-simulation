@@ -1,5 +1,6 @@
 """Async debate handler class"""
 
+import pickle
 from copy import deepcopy
 
 from rich.progress import track
@@ -7,6 +8,7 @@ from rich.progress import track
 from llm_mediator_simulation.metrics.async_metrics_handler import AsyncMetricsHandler
 from llm_mediator_simulation.models.language_model import AsyncLanguageModel
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
+from llm_mediator_simulation.simulation.debate.handler import DebatePickle
 from llm_mediator_simulation.simulation.debater.async_handler import AsyncDebaterHandler
 from llm_mediator_simulation.simulation.debater.config import DebaterConfig
 from llm_mediator_simulation.simulation.mediator.async_handler import (
@@ -48,12 +50,14 @@ class AsyncDebateHandler:
 
         # Configuration
         self.config = config
+        self.summary_config = summary_config or SummaryConfig()
+        self.mediator_config = mediator_config
         self.parallel_debates = parallel_debates
 
         # Handlers
         self.summary_handler = AsyncSummaryHandler(
             model=mediator_model,
-            config=summary_config or SummaryConfig(),
+            config=self.summary_config,
             parallel_debates=parallel_debates,
         )
 
@@ -85,7 +89,7 @@ class AsyncDebateHandler:
         self.interventions: list[list[Intervention]] = [
             [] for _ in range(parallel_debates)
         ]
-        self.initial_debaters = deepcopy(self.debaters)
+        self.initial_debaters = deepcopy(debaters)
 
     async def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
@@ -145,3 +149,22 @@ class AsyncDebateHandler:
 
         for i, intervention in zip(valid_indexes, interventions):
             self.interventions[i].append(intervention)
+
+    def pickle(self, path: str) -> None:
+        """Serialize all parallel debate configurations and logs to individual pickle files per debate. This does not include the model configuration.
+
+        Args:
+            path (str): The path to the pickle files, without file extension.
+        """
+
+        for i, interventions in enumerate(self.interventions):
+            data = DebatePickle(
+                self.config,
+                self.summary_config,
+                self.mediator_config,
+                self.initial_debaters,
+                interventions,
+            )
+
+            with open(f"{path}_{i}.pkl", "wb") as f:
+                pickle.dump(data, f)
