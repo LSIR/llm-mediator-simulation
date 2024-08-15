@@ -61,8 +61,15 @@ class AsyncMetricsHandler:
 
         return metrics
 
-    async def inject_metrics(self, interventions: list[Intervention]) -> None:
-        """Inject metrics in place into a given list of interventions."""
+    async def inject_metrics(
+        self, interventions: list[Intervention], valid_indexes: list[int]
+    ) -> list[int]:
+        """Inject metrics in place into a given list of interventions.
+
+        Args:
+            - interventions: the debate interventions to be evaluated.
+            - valid_indexes: the debate indexes whose interventions must be evaluated.
+        """
 
         # Do not compute metrics for empty interventions
         valid_indexes = [
@@ -74,3 +81,5 @@ class AsyncMetricsHandler:
 
         for index, metric in zip(valid_indexes, metrics):
             interventions[index].metrics = metric
+
+        return valid_indexes

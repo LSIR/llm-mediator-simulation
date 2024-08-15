@@ -233,11 +233,16 @@ async def async_mediator_interventions(
     config: DebateConfig,
     mediator: MediatorConfig,
     summary: AsyncSummaryHandler,
+    valid_indexes: list[int] | None = None,
     retry_attempts: int = 5,
 ) -> tuple[list[LLMMessage], list[str]]:
 
     prompts: list[str] = []
+
     summary_prompts = summary.raw_history_prompts()
+
+    if valid_indexes is not None:
+        summary_prompts = [summary_prompts[i] for i in valid_indexes]
 
     for debate_summary in summary_prompts:
         prompts.append(
