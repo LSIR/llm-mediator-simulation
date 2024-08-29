@@ -270,7 +270,7 @@ The implementation is in the [`utils/decorators`](./src/llm_mediator_simulation/
 CSV debate transcripts from the `deliberate-lab.appspot.com` app can be imported into a debate handler for further simulation.
 Note that debater personalities and positions cannot be inferred from this transcript yet, so the simulation may not reflect accurately the original debater personalities. If you want to continue a proper simulation, you may want to import the chat data first, and then assign personalities to the debater configs stored in the `initial_debaters` field of the `DebateHandler` class.
 
-See the `preload_csv_chat` method from the [`DebateHandler`](./src/llm_mediator_simulation/debate/handler.py) class.
+See the `preload_csv_chat` method from the [`DebateHandler`](./src/llm_mediator_simulation/simulation/debate/handler.py) class.
 
 ### Example scripts
 
