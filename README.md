@@ -21,12 +21,13 @@ See the [overview](/docs/OVERVIEW.md) for more details.
 ```bash
 ├── examples                  # Example scripts
 │
-├── llm_mediator_simulations  # Main package
+├── src/llm_mediator_simulations  # Main package
 │   │
-│   ├── metrics     # Metrics computations
-│   ├── models      # LLM model wrappers
-│   ├── simulation  # Debate simulation handler classes
-│   └── utils       # Utilities
+│   ├── metrics        # Metrics computations
+│   ├── models         # LLM model wrappers
+│   ├── simulation     # Debate simulation handler classes
+│   ├── utils          # Utilities
+│   └── visualization  # Visualization tools
 ```
 
 ## Get Started
@@ -50,3 +51,5 @@ python examples/example_async.py
 
 Run a local LLM with the `example_server.py` script.
 Analyze generated debates with the `example_analysis.py` script.
+
+See the [guide](./GUIDE.md) for more information.
