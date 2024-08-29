@@ -4,7 +4,11 @@ import asyncio
 from typing import Literal, override
 
 import google.generativeai as genai
-from google.generativeai.types import HarmBlockThreshold, HarmCategory
+from google.generativeai.types import (
+    GenerationConfigType,
+    HarmBlockThreshold,
+    HarmCategory,
+)
 
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
@@ -21,6 +25,7 @@ class GoogleModel(LanguageModel):
         api_key: str,
         model_name: Literal["gemini-1.0-pro", "gemini-1.5-flash", "gemini-1.5-pro"],
         harm_block_threshold: HarmBlockThreshold = HarmBlockThreshold.BLOCK_NONE,
+        temperature: float = 1,
     ):
         """Initialize a Google Vertex AI model.
 
@@ -28,10 +33,14 @@ class GoogleModel(LanguageModel):
             api_key: OpenAI API key.
             model_name: OpenAI model name.
             harm_block_threshold: Harm block threshold.
+            temperature: the model temperature.
         """
         genai.configure(api_key=api_key)
 
-        self.model = genai.GenerativeModel(model_name)
+        config: GenerationConfigType = {
+            "temperature": temperature,
+        }
+        self.model = genai.GenerativeModel(model_name, generation_config=config)
 
         self.safety_settings = [
             {
