@@ -193,3 +193,89 @@ debater_model = MistralModel(api_key=mistral_key, model_name="mistral-large-late
 ```
 
 Use the `async` model wrapper versions in an async setting instead.
+
+## Running the debate
+
+You can now run a debate simulation!
+
+You just need to create a `DebateHandler` instance and pass it all the configuration needed:
+
+```python
+from llm_mediator_simulation.simulation.debate.handler import DebateHandler
+
+debate = DebateHandler(
+    debater_model=mediator_model,
+    mediator_model=mediator_model,
+    debaters=debaters,
+    config=debate_config,
+    summary_config=summary_config,
+    metrics_handler=metrics,
+    mediator_config=mediator_config,
+)
+```
+
+You can then run multiple rounds of the debate, and save the results in a pickle file for later analysis:
+
+```python
+debate.run(rounds=3)
+
+# Saved to ./debate_archive.pkl
+debate.pickle("debate_archive")
+```
+
+Note that even after saving the debate to a pickle archive, you can continue running rounds.
+
+## Analysis
+
+A script is provided to analyze pickled debate files at [examples/example_analysis.py](./examples/example_analysis.py)
+
+The following commands are available:
+
+Plot the metrics of a debate:
+
+```bash
+python examples/example_analysis.py metrics -d debate.pkl
+python examples/example_analysis.py metrics -d debate.pkl -a  # Averaged over debaters
+```
+
+Plot the personalities of debaters over time:
+
+```bash
+python examples/example_analysis.py personalities -d debate.pkl
+python examples/example_analysis.py personalities -d debate.pkl -a  # Averaged over debaters
+```
+
+Generate a transcript of the debate:
+
+```bash
+python examples/example_analysis.py transcript -d debate.pkl
+```
+
+Print the debate data in a pretty format:
+
+```bash
+python examples/example_analysis.py print -d debate.pkl
+```
+
+## Other features
+
+### Benchmarks
+
+LLM API calls can be benchmarked for speed.
+Functions annotated with the `@benchmark` decorator have their call duration stored in the global `BENCHMARKS` object.
+The implementation is in the [`utils/decorators`](./src/llm_mediator_simulation/utils/decorators.py) file.
+
+### Integration with deliberate-lab.appspot.com
+
+CSV debate transcripts from the `deliberate-lab.appspot.com` app can be imported into a debate handler for further simulation.
+Note that debater personalities and positions cannot be inferred from this transcript yet, so the simulation may not reflect accurately the original debater personalities.
+
+### Example scripts
+
+Multiple example scripts are provided in the [`examples`](./examples) directory.
+
+- [`example_analysis.py`](./examples/example_analysis.py): cli helper to analyze debate data.
+- [`example_async.py`](./examples/example_async.py): run multiple debate simulations asynchronously.
+- [`example_debate.py`](./examples/example_debate.py): run a single debate simulation.
+- [`example_mistral.py`](./examples/example_mistral.py): test script to run the mistral 7B model locally.
+- [`example_server.py`](./examples/example_server.py): run a local mistral model inside a web server to experiment with LLM calls without having to wait for model initialization inbetween calls.

@@ -4,24 +4,24 @@ The following commands are available:
 
 Plot the metrics of a debate:
 ```bash
-python examples/example_analysis.py metrics -d debate.pickle
-python examples/example_analysis.py metrics -d debate.pickle -a  # Averaged over debaters
+python examples/example_analysis.py metrics -d debate.pkl
+python examples/example_analysis.py metrics -d debate.pkl -a  # Averaged over debaters
 ```
 
 Plot the personalities of debaters over time:
 ```bash
-python examples/example_analysis.py personalities -d debate.pickle
-python examples/example_analysis.py personalities -d debate.pickle -a  # Averaged over debaters
+python examples/example_analysis.py personalities -d debate.pkl
+python examples/example_analysis.py personalities -d debate.pkl -a  # Averaged over debaters
 ```
 
 Generate a transcript of the debate:
 ```bash
-python examples/example_analysis.py transcript -d debate.pickle
+python examples/example_analysis.py transcript -d debate.pkl
 ```
 
 Print the debate data in a pretty format:
 ```bash
-python examples/example_analysis.py print -d debate.pickle
+python examples/example_analysis.py print -d debate.pkl
 ```
 """
 
