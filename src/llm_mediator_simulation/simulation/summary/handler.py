@@ -6,7 +6,7 @@ from llm_mediator_simulation.models.language_model import LanguageModel
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 from llm_mediator_simulation.utils.interfaces import Promptable
 from llm_mediator_simulation.utils.model_utils import (
-    summarize_conversation_with_last_messages,
+    summarize_conversation_with_last_messages2,
 )
 from llm_mediator_simulation.utils.types import Intervention
 
@@ -39,6 +39,12 @@ class SummaryHandler(Promptable):
         """Return the last message string contents"""
 
         return [message.text for message in self.latest_messages if message.text]
+    
+    @property
+    def message_speakers(self) -> list[str]:
+        """Return the name of last messages"""
+        return [message.debater.name if message.debater is not None else "Mediator" for message in self.latest_messages if message.text]
+    
 
     def add_new_message(self, message: Intervention) -> None:
         """Add a new message to the latest messages list.
@@ -54,7 +60,7 @@ class SummaryHandler(Promptable):
     def regenerate_summary(self) -> str:
         """Regenerate the summary with the latest messages."""
 
-        self.summary = summarize_conversation_with_last_messages(
+        self.summary = summarize_conversation_with_last_messages2(
             self._model, self.summary, self.message_strings
         )
 

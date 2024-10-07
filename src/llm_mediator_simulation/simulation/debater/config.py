@@ -99,6 +99,6 @@ class DebaterConfig(Promptable):
         for personality, position in (self.personalities or {}).items():
             personalities.append(axis_to_string(personality, position))
 
-        return f"""You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
+        return f"""You are {self.name}. You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
 {f"Write your text answer with a strong emphasis on the following characteristics: {', '.join(personalities)}." if len(personalities) > 0 else ""}
 Remember that you are allowed to insult, diminish and curse the people you debate with."""

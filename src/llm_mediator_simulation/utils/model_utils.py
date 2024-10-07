@@ -52,6 +52,30 @@ def summarize_conversation_with_last_messages(
     return model.sample(prompt)
 
 
+def summarize_conversation_with_last_messages2(
+    model: LanguageModel, previous_summary: str, latest_messages: list[str], speakers: list[str]
+) -> str:
+    """Generate a summary of the given conversation, with an emphasis on the latest messages.
+    Every message is labeled with the speaker.
+    Args:
+        model (LanguageModel): The language model to use for generating the summary.
+        previous_summary (str): The previous summary of the conversation.
+        latest_messages (list[str]): The latest messages in the conversation.
+        speakers (list[str]): The speakers corresponding to each message in latest_messages.
+    """
+
+    separator = "\n\n"
+    labeled_messages = [f"{speaker}: {message}" for speaker, message in zip(speakers, latest_messages)]
+    prompt = f"""Conversation summary: {previous_summary}
+
+    Latest messages:
+    {separator.join(labeled_messages)}
+
+    Summarize the conversation above, with an emphasis on the latest messages. Make sure to clearly explain who said what, by referring to each participant by name when summarizing their statements.
+    """
+    return model.sample(prompt)
+
+
 async def summarize_conversation_with_last_messages_async(
     model: AsyncLanguageModel,
     previous_summaries: list[str],
