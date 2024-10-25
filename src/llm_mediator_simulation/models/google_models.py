@@ -26,6 +26,7 @@ class GoogleModel(LanguageModel):
         model_name: Literal["gemini-1.0-pro", "gemini-1.5-flash", "gemini-1.5-pro"],
         harm_block_threshold: HarmBlockThreshold = HarmBlockThreshold.BLOCK_NONE,
         temperature: float = 1,
+        seed: int | None = None,
     ):
         """Initialize a Google Vertex AI model.
 
@@ -34,12 +35,21 @@ class GoogleModel(LanguageModel):
             model_name: OpenAI model name.
             harm_block_threshold: Harm block threshold.
             temperature: the model temperature.
+            seed: Seeding sampling at generation time. Currently not avalaible through the GenerativeAI Python SDK. 
         """
         genai.configure(api_key=api_key)
 
         config: GenerationConfigType = {
             "temperature": temperature,
         }
+
+        # https://github.com/google-gemini/generative-ai-python/issues/605 
+        # Currently seeding Gemin not available through the GenerativeAI Python SDK
+        if seed is not None:
+            raise NotImplementedError("Seed not available through the GenerativeAI Python SDK")
+        #    config["seed"] = seed
+        
+
         self.model = genai.GenerativeModel(model_name, generation_config=config)
 
         self.safety_settings = [

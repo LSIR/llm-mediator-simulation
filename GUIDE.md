@@ -2,7 +2,7 @@
 
 This guide aims at clarifying the goal of this project, and how it is implemented.
 
-The idea: create a framework to simulate debates (political or not) over hot topics between multiple automated debaters,
+The idea: create a framework to simulate debates (political or not) over controversial topics between multiple automated debaters,
 with automated mediators.
 
 The debates are made over a statement _(ex: "We should use nuclear power")_.
@@ -56,7 +56,7 @@ Defined in the [`simulation/debater`](./src/llm_mediator_simulation/simulation/d
 
 A debater is configured with a name, a position (_for_ or _against_ the debate statement) and a list of personality axis.
 The personality axis represent a position between two extremes, with 5 possible values: `0`, `1`, `2`, `3`, `4`.
-The values on the personality axis will change over time, by `+-1` before every intervention of the targeted debater except the first.
+The values on the personality axis will change over time, by `+-1` before every intervention of the targeted debater except before the first intervention of the debate.
 
 ```python
 from llm_mediator_simulation.simulation.debater.config import (

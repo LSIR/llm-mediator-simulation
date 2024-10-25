@@ -1,11 +1,13 @@
+# [Deprecated, please refer to the [guide](../GUIDE.md)]
+
 # OVERVIEW
 
 This project aims at simulating online political debates using LLMs, and measuring the efficiency of LLMs as debate mediators by monitoring debate quality and toxicity.
 
 ## Configuration
 
-Debate simulations are configured through 2 objects: `DebateConfig` and `Debater`.
-These classes can be found [here](../llm_mediator_simulations/simulation/configuration.py).
+Debate simulations are configured through 2 objects: `DebateConfig` and `DebaterConfig`.
+These classes can be found [here](../src/simulation/debate/config.py) and [here](../src/simulation/debater/config.py).
 
 ### Debate Configuration
 
@@ -17,8 +19,8 @@ The `DebateConfig` class holds the debate metadata:
 
 ### Debater Configuration
 
-The `Debater` class holds the configuration of individual debater agents.
-A debater group config consists in a list of `Debater` instances.
+The `DebaterConfig` class holds the configuration of individual debater agents.
+A debater group config consists in a list of `DebaterConfig` instances.
 
 - The debater's position (for or against the debate statement)
 - The debater personality (a list of `Personality` enum members)

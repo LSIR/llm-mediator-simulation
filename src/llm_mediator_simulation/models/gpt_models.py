@@ -20,16 +20,19 @@ class GPTModel(LanguageModel):
         *,
         api_key: str,
         model_name: Literal["gpt-3.5-turbo", "gpt-4-turbo", "gpt-4o"],
+        seed: int | None = None,
     ):
         """Initialize a GPT model.
 
         Args:
             api_key: OpenAI API key.
             model_name: OpenAI model name.
+            seed: Seeding sampling at generation time.
         """
         self._api_key = api_key
         self.model_name = model_name
         self.client = OpenAI(api_key=api_key)
+        self.seed = seed
 
     @override
     def sample(self, prompt: str) -> str:
@@ -39,7 +42,7 @@ class GPTModel(LanguageModel):
         ]
 
         result = self.client.chat.completions.create(
-            messages=messages, model=self.model_name, n=1
+            messages=messages, model=self.model_name, n=1, seed=self.seed
         )
         content = result.choices[0].message.content
 

@@ -36,7 +36,7 @@ def summarize_conversation(model: LanguageModel, conversation: list[str]) -> str
 
 
 def summarize_conversation_with_last_messages(
-    model: LanguageModel, previous_summary: str, latest_messages: list[str]
+    model: LanguageModel, previous_summary: str, latest_messages: list[str], seed: int | None = None
 ) -> str:
     """Generate a summary of the given conversation, with an emphasis on the latest messages."""
 
