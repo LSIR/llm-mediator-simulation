@@ -281,3 +281,12 @@ Multiple example scripts are provided in the [`examples`](./examples) directory.
 - [`example_debate.py`](./examples/example_debate.py): run a single debate simulation.
 - [`example_mistral.py`](./examples/example_mistral.py): test script to run the mistral 7B model locally.
 - [`example_server.py`](./examples/example_server.py): run a local mistral model inside a web server to experiment with LLM calls without having to wait for model initialization inbetween calls.
+
+### Getting started
+Save GPT's API key in a `.env` file at the root of the project.
+
+```bash
+python examples/example_server.py start # Start the local mistral model server
+python scripts/default_debate_server.py # One Local Mistral LLM queried as a server, responding to debater prompts; One GPT's ``mediator'' acting only as a sumarizer (no mediator intervention) and plot the transcript
+python examples/example_analysis.py transcript -d debates_sandbox/my_debate.pkl # Plot the transcript of the my_debate
+```
