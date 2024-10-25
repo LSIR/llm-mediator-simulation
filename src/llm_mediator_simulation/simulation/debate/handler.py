@@ -149,6 +149,18 @@ class DebateHandler:
     #                                        SERIALIZATION                                        #
     ###############################################################################################
 
+    # To DebatePickle
+    def to_debate_pickle(self) -> "DebatePickle":
+        """Return the debate configuration and logs as a DebatePickle object."""
+
+        return DebatePickle(
+            self.config,
+            self.summary_config,
+            self.mediator_config,
+            self.initial_debaters,
+            self.interventions,
+        )
+    
     def pickle(self, path: str) -> None:
         """Serialize the debate configuration and logs to a pickle file.
         This does not include the model configuration.
@@ -157,13 +169,7 @@ class DebateHandler:
             path (str): The path to the pickle file, without file extension.
         """
 
-        data: "DebatePickle" = DebatePickle(
-            self.config,
-            self.summary_config,
-            self.mediator_config,
-            self.initial_debaters,
-            self.interventions,
-        )
+        data: "DebatePickle" = self.to_debate_pickle()
 
         with open(f"{path}.pkl", "wb") as file:
             pickle.dump(

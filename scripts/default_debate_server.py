@@ -84,7 +84,8 @@ debate.run(rounds=1)
 
 name_timestamp = time.strftime('%Y%m%d-%H%M%S')
 output_path = f"debates_sandbox"
-print(debate_transcript(debate))
+data = debate.to_debate_pickle()
+print(debate_transcript(data))
 debate.pickle(os.path.join(output_path, f"debate_{name_timestamp}"))
 
 
