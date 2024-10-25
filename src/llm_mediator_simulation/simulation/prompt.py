@@ -48,6 +48,7 @@ def debater_intervention(
     config: DebateConfig,
     summary: SummaryHandler,
     debater: DebaterConfig,
+    seed: int | None = None,
 ) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
 
@@ -61,7 +62,7 @@ supports your position. Use short chat messages, no more than 3 sentences.
 {json_prompt(LLM_RESPONSE_FORMAT)}
 """
 
-    response = model.sample(prompt)
+    response = model.sample(prompt, seed=seed)
     return parse_llm_json(response, LLMMessage), prompt
 
 

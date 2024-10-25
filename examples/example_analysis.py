@@ -25,6 +25,7 @@ python examples/example_analysis.py print -d debate.pkl
 ```
 """
 
+import os
 import click
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -135,6 +136,14 @@ def pretty_print(debate: str):
 def transcript(debate: str):
     """Print the debate transcript.
     You can pipe it to a file to save it."""
+    # If debate is a directory, unpickle the last debate
+    if os.path.isdir(debate):
+        debates = sorted(
+            [os.path.join(debate, f) for f in os.listdir(debate) if f.endswith(".pkl")]
+        )
+        debate = debates[-1]
+
+
     data = DebateHandler.unpickle(debate)
 
     print(debate_transcript(data))

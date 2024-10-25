@@ -116,7 +116,7 @@ def call(prompt: str | None, file: str | None):
     try:
         response = httpx.post(
             f"http://localhost:{PORT}/call",
-            json={"text": prompt},
+            json={"text": prompt, "seed": None},
             timeout=40,
         )
         click.echo(response.text)
@@ -138,10 +138,11 @@ def main():
 def server():
     """Start a Flask server to keep the LLM loaded"""
     from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
-
     # Load the model
-    model = MistralLocalModel(max_length=500)
 
+    model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2",
+                              max_length=500,
+                              json=True)
     from flask import Flask, request
 
     app = Flask("LLM Server")
@@ -154,8 +155,9 @@ def server():
     def call():
         data = request.get_json()
         text = data.get("text")
+        seed = data.get("seed")
 
-        return model.sample(text)
+        return model.sample(text, seed=seed)
 
     @app.route("/stop")
     def stop():

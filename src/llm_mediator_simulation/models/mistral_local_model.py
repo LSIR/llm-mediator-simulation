@@ -9,6 +9,7 @@ from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
     LanguageModel,
 )
+from llm_mediator_simulation.utils.reproducibility import set_transformers_seed
 
 # Taken from the HuggingFace api
 FEW_SHOT_PREPROMPT = """User: What is yout favorite condiment?
@@ -62,6 +63,7 @@ class MistralLocalModel(LanguageModel):
             temperature: Sampling temperature.
             top_p: Top-p sampling ratio.
             do_sample: Whether to sample or not.
+            quantization: BitsAndBytes precision. 
             debug: Displays verbose prompts and responses.
             json: Whether to enforce JSON generation.
         """
@@ -89,7 +91,7 @@ class MistralLocalModel(LanguageModel):
         self.json = json
 
     @override
-    def sample(self, prompt: str) -> str:
+    def sample(self, prompt: str, seed: int | None = None) -> str:
 
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
@@ -103,6 +105,11 @@ class MistralLocalModel(LanguageModel):
             print()
 
         inputs = self.tokenizer(prompt, return_tensors="pt")
+
+        # Seeding
+        if seed is not None:
+           set_transformers_seed(seed) # sampling tokens generation time
+
         with torch.no_grad():
             outputs = self.model.generate(
                 inputs.input_ids.to("cuda"),

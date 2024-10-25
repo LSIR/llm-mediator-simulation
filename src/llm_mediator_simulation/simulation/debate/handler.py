@@ -2,6 +2,7 @@
 
 import pickle
 from dataclasses import dataclass
+import random
 
 from rich.progress import track
 
@@ -31,6 +32,8 @@ class DebateHandler:
         mediator_config: MediatorConfig | None = None,
         summary_config: SummaryConfig | None = None,
         metrics_handler: MetricsHandler | None = None,
+        seed: int | None = None,
+        variable_personality: bool = False,
     ) -> None:
         """Instanciate a debate simulation handler.
 
@@ -42,6 +45,8 @@ class DebateHandler:
             mediator_config: The mediator configuration. If None, no mediator will be used. Defaults to None.
             summary_config: The summary configuration. Defaults to None. A default config will be used.
             metrics_handler: The metrics handler to use. Defaults to None.
+            seed: The seed to use for the random sampling at generation.
+            variable_personality: If True, the debaters will keep the same personality throughout the debate. Defaults to True.
         """
 
         # Configuration
@@ -87,20 +92,32 @@ class DebateHandler:
             debater.snapshot_personality() for debater in self.debaters
         ]
 
+        # Seed
+        if seed is not None:
+            self.seed = seed # setting the seed for sampling in generation
+            random.seed(seed) # shuffling the list of debaters consulted in each round
+
+        # Constant or variable personality
+        self.variable_personality = variable_personality
+
+
     def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
 
-        The debaters will all send one message per round, in the order they are listed in the debaters list.
+        The debaters will all send one intervention per round, in random order.
         """
 
         for i in track(range(rounds)):
+            # Shuffle the debaters order
+            random.shuffle(self.debaters)
             for debater in self.debaters:
 
                 ##############################################################
                 #                    DEBATER INTERVENTION                    #
                 ##############################################################
 
-                intervention = debater.intervention(update_personality=i != 0)
+                intervention = debater.intervention(update_personality=i != 0 and self.variable_personality,
+                                                    seed=self.seed)
 
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)

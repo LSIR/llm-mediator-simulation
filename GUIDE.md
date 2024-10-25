@@ -2,7 +2,7 @@
 
 This guide aims at clarifying the goal of this project, and how it is implemented.
 
-The idea: create a framework to simulate debates (political or not) over hot topics between multiple automated debaters,
+The idea: create a framework to simulate debates (political or not) over controversial topics between multiple automated debaters,
 with automated mediators.
 
 The debates are made over a statement _(ex: "We should use nuclear power")_.
@@ -56,7 +56,7 @@ Defined in the [`simulation/debater`](./src/llm_mediator_simulation/simulation/d
 
 A debater is configured with a name, a position (_for_ or _against_ the debate statement) and a list of personality axis.
 The personality axis represent a position between two extremes, with 5 possible values: `0`, `1`, `2`, `3`, `4`.
-The values on the personality axis will change over time, by `+-1` before every intervention of the targeted debater except the first.
+The values on the personality axis will change over time, by `+-1` before every intervention of the targeted debater except before the first intervention of the debate.
 
 ```python
 from llm_mediator_simulation.simulation.debater.config import (
@@ -281,3 +281,12 @@ Multiple example scripts are provided in the [`examples`](./examples) directory.
 - [`example_debate.py`](./examples/example_debate.py): run a single debate simulation.
 - [`example_mistral.py`](./examples/example_mistral.py): test script to run the mistral 7B model locally.
 - [`example_server.py`](./examples/example_server.py): run a local mistral model inside a web server to experiment with LLM calls without having to wait for model initialization inbetween calls.
+
+### Getting started
+Save GPT's API key in a `.env` file at the root of the project.
+
+```bash
+python examples/example_server.py start # Start the local mistral model server
+python scripts/default_debate_server.py # One Local Mistral LLM queried as a server, responding to debater prompts; One GPT's ``mediator'' acting only as a sumarizer (no mediator intervention) and plot the transcript
+python examples/example_analysis.py transcript -d debates_sandbox/my_debate.pkl # Plot the transcript of the my_debate
+```
