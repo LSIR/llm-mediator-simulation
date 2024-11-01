@@ -4,18 +4,20 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import override
 
+from llm_mediator_simulation.personalities.personality import Personality
+from llm_mediator_simulation.personalities.scales import Likert7AgreementLevel
 from llm_mediator_simulation.utils.interfaces import Promptable
 
 ###################################################################################################
 #                                   Debater Characteristics                                       #
 ###################################################################################################
 
+@dataclass
+class TopicOpinion:
+    """Agent opinion on a topic."""
 
-class DebatePosition(Enum):
-    """Debate positions for the participants."""
-
-    AGAINST = 0
-    FOR = 1
+    agreement: Likert7AgreementLevel
+    variable: bool = False
 
 
 @dataclass
@@ -84,21 +86,25 @@ class DebaterConfig(Promptable):
     """Debater metadata class
 
     Args:
-        position (DebatePosition): The position of the debater.
-        personality (str | None, optional): The personality of the debater (as a list of qualifiers). Defaults to None.
+        name (str): The name of the debater.
+        personality (Personality, optional): The debater's personality. Defaults to None.
+        topic_opinion (TopicOpinion, optional): The debater's opinion on the debate topic. Defaults to None.
     """
 
     name: str
-    position: DebatePosition
-    personalities: dict[PersonalityAxis, AxisPosition] | None = None
+    personality: Personality | None = None
+    topic_opinion: TopicOpinion | None = None
 
     @override
     def to_prompt(self) -> str:
 
-        personalities: list[str] = []
-        for personality, position in (self.personalities or {}).items():
-            personalities.append(axis_to_string(personality, position))
-
-        return f"""You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
+        return f"""You are roleplaying this real person: 
+        name: {self.name}; 
+        {self.personality.to_prompt() if self.personality else ""}
+        
+        
+        
+        
+        You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
 {f"Write your text answer with a strong emphasis on the following characteristics: {', '.join(personalities)}." if len(personalities) > 0 else ""}
 Remember that you are allowed to insult, diminish and curse the people you debate with."""

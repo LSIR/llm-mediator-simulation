@@ -1,120 +1,9 @@
-from dataclasses import dataclass
 from enum import Enum
+from llm_mediator_simulation.personalities.scales import KeyingDirection
+from llm_mediator_simulation.personalities.traits import PersonalityTrait, PersonalityTraitValue
 
 
-class DemographicCharacteristic(Enum):
-    """Demographic characteristic for agents.
-        Based on:
-            - https://github.com/yunshiuan/llm-agent-opinion-dynamics/blob/main/prompts/opinion_dynamics/Flache_2017/list_agent_descriptions.csv
-            - 10.48550/arXiv.2310.05984 - Fig. 1
-            - 10.5555/3618408.3619652 - Table 2
-            - https://electionstudies.org/wp-content/uploads/2024/05/anes_specialstudy_2024ets_qnnaire_20240403.pdf
-            - https://www.pewresearch.org/wp-content/uploads/sites/20/2024/07/2024-NPORS-Paper-Questionnaire.pdf 
-    """
-
-    # NAME = "name" ; name is not a demographic characteristic but a required field for agents
-
-    ETHNICITY = "ethnicity"
-
-    GENDER = "gender"
-
-    NATIONALITY = "nationality"
-
-    AGE = "age"
-
-    MARITAL_STATUS = "marital status"
-
-    EDUCATION = "education"
-
-    OCCUPATION = "occupation"
-
-    POLITICAL_LEANING = "political leaning"
-
-    RELIGION = "religion or spiritual beliefs"
-
-    SEXUAL_ORIENTATION = "sexual orientation"
-
-    HEALTH_CONDITION = "health condition"
-
-    INCOME = "total income of your family in the past 12 months"
-
-    HOUSEHOLD_SIZE = "household size"
-
-    NUMBER_OF_DEPENDENT = "number of dependent children or elderly family members"
-
-    LIVING_QUARTERS = "living quarters"
-
-    LANGUAGE_SPOKEN = "language spoken"
-
-    CITY_OF_RESIDENCE = "city of residence"
-
-    PRIMARY_MODE_OF_TRANSPORTATION = "primary mode of transportation"
-
-    BACKGROUND = "background"
-
-
-@dataclass
-class PersonalityTraitValue:
-    """Typing for the values of a personality trait."""
-
-    name: str
-    low: str
-    average: str
-    high: str
-
-    
-class PersonalityTrait(Enum):
-    """Big 5 Personality Trait for agents.
-        Based on:
-            - 10.18653/v1/2023.findings-emnlp.156 (Descriptions)
-            - 10.1093/acrefore/9780190236557.013.560 - Table 1 (3-point Likert Scale and descriptions for each level for each trait)
-            - https://en.wikipedia.org/wiki/Big_Five_personality_traits 
-                "A FFM-associated test was used by Cambridge Analytica, and was part of the 'psychographic profiling' 
-                controversy during the 2016 US presidential election."
-    """
-
-    OPENNESS = PersonalityTraitValue("openness to experience", 
-                                     "You are down-to-earth, practical, traditional, and pretty much set in your ways.",
-                                     "You are practical but willing to consider new ways of doing things. You seek a balance between the old and the new.",
-                                     "You are open to new experiences. You have broad interests and are very imaginative.")
-
-    CONSCIENTIOUSNESS = PersonalityTraitValue("conscientiousness",
-                                              "You are easy-going, not very well organized, and sometimes careless. You prefer not to make plans.",
-                                              "You are dependable and moderately well organized. You generally have clear goals but are able to set work aside.",
-                                              "You are very conscientious and well organized. You have high standards and always strives to achieve goals.")
-
-    EXTRAVERSION = PersonalityTraitValue("extraversion",
-                                         "You are introverted, reserved, and serious. You prefer to be alone or with a few close friends.",
-                                         "You are moderate in activity and enthusiasm. You enjoy the company of others but also values privacy.",
-                                         "You are extraverted, outgoing, active, and high-spirited. You prefer to be around people most of the time.")
-
-    AGREEABLENESS = PersonalityTraitValue("agreeableness",
-                                          "You are hardheaded, skeptical, proud, and competitive. You tend to express anger directly.",
-                                          "You are generally warm, trusting, and agreeable, but you can sometimes be stubborn and competitive.",
-                                          "You are compassionate, good-natured, and eager to cooperate and avoid conflict.")
-
-    NEUROTICISM = PersonalityTraitValue("neuroticism",
-                                        "You are secure, hardy, and generally relaxed, even under stressful conditions.",
-                                        "You are generally calm and able to deal with stress, but sometimes experiences feelings of guilt, anger, or sadness.",
-                                        "You are sensitive, emotional, and prone to experience feelings that are upsetting.")
-    
-
-class Likert3Level(Enum):
-    """Level on a 3-point likert scale axis."""
-
-    LOW = 0
-    AVERAGE = 1
-    HIGH = 2
-
-
-class KeyingDirection(Enum):
-    """Binary value.
-    Based on:
-            - 10.1016/j.jrp.2014.05.003 
-    """
-
-    NEGATIVE = 0
-    POSITIVE = 1
+from dataclasses import dataclass
 
 
 @dataclass
@@ -122,7 +11,7 @@ class item:
     """Personality trait item for agents.
         Based on:
             - https://ipip.ori.org/newNEOFacetsKey.htm
-                
+
     """
 
     trait: PersonalityTrait
@@ -139,6 +28,13 @@ class PersonalityFacetValue:
     positively_keyed_items: list[item]
     negatively_keyed_items: list[item]
 
+    def level(self, direction: KeyingDirection) -> str:
+        """Return a level of the personality trait based on the keying direction."""
+        if direction == KeyingDirection.POSITIVE:
+            return self.positively_keyed_items
+        else:
+            return self.negatively_keyed_items
+
 
 class PersonalityFacet(Enum):
     """Big 5 Personality Facet for agents.
@@ -146,13 +42,13 @@ class PersonalityFacet(Enum):
             - 10.1016/j.jrp.2014.05.003 - Table 1
             - https://ipip.ori.org/newNEOFacetsKey.htm (Descriptions)
             - https://en.wikipedia.org/wiki/Big_Five_personality_traits 
-                
+
     """
     ###################################################################################################
     #                                     Neuroticism Facets                                          #
     ###################################################################################################
 
-    ANXIEITY = PersonalityTraitValue("anxiety", 
+    ANXIEITY = PersonalityTraitValue("anxiety",
         PersonalityTrait.NEUROTICISM,
         [item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You worry about things."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You fear for the worst."),
@@ -164,7 +60,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You are not easily disturbed by events."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You don't worry about things that have already happened."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You adapt easily to new situations.")])
-    
+
 
     ANGER = PersonalityTraitValue("anger",
         PersonalityTrait.NEUROTICISM,
@@ -234,7 +130,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You know how to cope."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You readily overcome setbacks."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You are calm even in tense situations.")])
-    
+
 
     ###################################################################################################
     #                                     Extraversion Facets                                         #
@@ -323,7 +219,7 @@ class PersonalityFacet(Enum):
         [item(PersonalityTrait.EXTRAVERSION, KeyingDirection.NEGATIVE, "You are not easily amused."),
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.NEGATIVE, "You seldom joke around.")])
 
-    
+
     ###################################################################################################
     #                                     Openness Facets                                             #
     ###################################################################################################
@@ -584,12 +480,3 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.NEGATIVE, "You do crazy things."),
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.NEGATIVE, "You act without thinking."),
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.NEGATIVE, "You often make last-minute plans.")])
-
-
-
-@dataclass
-class Personality:
-    """Personality of an agent."""
-    demographic_profile: dict[DemographicCharacteristic, str] | None = None
-    traits: dict[PersonalityTrait, Likert3Level] | None = None
-    facets: dict[PersonalityTraitValue, KeyingDirection] | None = None
