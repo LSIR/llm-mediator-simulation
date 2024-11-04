@@ -13,7 +13,7 @@ class Issues(Enum):
     GENERAL = IssueValue("general", None)
     ECONOMIC = IssueValue("economic", "economic issues")
     SOCIAL = IssueValue("social", "social issues")
-    SOCIETAL = IssueValue("societal", "societal issues")
+    # SOCIETAL = IssueValue("societal", "societal issues")
 
 
 

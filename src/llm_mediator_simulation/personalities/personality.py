@@ -25,7 +25,7 @@ class Personality(Promptable):
     cognitive_biases: list[CognitiveBias] | None = None
     fallacies: list[Fallacy] | None = None
     vote_last_presidential_election: str | None = None
-    ideologies: dict[Issues, Ideology] | None = None
+    ideologies: dict[Issues, Ideology] | Ideology | None = None
     agreement_with_statements: dict[str, Likert7AgreementLevel] | None = None
     likelihood_of_beliefs: list[str, Likert11LikelihoodLevel] | None = None
     free_form_opinions: list[str] | None = None
@@ -152,8 +152,20 @@ class Personality(Promptable):
 
 
         if self.vote_last_presidential_election:
-            #TODO
-            pass
+            # self.vote_last_presidential_election can be "voted for the Democratic candidate", "voted with an invalid ballot", "were an eligible voter but did not vote", "were disenfranchised".
+            prompt += f"In the last presidential election, you {self.vote_last_presidential_election}.\n\n" 
+
+        if self.ideologies:
+            prompt += "You identify as:\n"
+            if isinstance(self.ideologies, Ideology):
+                prompt += f"- {self.ideologies.value}.\n"
+            elif isinstance(self.ideologies, dict):
+                for issue, ideology in self.ideologies.items():
+                    prompt += f"- {issue.value} issues: {ideology.value}.\n"
+            else:
+                raise ValueError("Invalid ideologies type")
+            prompt += "\n"
+
     
         #TODO Shuffle lists and dict...
 
