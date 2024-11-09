@@ -53,7 +53,10 @@ class DebaterHandler:
                 interventions=self.summary_handler.latest_messages,
             )
 
+        # Do the intervention
+        time = datetime.now()
         response, prompt = debater_intervention(
+            time = str(time.minute)+ ":" + str(time.second) + ":" ,
             model=self.model,
             config=self.debate_config,
             summary=self.summary_handler,

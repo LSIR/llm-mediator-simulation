@@ -46,8 +46,8 @@ class MistralLocalModel(LanguageModel):
         model_name: str = "mistralai/Mistral-7B-Instruct-v0.2",
         max_length: int = 100,
         num_return_sequences: int = 1,
-        temperature: float = 0.7,
-        top_p: float = 0.9,
+        temperature: float = 0.2,
+        top_p: float = 0.2,
         do_sample: bool = True,
         quantization: Literal["4_bits"] | None = None,
         debug: bool = False,
@@ -127,6 +127,40 @@ class MistralLocalModel(LanguageModel):
             print()
 
         return generated_text
+    
+    def generate(self, prompt: str) -> str:
+
+        if self.debug:
+            print("Prompt:")
+            print("----------------------")
+            print(prompt)
+            print()
+
+        inputs = self.tokenizer(prompt, return_tensors="pt")
+        with torch.no_grad():
+            outputs = self.model.generate(
+                inputs.input_ids.to("cuda"),
+                attention_mask=inputs.attention_mask,
+                num_return_sequences=self.num_return_sequences,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                do_sample=self.do_sample,
+                pad_token_id=self.pad_token_id,
+                # Stop conditions
+                stop_strings=["```"] if self.json else ["User:"],
+                tokenizer=self.tokenizer,
+                max_new_tokens=self.max_length,
+            )
+
+        generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        if self.debug:
+            print("Response:")
+            print("---------------------")
+            print(generated_text[len(prompt) :])
+            print()
+
+        return generated_text[len(prompt):]
 
 
 class BatchedMistralLocalModel(AsyncLanguageModel):
@@ -137,7 +171,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         *,
         max_length: int = 50,
         num_return_sequences: int = 1,
-        temperature: float = 0.7,
+        temperature: float = 0.4,
         top_p: float = 0.9,
         do_sample: bool = True,
         quantization: Literal["4_bits"] | None = None,
@@ -208,6 +242,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         ]
 
         return generated_texts
+    
 
 
 # Quantization configs

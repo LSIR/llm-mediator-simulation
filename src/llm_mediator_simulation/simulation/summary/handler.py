@@ -9,6 +9,7 @@ from llm_mediator_simulation.utils.model_utils import (
     summarize_conversation_with_last_messages,
 )
 from llm_mediator_simulation.utils.types import Intervention
+import datetime
 
 
 class SummaryHandler(Promptable):
@@ -27,18 +28,26 @@ class SummaryHandler(Promptable):
         """
 
         self.summary = ""
-        self.latest_messages: list[Intervention] = []
+
+        self.time_indicator = 0 
 
         self._model = model
         self._latest_messages_limit = config.latest_messages_limit
 
         self.debaters = config.debaters or []
+        
 
     @property
     def message_strings(self) -> list[str]:
         """Return the last message string contents"""
 
         return [message.text for message in self.latest_messages if message.text]
+    
+    @property
+    def message_speakers_and_strings(self) -> list[str]:
+        """Return the name of last messages"""
+        return [f"{message.debater.name}: {message.text}" if message.debater is not None else f"Mediator: {message.text}" for message in self.latest_messages if message.text]
+    
 
     def add_new_message(self, message: Intervention) -> None:
         """Add a new message to the latest messages list.
@@ -50,12 +59,13 @@ class SummaryHandler(Promptable):
         self.latest_messages = (self.latest_messages + [message])[
             -self._latest_messages_limit :
         ]
+        #self.time_indicator += 1
 
     def regenerate_summary(self) -> str:
         """Regenerate the summary with the latest messages."""
 
         self.summary = summarize_conversation_with_last_messages(
-            self._model, self.summary, self.message_strings
+            self._model, self.summary, self.message_speakers_and_strings
         )
 
         return self.summary
@@ -64,12 +74,13 @@ class SummaryHandler(Promptable):
     def to_prompt(self) -> str:
         msg_sep = "\n\n"
 
-        return f"""Here is a summary of the last exchanges (if empty, the conversation just started):
-{self.summary}
-
-Here are the last messages exchanged (you should focus your argumentation on them):
-{msg_sep.join(self.message_strings)}
-"""
+        if len(self.latest_messages) == 0:
+            return "The conversation has just started, and there are no prior messages or exchanges. Please present your initial argument on the topic"
+        return f"""Here is a summary of the last exchanges :
+        {self.summary}
+        Here are the last messages exchanged (you should focus your argumentation on them):
+        {msg_sep.join(self.message_speakers_and_strings)}
+        """
 
     def raw_history_prompt(self) -> str:
         """Return the last messages "as is"."""
@@ -79,7 +90,7 @@ Here are the last messages exchanged (you should focus your argumentation on the
             if message.text:
                 debater_name = message.debater.name if message.debater else "Mediator"
 
-                messages.append(f"[{message.timestamp}] {debater_name}: {message.text}")
+                messages.append(f"[Time:{message.timestamp.minute}:{message.timestamp.second}] {debater_name}: {message.text}")
 
         return "\n".join(messages)
 

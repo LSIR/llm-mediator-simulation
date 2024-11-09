@@ -53,15 +53,30 @@ class ArgumentQuality(Enum):
         "Global sufficiency",
         "Possible counterarguments are rebutted.",
     )
+    
+    
 
     # The following metric reauire knowledge of the debate topic to properly evaluate.
     GLOBAL_RELEVANCE = (
         "Global relevance",
-        "The argument contributes to the resolution of the issue.",
+        "The argument contributes to the resolution of the issue. (The subject here is Abortion and whether it should be legal or not)",
     )
     CLARITY = (
         "Clarity",
         "Clear and correct language is used, the contribution is on topic.",
+    )
+    
+    #The following metrics are inspired by this website: https://debattonsmieux.fr/outils/les-r%C3%A8gles-du-d%C3%A9bat-constructif/
+    
+    
+    WILLING_TO_COOPERATE = (
+        "Willingness to cooperate",
+        "The argument reflects an openness to engage in collaborative dialogue, actively seeking mutual understanding, and showing flexibility in considering opposing views. It avoids confrontation and focuses on working together to build a constructive discussion.",
+    )
+    
+    EMPATHY = (
+        "Empathy",
+        "The argument demonstrates an understanding and consideration of the emotions and perspectives of others, fostering a sense of connection and respect by acknowledging the feelings and experiences of all parties involved.",
     )
 
 

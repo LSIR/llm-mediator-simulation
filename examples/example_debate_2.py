@@ -6,12 +6,10 @@ from dotenv import load_dotenv
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
+from llm_mediator_simulation.metrics.perspective_api import PerspectiveScorer
 from llm_mediator_simulation.models.google_models import GoogleModel
 from llm_mediator_simulation.models.gpt_models import GPTModel
 from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
-
-
-
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debate.handler import DebateHandler
 from llm_mediator_simulation.simulation.debater.config import (
@@ -26,63 +24,68 @@ from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 load_dotenv()
 
 gpt_key = os.getenv("GPT_API_KEY") or ""
-google_key = "AIzaSyCfCU1LlK0gNl2H6XfAmX2KFHomydwUfhU" #os.getenv("VERTEX_AI_API_KEY") or ""
+google_key = os.getenv("VERTEX_AI_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
-#mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
+mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 debater_model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2" ,max_length=200, debug=True, json=True)
-mediator_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
+#mediator_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
+
 
 
 # Debater participants
 debaters = [
     DebaterConfig(
-        name="Alice",
+        name="Bob",
         position=DebatePosition.AGAINST,
-        personalities={
-            PersonalityAxis.CIVILITY: AxisPosition.VERY_RIGHT,  # Very civil
-            PersonalityAxis.POLITENESS: AxisPosition.VERY_RIGHT,  # Very kind
-            PersonalityAxis.EMOTIONAL_STATE: AxisPosition.VERY_RIGHT,  # Very calm
-            PersonalityAxis.POLITICAL_ORIENTATION: AxisPosition.VERY_LEFT,  # Very concervative
-        },
+        personalities= None,
+        # personalities={
+        #     PersonalityAxis.CIVILITY: AxisPosition.NEUTRAL,  # Very toxic
+        #     PersonalityAxis.POLITENESS: AxisPosition.NEUTRAL,  # Very rude
+        #     PersonalityAxis.EMOTIONAL_STATE: AxisPosition.NEUTRAL,  # Very angry
+        #     PersonalityAxis.POLITICAL_ORIENTATION: AxisPosition.VERY_LEFT,  # Very conservative
+        # },
     ),
     DebaterConfig(
-        name="Bob",
+        name="Alice",
         position=DebatePosition.FOR,
-        personalities={
-           PersonalityAxis.CIVILITY: AxisPosition.RIGHT,  # Very civil
-            PersonalityAxis.POLITENESS: AxisPosition.RIGHT,  # Very kind
-            PersonalityAxis.EMOTIONAL_STATE: AxisPosition.RIGHT,  # Very calm
-            PersonalityAxis.POLITICAL_ORIENTATION: AxisPosition.VERY_LEFT,  # Very concervati
-        },
+        personalities= None,
+        # personalities={
+        #     PersonalityAxis.CIVILITY: AxisPosition.NEUTRAL,  # Very civil
+        #     PersonalityAxis.POLITENESS: AxisPosition.NEUTRAL,  # Very kind
+        #     PersonalityAxis.EMOTIONAL_STATE: AxisPosition.NEUTRAL,  # Very calm
+        #     PersonalityAxis.POLITICAL_ORIENTATION: AxisPosition.VERY_RIGHT,  # Very liberal
+        # },
     ),
 ]
 
 metrics = MetricsHandler(
+    perspective = PerspectiveScorer(api_key=perspective_key),
     model=mediator_model,
     argument_qualities=[
         ArgumentQuality.APPROPRIATENESS,
         ArgumentQuality.CLARITY,
         ArgumentQuality.LOCAL_ACCEPTABILITY,
         ArgumentQuality.EMOTIONAL_APPEAL,
-        
+        ArgumentQuality.GLOBAL_RELEVANCE,
+        ArgumentQuality.EMPATHY,
+        ArgumentQuality.WILLING_TO_COOPERATE,
     ],
 )  
-#perspective= PerspectiveScorer(api_key=perspective_key)
 
 # The conversation summary handler (keep track of the general history and of the n latest messages)
 summary_config = SummaryConfig(latest_messages_limit=3, debaters=debaters)
 
 # The debate configuration (which topic to discuss, and customisable instructions)
 debate_config = DebateConfig(
-    statement="We should use nuclear power.",
+    statement="Abortion should be legal",
 )
 
-mediator_config = MediatorConfig()
+mediator_config = None #MediatorConfig() #None
 
 # The debate runner
 debate = DebateHandler(
-    debater_model=mediator_model,
+    debater_model=debater_model,
     mediator_model=mediator_model,
     debaters=debaters,
     config=debate_config,
@@ -93,5 +96,4 @@ debate = DebateHandler(
 
 debate.run(rounds=10)
 
-debate.pickle("debate8")
-
+debate.pickle("debateNuclearMediator")

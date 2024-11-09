@@ -25,9 +25,8 @@ from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 
 load_dotenv()
 
-
 gpt_key = os.getenv("GPT_API_KEY") or ""
-google_key = os.getenv("VERTEX_AI_API_KEY") or ""
+google_key = "AIzaSyCfCU1LlK0gNl2H6XfAmX2KFHomydwUfhU" #os.getenv("VERTEX_AI_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
 # mediator_model = AsyncGPTModel(api_key=gpt_key, model_name="gpt-4o")
