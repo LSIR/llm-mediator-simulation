@@ -2,7 +2,7 @@
 
 import os
 import sys
-import os
+
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
@@ -42,11 +42,6 @@ mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 
 # Path to the extracted model directory
 model_mistral_path = "ybelkada/Mixtral-8x7B-Instruct-v0.1-bnb-4bit"
-
-# Initialize the tokenizer and model
-#tokenizer = AutoTokenizer.from_pretrained(model_mistral_path, use_fast=False, legacy=True)
-
-#model = AutoModelForCausalLM.from_pretrained(model_mistral_path)
 
 # Initialize the MistralLocalModel with the extracted model path
 debater_model = MistralLocalModel(model_name=model_mistral_path, max_length=200, debug=True, json=True, quantization="4_bits")
