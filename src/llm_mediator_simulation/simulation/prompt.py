@@ -12,6 +12,7 @@ from llm_mediator_simulation.simulation.debater.config import (
     DebaterConfig,
     PersonalityAxis,
 )
+
 from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
 from llm_mediator_simulation.simulation.summary.async_handler import AsyncSummaryHandler
 from llm_mediator_simulation.simulation.summary.handler import SummaryHandler
@@ -44,82 +45,94 @@ LLM_PROBA_RESPONSE_FORMAT: dict[str, str] = {
 
     
 
+# @retry(attempts=5, verbose=True)
+# def debater_intervention(
+#     time: str,
+#     model: LanguageModel,
+#     config: DebateConfig,
+#     summary: SummaryHandler,
+#     debater: DebaterConfig,
+# ) -> tuple[LLMMessage, str]:
+    
+   
+#     """Debater intervention: decision, motivation for the intervention, and intervention content."""
+    
+#     prompt = f"""{config.to_prompt()}. {debater.to_prompt()} {summary.to_prompt()}
+
+#     Do you want to comment the online debate right now? Use short chat messages, no more than 3 sentences. 
+    
+#     {json_prompt(LLM_RESPONSE_FORMAT)}
+    
+#     """
+
+#     initial_response = model.generate(prompt)
+#     with open("initial_response.txt", "w") as file:
+#         file.write(initial_response)
+    
+#     reflexion_prompt = f"""
+#     Reflect on the following interaction and provide detailed constructive feedback. Evaluate the response based on the following criteria: 
+#     1. Does it address the prompt adequately?
+#     2. Is this response natural and similar to what a human would say?
+#     3. Does the response stay coherent with the assigned role, maintaining appropriate tone, perspective, and alignment with the role's objectives?
+#     4. Does the response accurately understand who it is speaking to and its own role, without mistakenly assuming there is another person with the same name?
+#     5. Are there areas for improvement?
+
+#     Initial Response:
+#     {initial_response}
+    
+#     Provided Prompt:
+#     {prompt}
+
+#     Feedback:
+    
+#     """
+#     reflexion_response = model.generate(reflexion_prompt)
+    
+        
+#     final_prompt = f"""
+#     You were asked to respond to the following instruction:
+#     {prompt}
+
+#     Your previous response was:
+#     {initial_response}
+
+#     Based on the reflection feedback provided below, please improve your response:
+#     {reflexion_response}
+
+#     Revised Response:
+    
+    
+#     {json_prompt(LLM_RESPONSE_FORMAT)}
+#     """
+    
+#     final_response = model.generate(final_prompt)
+
+    
+#     return  parse_llm_json(final_response, LLMMessage), final_prompt
+
+
 @retry(attempts=5, verbose=True)
 def debater_intervention(
-    time: str,
     model: LanguageModel,
     config: DebateConfig,
     summary: SummaryHandler,
     debater: DebaterConfig,
+    seed: int | None = None,
 ) -> tuple[LLMMessage, str]:
-    
-   
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
-    
+
     prompt = f"""{config.to_prompt()}. {debater.to_prompt()} {summary.to_prompt()}
 
-    Do you want to comment the online debate right now? Use short chat messages, no more than 3 sentences. 
-    
-    {json_prompt(LLM_RESPONSE_FORMAT)}
-    
-    """
+Do you want to add a comment to the online debate right now?
+You should often add a comment when the previous context is empty or not in the favor of your \
+position. However, you should almost never add a comment when the previous context already \
+supports your position. Use short chat messages, no more than 3 sentences.
 
-    initial_response = model.generate(prompt)
-    with open("initial_response.txt", "w") as file:
-        file.write(initial_response)
-    
-    reflexion_prompt = f"""
-    Reflect on the following interaction and provide detailed constructive feedback. Evaluate the response based on the following criteria: 
-    1. Does it address the prompt adequately?
-    2. Is this response natural and similar to what a human would say?
-    3. Does the response stay coherent with the assigned role, maintaining appropriate tone, perspective, and alignment with the role's objectives?
-    4. Does the response accurately understand who it is speaking to and its own role, without mistakenly assuming there is another person with the same name?
-    5. Are there areas for improvement?
+{json_prompt(LLM_RESPONSE_FORMAT)}
+"""
 
-    Initial Response:
-    {initial_response}
-    
-    Provided Prompt:
-    {prompt}
-
-    Feedback:
-    
-    """
-    reflexion_response = model.generate(reflexion_prompt)
-    
-    with open("reflexion_prompt.txt", "w") as file:
-        file.write(reflexion_prompt)
-        
-    with open("reflexion_response.txt", "w") as file:
-        file.write(reflexion_response)
-        
-    final_prompt = f"""
-    You were asked to respond to the following instruction:
-    {prompt}
-
-    Your previous response was:
-    {initial_response}
-
-    Based on the reflection feedback provided below, please improve your response:
-    {reflexion_response}
-
-    Revised Response:
-    
-    
-    {json_prompt(LLM_RESPONSE_FORMAT)}
-    """
-    
-    # Save final_prompt to a file
-    with open("final_prompt.txt", "w") as file:
-        file.write(final_prompt)
-    
-    final_response = model.generate(final_prompt)
-    
-    with open("final_response.txt", "w") as file:
-        file.write(final_response)
-    
-    return  parse_llm_json(final_response, LLMMessage), final_prompt
-# Time now is {time}. 
+    response = model.sample(prompt)
+    return parse_llm_json(response, LLMMessage), prompt
 
 
 

@@ -26,11 +26,11 @@ from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 load_dotenv()
 
 gpt_key = os.getenv("GPT_API_KEY") or ""
-google_key = "AIzaSyCfCU1LlK0gNl2H6XfAmX2KFHomydwUfhU" #os.getenv("VERTEX_AI_API_KEY") or ""
+google_key = os.getenv("VERTEX_AI_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
 #mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
-debater_model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2" ,max_length=200, debug=True, json=True)
+debater_model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-Small-Instruct-2409" ,max_length=200, debug=True, json=True, quantization = "4_bits")
 mediator_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
 
 
@@ -91,7 +91,7 @@ debate = DebateHandler(
     mediator_config=mediator_config,
 )
 
-debate.run(rounds=10)
+debate.run(rounds=2)
 
 debate.pickle("debate8")
 

@@ -31,6 +31,7 @@ class DebateHandler:
         mediator_config: MediatorConfig | None = None,
         summary_config: SummaryConfig | None = None,
         metrics_handler: MetricsHandler | None = None,
+        relative_memory: bool = False,
     ) -> None:
         """Instanciate a debate simulation handler.
 
@@ -42,12 +43,14 @@ class DebateHandler:
             mediator_config: The mediator configuration. If None, no mediator will be used. Defaults to None.
             summary_config: The summary configuration. Defaults to None. A default config will be used.
             metrics_handler: The metrics handler to use. Defaults to None.
+            relative_memory: Whether the summary is relative to the debater's memory. Defaults to False.
         """
 
         # Configuration
         self.config = config
         self.mediator_config = mediator_config
         self.summary_config = summary_config or SummaryConfig()
+        self.relative_memory = relative_memory 
 
         # Models
         self.debater_model = debater_model
@@ -75,6 +78,7 @@ class DebateHandler:
                 config=debater,
                 debate_config=config,
                 summary_handler=self.summary_handler,
+                relative_memory = self.relative_memory
             )
             for debater in debaters
         ]
@@ -86,6 +90,7 @@ class DebateHandler:
         self.initial_debaters = [
             debater.snapshot_personality() for debater in self.debaters
         ]
+        self.relative_memory = relative_memory
 
     def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
@@ -104,6 +109,9 @@ class DebateHandler:
 
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)
+                if self.relative_memory :
+                    for deb in self.debaters:
+                        deb.add_new_message(intervention)
 
                 # If the debater did not intervene, skip to the next debater
                 if not intervention.text:
@@ -112,21 +120,36 @@ class DebateHandler:
                 if self.metrics_handler:
                     self.metrics_handler.inject_metrics(intervention)
 
+                    
                 ##############################################################
                 #                    MEDIATOR INTERVENTION                   #
                 ##############################################################
 
-                if not self.mediator_handler:
-                    self.summary_handler.regenerate_summary()
+                if not self.mediator_handler :
+                    if self.relative_memory :
+                        #update the memory of all debaters
+                        for deb in self.debaters:
+                            deb.regenerate_memory()
+                        
+                    else :
+                        self.summary_handler.regenerate_summary()
                     continue
 
                 intervention = self.mediator_handler.intervention()
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)
+                if self.relative_memory :
+                    for deb in self.debaters:
+                        deb.add_new_message(intervention)
 
                 # Regenerate the summary for the next debater
                 # (either way, a debater or mediator has intervened here)
-                self.summary_handler.regenerate_summary()
+                if self.relative_memory :
+                    #update the memory of all debaters
+                    for deb in self.debaters:
+                        deb.regenerate_memory()
+                else :
+                    self.summary_handler.regenerate_summary()
 
     ###############################################################################################
     #                                        SERIALIZATION                                        #

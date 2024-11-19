@@ -73,11 +73,13 @@ class MistralLocalModel(LanguageModel):
             if self.tokenizer.pad_token_id is not None
             else self.tokenizer.eos_token_id
         )
+
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
-            device_map="auto",
             quantization_config=QUANTIZATION_CONFIG[quantization],
+            device_map = "auto",
         )
+        
 
         # Parameters
         self.max_length = max_length
@@ -254,6 +256,7 @@ config_4bits = BitsAndBytesConfig(
     bnb_4bit_quant_type="nf4",
     bnb_4bit_use_double_quant=True,
     bnb_4bit_compute_dtype=torch.bfloat16,
+    load_in_8bit_fp32_cpu_offload=True,
 )
 
 QUANTIZATION_CONFIG = {

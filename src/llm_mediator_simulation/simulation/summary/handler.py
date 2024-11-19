@@ -29,8 +29,8 @@ class SummaryHandler(Promptable):
 
         self.summary = ""
 
-        self.time_indicator = 0 
-
+        #self.time_indicator = 0 
+        self.latest_messages: list[Intervention] = []
         self._model = model
         self._latest_messages_limit = config.latest_messages_limit
 
@@ -46,7 +46,7 @@ class SummaryHandler(Promptable):
     @property
     def message_speakers_and_strings(self) -> list[str]:
         """Return the name of last messages"""
-        return [f"{message.debater.name}: {message.text}" if message.debater is not None else f"Mediator: {message.text}" for message in self.latest_messages if message.text]
+        return [f"{message.debater.name} said:  \"{message.text} \"" if message.debater is not None else f"Mediator: {message.text}" for message in self.latest_messages if message.text]
     
 
     def add_new_message(self, message: Intervention) -> None:

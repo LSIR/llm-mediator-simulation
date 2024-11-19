@@ -1,6 +1,13 @@
 """Example script to run a debate simulation on nuclear energy."""
 
 import os
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+from llm_mediator_simulation.metrics.criteria import ArgumentQuality
+# ... rest of the imports
 
 from dotenv import load_dotenv
 
@@ -21,6 +28,9 @@ from llm_mediator_simulation.simulation.debater.config import (
 from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 
+
+
+
 load_dotenv()
 
 gpt_key = os.getenv("GPT_API_KEY") or ""
@@ -28,8 +38,23 @@ google_key = os.getenv("VERTEX_AI_API_KEY") or ""
 perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
 mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
-debater_model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2" ,max_length=200, debug=True, json=True)
+
+
+# Path to the extracted model directory
+model_mistral_path = "ybelkada/Mixtral-8x7B-Instruct-v0.1-bnb-4bit"
+
+# Initialize the tokenizer and model
+#tokenizer = AutoTokenizer.from_pretrained(model_mistral_path, use_fast=False, legacy=True)
+
+#model = AutoModelForCausalLM.from_pretrained(model_mistral_path)
+
+# Initialize the MistralLocalModel with the extracted model path
+debater_model = MistralLocalModel(model_name=model_mistral_path, max_length=200, debug=True, json=True, quantization="4_bits")
+
+
+#debater_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 #mediator_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
+
 
 
 
@@ -68,8 +93,7 @@ metrics = MetricsHandler(
         ArgumentQuality.LOCAL_ACCEPTABILITY,
         ArgumentQuality.EMOTIONAL_APPEAL,
         ArgumentQuality.GLOBAL_RELEVANCE,
-        ArgumentQuality.EMPATHY,
-        ArgumentQuality.WILLING_TO_COOPERATE,
+        
     ],
 )  
 
@@ -92,6 +116,7 @@ debate = DebateHandler(
     summary_config=summary_config,
     metrics_handler=metrics,
     mediator_config=mediator_config,
+    relative_memory = True,
 )
 
 debate.run(rounds=10)
