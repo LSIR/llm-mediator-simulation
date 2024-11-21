@@ -70,12 +70,15 @@ class SummaryHandler(Promptable):
 
         return self.summary
 
+    
     @override
     def to_prompt(self) -> str:
         msg_sep = "\n\n"
-
+        
+        
         if len(self.latest_messages) == 0:
-            return "The conversation has just started, and there are no prior messages or exchanges. Please present your initial argument on the topic"
+            return f"The conversation between {', '.join({deb.name for deb in self.debaters})} has just started, and there are no prior messages or exchanges. Please present your initial argument on the topic"
+        
         return f"""Here is a summary of the last exchanges :
         {self.summary}
         Here are the last messages exchanged (you should focus your argumentation on them):

@@ -165,7 +165,7 @@ class DebaterHandler(Promptable):
         Latest messages:
         {separator.join(labeled_messages)}
 
-        Summarize the conversation above from your perspective as {self.config.name}, focusing on the recent messages. Frame it according to your recollection of events, highlighting your own interpretation and understanding. When mentioning the participants, refer to them by name, emphasizing your biased viewpoint on who said what.
+        In 3-4 sentences, summarize the conversation above from your perspective as {self.config.name}, focusing on the recent messages. Frame it according to your recollection of events, highlighting your own interpretation and understanding. When mentioning the participants, refer to them by name, emphasizing your biased viewpoint on who said what.
         """
         return model.generate_response(prompt)
 
@@ -175,9 +175,9 @@ class DebaterHandler(Promptable):
         msg_sep = "\n\n"
 
         if len(self.latest_messages) == 0:
-            return "The conversation has just started, and there are no prior messages or exchanges. Please present your initial argument on the topic"
-        return f"""Here is a recollection of the previous exchanges from your memory as {self.config.name} : <"
-        {self.memory}>"
+            return f"""The conversation between you and {', '.join({deb.name for deb in self.summary_handler.debaters if deb.name != self.config.name})} has just started, and there are no prior messages or exchanges. Please present your initial argument on the topic"""
+        return f"""Here is a recollection of the previous exchanges from your memory as {self.config.name} : 
+        ""{self.memory}""
         Here are the most recent exchanged messages (you should focus your argumentation on them):
         {msg_sep.join(self.message_speakers_and_strings)}
         """
