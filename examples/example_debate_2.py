@@ -35,7 +35,8 @@ load_dotenv()
 
 gpt_key = os.getenv("GPT_API_KEY") or ""
 google_key = os.getenv("VERTEX_AI_API_KEY") or ""
-perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
+perspective_key =os.getenv("PERSPECTIVE_API_KEY") or ""
+
 
 mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 
@@ -44,7 +45,7 @@ mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 model_mistral_path = "ybelkada/Mixtral-8x7B-Instruct-v0.1-bnb-4bit"
 
 # Initialize the MistralLocalModel with the extracted model path
-debater_model = MistralLocalModel(model_name=model_mistral_path, max_length=200, debug=True, json=True, quantization="4_bits")
+debater_model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2" ,max_length=200, debug=True, json=True)
 
 
 #debater_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
@@ -114,6 +115,6 @@ debate = DebateHandler(
     relative_memory = True,
 )
 
-debate.run(rounds=10)
+debate.run(rounds=4)
 
 debate.pickle("debateNuclearMediator")

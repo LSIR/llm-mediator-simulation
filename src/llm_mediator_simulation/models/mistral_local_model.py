@@ -130,7 +130,7 @@ class MistralLocalModel(LanguageModel):
 
         return generated_text
     
-    def generate(self, prompt: str) -> str:
+    def generate_response(self, prompt: str) -> str:
 
         if self.debug:
             print("Prompt:")

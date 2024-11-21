@@ -167,7 +167,7 @@ class DebaterHandler(Promptable):
 
         Summarize the conversation above from your perspective as {self.config.name}, focusing on the recent messages. Frame it according to your recollection of events, highlighting your own interpretation and understanding. When mentioning the participants, refer to them by name, emphasizing your biased viewpoint on who said what.
         """
-        return model.sample(prompt)
+        return model.generate_response(prompt)
 
     
     @override
@@ -176,9 +176,9 @@ class DebaterHandler(Promptable):
 
         if len(self.latest_messages) == 0:
             return "The conversation has just started, and there are no prior messages or exchanges. Please present your initial argument on the topic"
-        return f"""Here is a summary of the last exchanges :
-        {self.memory}
-        Here are the last messages exchanged (you should focus your argumentation on them):
+        return f"""Here is a recollection of the previous exchanges from your memory as {self.config.name} : <"
+        {self.memory}>"
+        Here are the most recent exchanged messages (you should focus your argumentation on them):
         {msg_sep.join(self.message_speakers_and_strings)}
         """
     
