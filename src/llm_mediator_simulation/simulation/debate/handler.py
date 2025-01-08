@@ -24,6 +24,7 @@ class DebateHandler:
     def __init__(
         self,
         *,
+        memory_model: LanguageModel,
         debater_model: LanguageModel,
         mediator_model: LanguageModel,
         debaters: list[DebaterConfig],
@@ -57,7 +58,8 @@ class DebateHandler:
         self.mediator_model = mediator_model
 
         # Handlers
-        self.summary_handler = SummaryHandler(
+        self.memory_model = memory_model
+        self.summary_handler = SummaryHandler( 
             model=mediator_model, config=self.summary_config
         )
 
@@ -74,6 +76,7 @@ class DebateHandler:
 
         self.debaters = [
             DebaterHandler(
+                memory_model= self.memory_model,
                 model=debater_model,
                 config=debater,
                 debate_config=config,
@@ -118,7 +121,9 @@ class DebateHandler:
                     continue
 
                 if self.metrics_handler:
-                    self.metrics_handler.inject_metrics(intervention)
+                    latest_messages = " ".join(self.summary_handler.message_strings_metrics)
+                    self.metrics_handler.inject_metrics(intervention, latest_messages)
+            
 
                     
                 ##############################################################

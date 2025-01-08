@@ -70,6 +70,10 @@ class GoogleModel(LanguageModel):
         )
 
         return response.text
+    
+    @override
+    def generate_response(self, prompt:str) -> str:
+        self.sample(prompt)
 
 
 class AsyncGoogleModel(AsyncLanguageModel):

@@ -39,10 +39,13 @@ def plot_personalities(
     # Plot a middle line at 2 (the middle value)
     axes.axhline(y=2, color="k", linestyle="--")
 
-
 def plot_metrics(
     axes: Axes,
     perspective: list[float] | None,
+    distinct3: list[float] | None,
+    repetition4: list[float] | None,
+    lexicalrep: list[float] | None,
+    bertscore: list[float] | None,
     qualities: dict[ArgumentQuality, list[float]],
     title: str,
 ):
@@ -61,11 +64,24 @@ def plot_metrics(
         # Scale to 0-4, like the argument qualities
         perspective = [p * 4 for p in perspective]
         axes.plot(range(len(perspective)), perspective, label="Perspective toxicity")
-        axes.legend()
-
+        
+    if distinct3 is not None:
+        axes.plot(range(len(distinct3)), distinct3, label="Distinct-3")
+        
+    if repetition4 is not None:
+        axes.plot(range(len(repetition4)), repetition4, label="Repetition-4")
+        
+    if lexicalrep is not None:
+        axes.plot(range(len(lexicalrep)), lexicalrep, label="Lexical Repetition")
+        
+    if bertscore is not None:
+        axes.plot(range(len(bertscore)), bertscore, label="BERTScore")
+        
     for quality, agreements in qualities.items():
         axes.plot(range(len(agreements)), agreements, label=f"{quality.name}")
-        axes.legend()
-
+        
     # Plot a middle line at 2 (the middle value)
     axes.axhline(y=2, color="k", linestyle="--")
+
+    # Adjust legend font size
+    axes.legend(fontsize='x-small')

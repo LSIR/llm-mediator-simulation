@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulation.metrics.perspective_api import PerspectiveScorer
+from llm_mediator_simulation.metrics.distinct_repetition_bertScore import Distinct3, Repetition4, LexicalRepetition, BERTScore
 from llm_mediator_simulation.models.google_models import GoogleModel
 from llm_mediator_simulation.models.gpt_models import GPTModel
 from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
@@ -39,14 +40,25 @@ perspective_key = os.getenv("PERSPECTIVE_API_KEY") or ""
 
 
 
+
 mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 
 # Initialize the MistralLocalModel with the extracted model path
-debater_model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2" ,max_length=200, debug=True, json=True)
-
-
+#debater_model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-7B-v0.1" ,max_length=200, debug=True, json=True)
+debater_model = MistralLocalModel(model_name="mistralai/Mistral-7B-Instruct-v0.2" ,max_length=200, debug=True, json=True)
+#debater_model = MistralLocalModel(model_name="mistralai/Mistral-7B-v0.3" ,max_length=200, debug=True, json=True)
+#debater_model = MistralLocalModel(model_name="meta-llama/Llama-3.2-3B-Instruct" ,max_length=200, debug=True, json=True)
 #debater_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
-#mediator_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
+
+#lora_trained_mistral  Mistral-7B-Instruct-v0.1  Mistral-7B-Instruct-v0.2  Mistral-7B-v0.1  meta-llama/Llama-3.2-1B
+# Meta-Llama-3-70B-Instruct  Meta-Llama-3-8B-Instruct  Meta-Llama-3-70B           Meta-Llama-3-8B     meta-llama/Llama-3.2-3B-Instruct
+
+memory_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
+#MistralLocalModel(model_name="mistralai/Mistral-7B-Instruct-v0.2" ,max_length=200, debug=True, json=True)
+#memory_model= GPTModel(api_key=gpt_key, model_name="gpt-4o")
+#memory_model= MistralLocalModel(model_name="meta-llama/Llama-3.2-3B-Instruct" ,max_length=200, debug=True, json=True)
+
+#memory_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
 
 
 
@@ -77,8 +89,16 @@ debaters = [
     ),
 ]
 
+
+
+
 metrics = MetricsHandler(
     perspective = PerspectiveScorer(api_key=perspective_key),
+    distinct3 = Distinct3(),
+    repetition4 = Repetition4(),
+    lexicalrep = LexicalRepetition(n=2, kgram =4),
+    bertscore = BERTScore(),
+    
     model=mediator_model,
     argument_qualities=[
         ArgumentQuality.APPROPRIATENESS,
@@ -86,12 +106,15 @@ metrics = MetricsHandler(
         ArgumentQuality.LOCAL_ACCEPTABILITY,
         ArgumentQuality.EMOTIONAL_APPEAL,
         ArgumentQuality.GLOBAL_RELEVANCE,
+        ArgumentQuality.CONSTRUCTIVITY,
+        ArgumentQuality.EMPATHY,
+        ArgumentQuality.WILLING_TO_COOPERATE,
         
     ],
 )  
 
 # The conversation summary handler (keep track of the general history and of the n latest messages)
-summary_config = SummaryConfig(latest_messages_limit=3, debaters=debaters)
+summary_config = SummaryConfig(latest_messages_limit=6, debaters=debaters)
 
 # The debate configuration (which topic to discuss, and customisable instructions)
 debate_config = DebateConfig(
@@ -102,6 +125,7 @@ mediator_config = None #MediatorConfig() #None
 
 # The debate runner
 debate = DebateHandler(
+    memory_model = memory_model,
     debater_model=debater_model,
     mediator_model=mediator_model,
     debaters=debaters,
@@ -112,6 +136,6 @@ debate = DebateHandler(
     relative_memory = True,
 )
 
-debate.run(rounds=4)
+debate.run(rounds=5)
 
-debate.pickle("debateNuclearMediator")
+debate.pickle("DEBAT7")

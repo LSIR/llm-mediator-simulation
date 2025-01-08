@@ -1,0 +1,613 @@
+[{
+    "name": "Ad Hominem",
+    "definition": "Attacking the arguer instead of the argument."
+},
+{
+    "name": "Affirmative Conclusion from a Negative Premise",
+    "definition": "A categorical syllogism has a positive conclusion, but at least one negative premise."
+},
+{
+    "name": "Affirming a Disjunct",
+    "definition": "Concluding that one disjunct of a logical disjunction must be false because the other disjunct is true; A or B; A, therefore not B."
+},
+{
+    "name": "Affirming the Consequent",
+    "definition": "The antecedent in an indicative conditional is claimed to be true because the consequent is true; if A, then B; B, therefore A."
+},
+{
+    "name": "Ambiguous Middle Term",
+    "definition": "Using a middle term with multiple meanings."
+},
+{
+    "name": "Appeal to Accomplishment",
+    "definition": "An assertion is deemed true or false based on the accomplishments of the proposer."
+},
+{
+    "name": "Appeal to Authority",
+    "definition": "An assertion is deemed true because of the position or authority of the person asserting it."
+},
+{
+    "name": "Appeal to Consequences",
+    "definition": "The conclusion is supported by a premise that asserts positive or negative consequences from some course of action in an attempt to distract from the initial discussion."
+},
+{
+    "name": "Appeal to Emotion",
+    "definition": "Manipulating the emotions of the listener rather than using valid reasoning to obtain common agreement."
+},
+{
+    "name": "Appeal to Fear",
+    "definition": "Generating distress, anxiety, cynicism, or prejudice towards the opponent in an argument."
+},
+{
+    "name": "Appeal to Flattery",
+    "definition": "Using excessive or insincere praise to obtain common agreement."
+},
+{
+    "name": "Appeal to Motive",
+    "definition": "Dismissing an idea by questioning the motives of its proposer."
+},
+{
+    "name": "Appeal to Nature",
+    "definition": "Judgment is based solely on whether the subject of judgment is 'natural' or 'unnatural'."
+},
+{
+    "name": "Appeal to Novelty",
+    "definition": "A proposal is claimed to be superior or better solely because it is new or modern."
+},
+{
+    "name": "Appeal to Pity",
+    "definition": "Generating feelings of sympathy or mercy in the listener to obtain common agreement."
+},
+{
+    "name": "Appeal to Poverty",
+    "definition": "Supporting a conclusion because the arguer is poor (or refuting because the arguer is wealthy)."
+},
+{
+    "name": "Appeal to Probability",
+    "definition": "Taking something for granted because it would probably be the case (or might possibly be the case)."
+},
+{
+    "name": "Appeal to Ridicule",
+    "definition": "Mocking or stating that the opponent's position is laughable to deflect from the merits of the opponent's argument."
+},
+{
+    "name": "Appeal to Spite",
+    "definition": "Generating bitterness or hostility in the listener toward an opponent in an argument."
+},
+{
+    "name": "Appeal to the Stone",
+    "definition": "Dismissing a claim as absurd without demonstrating proof for its absurdity."
+},
+{
+    "name": "Appeal to Tradition",
+    "definition": "A conclusion supported solely because it has long been held to be true."
+},
+{
+    "name": "Appeal to Wealth",
+    "definition": "Supporting a conclusion because the arguer is wealthy (or refuting because the arguer is poor)."
+},
+{
+    "name": "Argument from Fallacy",
+    "definition": "The assumption that, if a particular argument for a conclusion is fallacious, then the conclusion by itself is false."
+},
+{
+    "name": "Argument from Ignorance",
+    "definition": "The belief that, because something is unknown, it is impossible to know anything about it."
+},
+{
+    "name": "Argument from Incredulity",
+    "definition": "Dismissing a claim as false because it seems unbelievable or impossible to imagine, often phrased as 'I cannot imagine how this could be true; therefore, it must be false.'"
+},
+{
+    "name": "Argument from Repetition",
+    "definition": "Repeating an argument until nobody cares to discuss it anymore and referencing that lack of objection as evidence of support for the truth of the conclusion."
+},
+{
+    "name": "Argument from Silence",
+    "definition": "Assuming that a claim is true based on the absence of textual or spoken evidence from an authoritative source, or vice versa."
+},
+{
+    "name": "Argument to Moderation",
+    "definition": "Assuming that a compromise between two positions is always correct."
+},
+{
+    "name": "Argumentum ad Baculum",
+    "definition": "An argument made through coercion or threats of force to support position."
+},
+{
+    "name": "Argumentum ad Populum",
+    "definition": "A proposition is claimed to be true or good solely because a majority or many people believe it to be so."
+},
+{
+    "name": "Association Fallacy",
+    "definition": "Arguing that because two things share (or are implied to share) some property, they are the same."
+},
+{
+    "name": "Baconian Fallacy",
+    "definition": "Supposing that historians can obtain the 'whole truth' via induction from individual pieces of historical evidence."
+},
+{
+    "name": "Base Rate Fallacy",
+    "definition": "Making a probability judgment based on conditional probabilities, without taking into account the effect of prior probabilities."
+},
+{
+    "name": "Begging the Question",
+    "definition": "Using the conclusion of the argument in support of itself in a premise."
+},
+{
+    "name": "Bulverism",
+    "definition": "Inferring why an argument is being used, associating it to some psychological reason, then assuming it is invalid as a result."
+},
+{
+    "name": "Chronological Snobbery",
+    "definition": "A thesis is deemed incorrect because it was commonly held when something else, known to be false, was also commonly held."
+},
+{
+    "name": "Circular Reasoning",
+    "definition": "The reasoner begins with what they are trying to end up with."
+},
+{
+    "name": "Circumstantial Ad Hominem",
+    "definition": "Stating that the arguer's personal situation or perceived benefit from advancing a conclusion means that their conclusion is wrong."
+},
+{
+    "name": "Conjunction Fallacy",
+    "definition": "The assumption that an outcome simultaneously satisfying multiple conditions is more probable than an outcome satisfying a single one of them."
+},
+{
+    "name": "Continuum Fallacy",
+    "definition": "Improperly rejecting a claim for being imprecise."
+},
+{
+    "name": "Courtier's Reply",
+    "definition": "A criticism is dismissed by claiming that the critic lacks sufficient knowledge, credentials, or training to credibly comment on the subject matter."
+},
+{
+    "name": "Cum Hoc Ergo Propter Hoc",
+    "definition": "A faulty assumption that, because there is a correlation between two variables, one caused the other."
+},
+{
+    "name": "Definist Fallacy",
+    "definition": "Defining a term used in an argument in a biased manner."
+},
+{
+    "name": "Definitional Retreat",
+    "definition": "Changing the meaning of a word when an objection is raised."
+},
+{
+    "name": "Denying the Antecedent",
+    "definition": "The consequent in an indicative conditional is claimed to be false because the antecedent is false; if A, then B; not A, therefore not B."
+},
+{
+    "name": "Divine Fallacy",
+    "definition": "Arguing that, because something is so phenomenal or amazing, it must be the result of superior, divine, alien or paranormal agency."
+},
+{
+    "name": "Double Counting",
+    "definition": "Counting events or occurrences more than once in probabilistic reasoning, which leads to the sum of the probabilities of all cases exceeding unity."
+},
+{
+    "name": "Ecological Fallacy",
+    "definition": "Inferring about the nature of an entity based solely upon aggregate statistics collected for the group to which that entity belongs."
+},
+{
+    "name": "Equivocation",
+    "definition": "Using a term with more than one meaning in a statement without specifying which meaning is intended."
+},
+{
+    "name": "Etymological Fallacy",
+    "definition": "Assuming that the original or historical meaning of a word or phrase is necessarily similar to its actual present-day usage."
+},
+{
+    "name": "Existential Fallacy",
+    "definition": "An argument that has a universal premise and a particular conclusion."
+},
+{
+    "name": "Fallacy of Accent",
+    "definition": "Changing the meaning of a statement by not specifying on which word emphasis falls."
+},
+{
+    "name": "Fallacy of Composition",
+    "definition": "Assuming that something true of part of a whole must also be true of the whole."
+},
+{
+    "name": "Fallacy of Division",
+    "definition": "Assuming that something true of a composite thing must also be true of all or some of its parts."
+},
+{
+    "name": "Fallacy of Exclusive Premises",
+    "definition": "A categorical syllogism that is invalid because both of its premises are negative."
+},
+{
+    "name": "Fallacy of Four Terms",
+    "definition": "A categorical syllogism that has four terms."
+},
+{
+    "name": "Fallacy of Many Questions",
+    "definition": "Someone asks a question that presupposes something that has not been proven or accepted by all the people involved."
+},
+{
+    "name": "Fallacy of Quoting Out of Context",
+    "definition": "Selective excerpting of words from their original context to distort the intended meaning."
+},
+{
+    "name": "Fallacy of Relative Privation",
+    "definition": "Dismissing an argument or complaint due to what are perceived to be more important problems."
+},
+{
+    "name": "Fallacy of the Single Cause",
+    "definition": "It is assumed that there is one, simple cause of an outcome when in reality it may have been caused by a number of only jointly sufficient causes."
+},
+{
+    "name": "Fallacy of the Undistributed Middle",
+    "definition": "The middle term in a categorical syllogism is not distributed."
+},
+{
+    "name": "False Attribution",
+    "definition": "Appealing to an irrelevant, unqualified, unidentified, biased or fabricated source in support of an argument."
+},
+{
+    "name": "False Authority",
+    "definition": "Using an expert of dubious credentials or using only one opinion to promote a product or idea."
+},
+{
+    "name": "False Dilemma",
+    "definition": "Two alternative statements are given as the only possible options when, in reality, there are more."
+},
+{
+    "name": "False Equivalence",
+    "definition": "Describing two or more statements as virtually equal when they are not."
+},
+{
+    "name": "Feedback Fallacy",
+    "definition": "Believing in the objectivity of an evaluation to be used as the basis for improvement without verifying that the source of the evaluation is a disinterested party."
+},
+{
+    "name": "Furtive Fallacy",
+    "definition": "Outcomes are asserted to have been caused by the malfeasance of decision makers."
+},
+{
+    "name": "Gambler's Fallacy",
+    "definition": "The incorrect belief that separate, independent events can affect the likelihood of another random event. If a fair coin lands on heads 10 times in a row, the belief that it is 'due to the number of times it had previously landed on tails' is incorrect."
+},
+{
+    "name": "Garden of Forking Paths Fallacy",
+    "definition": "Incorrect belief that a single experiment can not be subject to the multiple comparisons effect."
+},
+{
+    "name": "Genetic Fallacy",
+    "definition": "A conclusion is suggested based solely on something or someone's origin rather than its current meaning or context."
+},
+{
+    "name": "Historian's Fallacy",
+    "definition": "Assuming that decision-makers of the past had identical information as those subsequently analyzing the decision."
+},
+{
+    "name": "Historical Fallacy",
+    "definition": "Believing that certain results occurred only because a specific process was performed, though said process may actually be unrelated to the results."
+},
+{
+    "name": "Homunculus Fallacy",
+    "definition": "Using a 'middle-man' for explanation; this sometimes leads to regressive middle-men."
+},
+{
+    "name": "I'm Entitled to My Opinion",
+    "definition": "A person discredits any opposition by claiming that they are entitled to their opinion."
+},
+{
+    "name": "If-by-Whiskey",
+    "definition": "An argument that supports both sides of an issue by using terms that are emotionally sensitive and ambiguous."
+},
+{
+    "name": "Ignoring a Common Cause",
+    "definition": "Failing to account for the possibility that two events might be caused by a third, unseen factor."
+},
+{
+    "name": "Ignoratio Elenchi",
+    "definition": "An argument that may in itself be valid, but does not address the issue in question, also known as irrelevant conclusion or missing the point."
+},
+{
+    "name": "Illicit Major",
+    "definition": "A categorical syllogism that is invalid because its major term is not distributed in the major premise but distributed in the conclusion."
+},
+{
+    "name": "Illicit Minor",
+    "definition": "A categorical syllogism that is invalid because its minor term is not distributed in the minor premise but distributed in the conclusion."
+},
+{
+    "name": "Incomplete Comparison",
+    "definition": "Insufficient information is provided to make a complete comparison."
+},
+{
+    "name": "Inflation of Conflict",
+    "definition": "Arguing that, if experts in a field of knowledge disagree on a certain point within that field, no conclusion can be reached or that the legitimacy of that field of knowledge is questionable."
+},
+{
+    "name": "Intentionality Fallacy",
+    "definition": "The insistence that the ultimate meaning of an expression must be consistent with the intention of the person from whom the communication originated."
+},
+{
+    "name": "Inverse Gambler's Fallacy",
+    "definition": "The inverse of the gambler's fallacy. It is the incorrect belief that on the basis of an unlikely outcome, the process must have happened many times before."
+},
+{
+    "name": "Ipse Dixit",
+    "definition": "A claim that is presented as true without support, as self-evidently true, or as dogmatically true."
+},
+{
+    "name": "Is-Ought Fallacy",
+    "definition": "Deducing a conclusion about what ought to be, on the basis of what is."
+},
+{
+    "name": "Judgmental Language",
+    "definition": "Using insulting or pejorative language in an argument."
+},
+{
+    "name": "Kettle Logic",
+    "definition": "Using multiple, jointly inconsistent arguments to defend a position."
+},
+{
+    "name": "Loaded Label",
+    "definition": "The use of evocative terms to support a conclusion, relying on the term's connotations to sway the argument towards a particular conclusion."
+},
+{
+    "name": "Logic Chopping Fallacy",
+    "definition": "Focusing on trivial details of an argument, rather than the main point of the argumentation."
+},
+{
+    "name": "Magical Thinking",
+    "definition": "Fallacious attribution of causal relationships between actions and events, often involving beliefs that ritual, prayer, sacrifice, and taboos will produce specific supernatural consequences."
+},
+{
+    "name": "Moving the Goalposts",
+    "definition": "Argument in which evidence presented in response to a specific claim is dismissed and some other (often greater) evidence is demanded."
+},
+{
+    "name": "Prosecutor's Fallacy",
+    "definition": "A low probability of false matches does not mean a low probability of some false match being found."
+},
+{
+    "name": "Proving Too Much",
+    "definition": "An argument that results in an overly generalized conclusion."
+},
+{
+    "name": "Psychologist's Fallacy",
+    "definition": "An observer presupposes the objectivity of their own perspective when analyzing a behavioral event."
+},
+{
+    "name": "Referential Fallacy",
+    "definition": "Assuming that all words refer to existing things and that the meaning of words reside within the things they refer to."
+},
+{
+    "name": "Reification",
+    "definition": "Treating an abstract belief or hypothetical construct as if it were a concrete, real event or physical entity."
+},
+{
+    "name": "Retrospective Determinism",
+    "definition": "Believing that, because an event has occurred under some circumstance, the circumstance must have made the event inevitable."
+},
+{
+    "name": "Slippery Slope",
+    "definition": "Asserting that a proposed, relatively small, first action will inevitably lead to a chain of related events resulting in a significant and negative event."
+},
+{
+    "name": "Special Pleading",
+    "definition": "The arguer attempts to cite something as an exemption to a generally accepted rule or principle without justifying the exemption."
+},
+{
+    "name": "Questionable Cause",
+    "definition": "A general type of error with many variants, primarily based on the confusion of association with causation, either by inappropriately deducing (or rejecting) causation or a broader failure to properly investigate the cause of an observed effect."
+},
+{
+    "name": "Post Hoc Ergo Propter Hoc",
+    "definition": "X happened, then Y happened; therefore X caused Y."
+},
+{
+    "name": "Wrong Direction",
+    "definition": "Cause and effect are reversed. The cause is said to be the effect and vice versa."
+},
+{
+    "name": "Regression Fallacy",
+    "definition": "Ascribes cause where none exists. The flaw is failing to account for natural fluctuations. It is frequently a special kind of post hoc fallacy."
+},
+{
+    "name": "P-hacking",
+    "definition": "Belief in the significance of a result, not realizing that multiple comparisons or experiments have been run and only the most significant were published."
+},
+{
+    "name": "Appeal to the Stone",
+    "definition": "Dismissing a claim as absurd without demonstrating proof for its absurdity."
+},
+{
+    "name": "Argument from Ignorance",
+    "definition": "The belief that, because something is unknown, it is impossible to know anything about it."
+},
+{
+    "name": "Argument from Incredulity",
+    "definition": "Dismissing a claim as false because it seems unbelievable or impossible to imagine, often phrased as 'I cannot imagine how this could be true; therefore, it must be false.'"
+},
+{
+    "name": "Argument from Repetition",
+    "definition": "Repeating an argument until nobody cares to discuss it anymore and referencing that lack of objection as evidence of support for the truth of the conclusion."
+},
+{
+    "name": "Argument from Silence",
+    "definition": "Assuming that a claim is true based on the absence of textual or spoken evidence from an authoritative source, or vice versa."
+},
+{
+    "name": "Ignoratio Elenchi",
+    "definition": "An argument that may in itself be valid, but does not address the issue in question, also known as irrelevant conclusion or missing the point."
+},
+{
+    "name": "Red Herring",
+    "definition": "Introducing a second argument in response to the first argument that is irrelevant and draws attention away from the original topic."
+},
+{
+    "name": "Poisoning the Well",
+    "definition": "Presenting adverse information about a target person with the intention of discrediting everything that the target person says."
+},
+{
+    "name": "Appeal to Motive",
+    "definition": "Dismissing an idea by questioning the motives of its proposer."
+},
+{
+    "name": "Tone Policing",
+    "definition": "Focusing on emotion behind (or resulting from) a message rather than the message itself as a discrediting tactic."
+},
+{
+    "name": "Traitorous Critic Fallacy",
+    "definition": "A critic's perceived affiliation is portrayed as the underlying reason for the criticism and the critic is asked to stay away from the issue altogether."
+},
+{
+    "name": "Appeal to Authority",
+    "definition": "An assertion is deemed true because of the position or authority of the person asserting it."
+},
+{
+    "name": "Appeal to Accomplishment",
+    "definition": "An assertion is deemed true or false based on the accomplishments of the proposer."
+},
+{
+    "name": "Courtier's Reply",
+    "definition": "A criticism is dismissed by claiming that the critic lacks sufficient knowledge, credentials, or training to credibly comment on the subject matter."
+},
+{
+    "name": "Appeal to Consequences",
+    "definition": "The conclusion is supported by a premise that asserts positive or negative consequences from some course of action in an attempt to distract from the initial discussion."
+},
+{
+    "name": "Appeal to Emotion",
+    "definition": "Manipulating the emotions of the listener rather than using valid reasoning to obtain common agreement."
+},
+{
+    "name": "Appeal to Fear",
+    "definition": "Generating distress, anxiety, cynicism, or prejudice towards the opponent in an argument."
+},
+{
+    "name": "Appeal to Flattery",
+    "definition": "Using excessive or insincere praise to obtain common agreement."
+},
+{
+    "name": "Appeal to Pity",
+    "definition": "Generating feelings of sympathy or mercy in the listener to obtain common agreement."
+},
+{
+    "name": "Appeal to Ridicule",
+    "definition": "Mocking or stating that the opponent's position is laughable to deflect from the merits of the opponent's argument."
+},
+{
+    "name": "Appeal to Spite",
+    "definition": "Generating bitterness or hostility in the listener toward an opponent in an argument."
+},
+{
+    "name": "Judgmental Language",
+    "definition": "Using insulting or pejorative language in an argument."
+},
+{
+    "name": "Pooh-pooh",
+    "definition": "Stating that an opponent's argument is unworthy of consideration."
+},
+{
+    "name": "Style over Substance",
+    "definition": "Embellishing an argument with compelling language, exploiting a bias towards the esthetic qualities of an argument."
+},
+{
+    "name": "Wishful Thinking",
+    "definition": "Arguing for a course of action by the listener according to what might be pleasing to imagine rather than according to evidence or reason."
+},
+{
+    "name": "Appeal to Nature",
+    "definition": "Judgment is based solely on whether the subject of judgment is 'natural' or 'unnatural'."
+},
+{
+    "name": "Appeal to Novelty",
+    "definition": "A proposal is claimed to be superior or better solely because it is new or modern."
+},
+{
+    "name": "Appeal to Poverty",
+    "definition": "Supporting a conclusion because the arguer is poor (or refuting because the arguer is wealthy)."
+},
+{
+    "name": "Appeal to Tradition",
+    "definition": "A conclusion supported solely because it has long been held to be true."
+},
+{
+    "name": "Appeal to Wealth",
+    "definition": "Supporting a conclusion because the arguer is wealthy (or refuting because the arguer is poor)."
+},
+{
+    "name": "Argumentum ad Baculum",
+    "definition": "An argument made through coercion or threats of force to support position."
+},
+{
+    "name": "Argumentum ad Populum",
+    "definition": "A proposition is claimed to be true or good solely because a majority or many people believe it to be so."
+},
+{
+    "name": "Association Fallacy",
+    "definition": "Arguing that because two things share (or are implied to share) some property, they are the same."
+},
+{
+    "name": "Logic Chopping Fallacy",
+    "definition": "Focusing on trivial details of an argument, rather than the main point of the argumentation."
+},
+{
+    "name": "Ipse Dixit",
+    "definition": "A claim that is presented as true without support, as self-evidently true, or as dogmatically true."
+},
+{
+    "name": "Bulverism",
+    "definition": "Inferring why an argument is being used, associating it to some psychological reason, then assuming it is invalid as a result."
+},
+{
+    "name": "Chronological Snobbery",
+    "definition": "A thesis is deemed incorrect because it was commonly held when something else, known to be false, was also commonly held."
+},
+{
+    "name": "Fallacy of Relative Privation",
+    "definition": "Dismissing an argument or complaint due to what are perceived to be more important problems."
+},
+{
+    "name": "Genetic Fallacy",
+    "definition": "A conclusion is suggested based solely on something or someone's origin rather than its current meaning or context."
+},
+{
+    "name": "I'm Entitled to My Opinion",
+    "definition": "A person discredits any opposition by claiming that they are entitled to their opinion."
+},
+{
+    "name": "Moralistic Fallacy",
+    "definition": "Inferring factual conclusions from evaluative premises, in violation of fact-value distinction."
+},
+{
+    "name": "Naturalistic Fallacy",
+    "definition": "Inferring evaluative conclusions from purely factual premises in violation of fact-value distinction."
+},
+{
+    "name": "Is-Ought Fallacy",
+    "definition": "Deducing a conclusion about what ought to be, on the basis of what is."
+},
+{
+    "name": "Naturalistic Fallacy Fallacy",
+    "definition": "Inferring an impossibility to infer any instance of ought from is from the general invalidity of is-ought fallacy."
+},
+{
+    "name": "Straw Man Fallacy",
+    "definition": "Refuting an argument different from the one actually under discussion, while not recognizing or acknowledging the distinction."
+},
+{
+    "name": "Texas Sharpshooter Fallacy",
+    "definition": "Improperly asserting a cause to explain a cluster of data."
+},
+{
+    "name": "Tu Quoque",
+    "definition": "Stating that a position is false, wrong, or should be disregarded because its proponent fails to act consistently in accordance with it."
+},
+{
+    "name": "Two Wrongs Make a Right",
+    "definition": "Assuming that, if one wrong is committed, another wrong will rectify it."
+},
+{
+    "name": "Vacuous Truth",
+    "definition": "A claim that is technically true but meaningless, in the form no A in B has C, when there is no A in B."
+}
+]

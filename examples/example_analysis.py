@@ -30,6 +30,8 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from rich.pretty import pprint
 
+
+
 from llm_mediator_simulation.simulation.debate.handler import DebateHandler
 from llm_mediator_simulation.utils.analysis import (
     aggregate_average_metrics,
@@ -63,17 +65,17 @@ def common_options(func):
 @common_options
 def metrics(debate: str, average: bool):
     """Plot the debater metrics"""
-
+    
     data = DebateHandler.unpickle(debate)
     n = len(data.debaters)
 
     if average:
-        perspective, qualities = aggregate_average_metrics(data)
+        perspective, distinct3, repetition4, lexicalrep, bertscore, qualities = aggregate_average_metrics(data)
 
         axes = plt.gca()
 
-        plot_metrics(axes, perspective, qualities, "Average metrics")
-
+        plot_metrics(axes=axes, perspective=perspective, distinct3=distinct3, repetition4=repetition4, lexicalrep=lexicalrep, bertscore=bertscore, qualities=qualities, title ="Average metrics")
+        
     else:
         _, axs = plt.subplots(n, 1)
         for i, debater in enumerate(data.debaters):
@@ -86,11 +88,15 @@ def metrics(debate: str, average: bool):
                 if intervention.metrics is not None
             ]
 
-            perspective, qualities = aggregate_metrics(metrics)
-            plot_metrics(axes, perspective, qualities, f"Metrics of {debater.name}")
+            
+            perspective, distinct3, repetition4, lexicalrep, bertscore, qualities = aggregate_metrics(metrics)
+            plot_metrics(axes=axes, perspective=perspective, distinct3=distinct3, repetition4=repetition4, lexicalrep=lexicalrep, bertscore=bertscore, qualities=qualities, title = f"Metrics of {debater.name}")
 
     plt.tight_layout()
     plt.show()
+    #plot_filename = "metrics_plot.png"
+    #plt.savefig(plot_filename)
+
 
 
 @click.command("personalities")

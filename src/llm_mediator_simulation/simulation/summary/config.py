@@ -15,4 +15,5 @@ class SummaryConfig:
     """
 
     latest_messages_limit: int = 3
+    latest_messages_limit_metrics: int = 10
     debaters: list[DebaterConfig] | None = None

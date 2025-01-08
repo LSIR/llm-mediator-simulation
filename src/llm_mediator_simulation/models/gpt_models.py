@@ -44,6 +44,11 @@ class GPTModel(LanguageModel):
         content = result.choices[0].message.content
 
         return content if content else ""
+    
+    @override
+    def generate_response(self, prompt:str) -> str:
+        self.sample(prompt)
+        
 
 
 class AsyncGPTModel(AsyncLanguageModel):

@@ -149,6 +149,7 @@ Synchronous debate example:
 ```python
 from llm_mediator_simulation.metrics.perspective_api import PerspectiveScorer
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
+from llm_mediator_simulation.metrics.distinct_repetition_bertScore import Distinct3, Repetition4, LexicalRepetition, BERTScore
 
 metrics = MetricsHandler(
     model=mediator_model,
@@ -158,7 +159,12 @@ metrics = MetricsHandler(
         ArgumentQuality.LOCAL_ACCEPTABILITY,
         ArgumentQuality.EMOTIONAL_APPEAL,
     ],
-)   perspective=PerspectiveScorer(api_key=your_perspective_api_key))
+    perspective = PerspectiveScorer(api_key=your_perspective_api_key))
+    distinct3 = Distinct3(),
+    repetition4 = Repetition4(),
+    lexicalrep = LexicalRepetition(n=2, kgram=4),
+    bertscore = BERTScore() 
+)    
 ```
 
 Use `AsyncMetricsHandler` in an asynchronous debate setting instead.

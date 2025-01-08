@@ -90,7 +90,6 @@ def aggregate_average_personalities(debate: DebatePickle):
 
     return aggregate
 
-
 def aggregate_metrics(metrics: list[Metrics]):
     """Aggregate a list of metrics into plottable values."""
 
@@ -99,11 +98,31 @@ def aggregate_metrics(metrics: list[Metrics]):
     if len(perspective) == 0:
         perspective = None
 
+    # Aggregate distinct3
+    distinct3 = [m.distinct3 for m in metrics if m.distinct3 is not None]
+    if len(distinct3) == 0:
+        distinct3 = None
+
+    # Aggregate repetition4
+    repetition4 = [m.repetition4 for m in metrics if m.repetition4 is not None]
+    if len(repetition4) == 0:
+        repetition4 = None
+
+    # Aggregate lexicalrep
+    lexicalrep = [m.lexicalrep for m in metrics if m.lexicalrep is not None]
+    if len(lexicalrep) == 0:
+        lexicalrep = None
+
+    # Aggregate bertscore
+    bertscore = [m.bertscore for m in metrics if m.bertscore is not None]
+    if len(bertscore) == 0:
+        bertscore = None
+
     # Aggregate other metrics
     qualities: dict[ArgumentQuality, list[float]] = {}
 
     if len(metrics) == 0 or metrics[0].argument_qualities is None:
-        return perspective, qualities
+        return perspective, distinct3, repetition4, lexicalrep, bertscore, qualities
 
     for m in metrics:
         if m.argument_qualities is None:
@@ -114,17 +133,21 @@ def aggregate_metrics(metrics: list[Metrics]):
                 qualities[quality] = []
             qualities[quality].append(agreement.value)
 
-    return perspective, qualities
+    return perspective, distinct3, repetition4, lexicalrep, bertscore, qualities
 
 
 def aggregate_average_metrics(debate: DebatePickle):
     """Aggregate a debate's metrics into an average among all debaters per round of interventions."""
-
+    
     n = len(debate.debaters)
 
     round = 0
     debater_count = 0
     perspective: list[float] | None = []
+    distinct3: list[float] | None = []
+    repetition4: list[float] | None = []
+    lexicalrep: list[float] | None = []
+    bertscore: list[float] | None = []
     aggregate: dict[ArgumentQuality, list[float]] = {}
 
     for intervention in debate.interventions:
@@ -143,6 +166,30 @@ def aggregate_average_metrics(debate: DebatePickle):
             else:
                 perspective[round] += intervention.metrics.perspective
 
+        if intervention.metrics.distinct3 is not None:
+            if len(distinct3) <= round:
+                distinct3.append(intervention.metrics.distinct3)
+            else:
+                distinct3[round] += intervention.metrics.distinct3
+
+        if intervention.metrics.repetition4 is not None:
+            if len(repetition4) <= round:
+                repetition4.append(intervention.metrics.repetition4)
+            else:
+                repetition4[round] += intervention.metrics.repetition4
+
+        if intervention.metrics.lexicalrep is not None:
+            if len(lexicalrep) <= round:
+                lexicalrep.append(intervention.metrics.lexicalrep)
+            else:
+                lexicalrep[round] += intervention.metrics.lexicalrep
+
+        if intervention.metrics.bertscore is not None:
+            if len(bertscore) <= round:
+                bertscore.append(intervention.metrics.bertscore)
+            else:
+                bertscore[round] += intervention.metrics.bertscore
+
         if intervention.metrics.argument_qualities is not None:
             for quality, agreement in intervention.metrics.argument_qualities.items():
                 if quality not in aggregate:
@@ -158,6 +205,10 @@ def aggregate_average_metrics(debate: DebatePickle):
 
     # Compute the average for every axis
     perspective = [p / n for p in perspective]
+    distinct3 = [d / n for d in distinct3]
+    repetition4 = [r / n for r in repetition4]
+    lexicalrep = [l / n for l in lexicalrep]
+    bertscore = [b / n for b in bertscore]
 
     for quality, values in aggregate.items():
         aggregate[quality] = [v / n for v in values]
@@ -165,4 +216,17 @@ def aggregate_average_metrics(debate: DebatePickle):
     if len(perspective) == 0:
         perspective = None
 
-    return perspective, aggregate
+    if len(distinct3) == 0:
+        distinct3 = None
+
+    if len(repetition4) == 0:
+        repetition4 = None
+
+    if len(lexicalrep) == 0:
+        lexicalrep = None
+
+    if len(bertscore) == 0:
+        bertscore = None
+        
+
+    return perspective, distinct3, repetition4, lexicalrep, bertscore, aggregate

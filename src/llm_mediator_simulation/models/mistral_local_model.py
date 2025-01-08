@@ -4,6 +4,7 @@ from typing import Literal, override
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from llm_mediator_simulation.utils.reproducibility import set_transformers_seed
 
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
@@ -44,10 +45,10 @@ class MistralLocalModel(LanguageModel):
         self,
         *,
         model_name: str = "mistralai/Mistral-7B-Instruct-v0.2",
-        max_length: int = 100,
+        max_length: int = 300,
         num_return_sequences: int = 1,
-        temperature: float = 0.2,
-        top_p: float = 0.2,
+        temperature: float = 0.7,
+        top_p: float = 0.6,
         do_sample: bool = True,
         quantization: Literal["4_bits"] | None = None,
         debug: bool = False,
@@ -91,7 +92,7 @@ class MistralLocalModel(LanguageModel):
         self.json = json
 
     @override
-    def sample(self, prompt: str) -> str:
+    def sample(self, prompt: str, seed: int | None = None) -> str:
 
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
@@ -105,6 +106,11 @@ class MistralLocalModel(LanguageModel):
             print()
 
         inputs = self.tokenizer(prompt, return_tensors="pt")
+
+        # Seeding
+        if seed is not None:
+           set_transformers_seed(seed) # sampling tokens generation time
+
         with torch.no_grad():
             outputs = self.model.generate(
                 inputs.input_ids.to("cuda"),
@@ -130,7 +136,10 @@ class MistralLocalModel(LanguageModel):
 
         return generated_text
     
-    def generate_response(self, prompt: str) -> str:
+    @override
+    def generate_response(self, prompt: str, max_length:int = None) -> str:
+        if max_length is None:
+            max_length = self.max_length
 
         if self.debug:
             print("Prompt:")
@@ -151,7 +160,7 @@ class MistralLocalModel(LanguageModel):
                 # Stop conditions
                 stop_strings=["```"] if self.json else ["User:"],
                 tokenizer=self.tokenizer,
-                max_new_tokens=self.max_length,
+                max_new_tokens=max_length,
             )
 
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -219,7 +228,13 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         postprompt = "Assistant:```json" if self.json else "Assistant: "
 
         prompts = [f"{preprompt}{prompt}{postprompt}" for prompt in prompts]
-
+        
+        max_context_length = self.model.config.max_position_embeddings
+        # Save max_context_length to window.txt
+        with open("window.txt", "w") as file:
+            file.write(str(max_context_length))
+    
+        
         inputs = self.tokenizer(prompts, return_tensors="pt")
 
         with torch.no_grad():

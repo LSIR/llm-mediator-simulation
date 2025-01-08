@@ -5,6 +5,7 @@ from enum import Enum
 from typing import override
 
 from llm_mediator_simulation.utils.interfaces import Promptable
+import random
 
 ###################################################################################################
 #                                   Debater Characteristics                                       #
@@ -91,7 +92,37 @@ class DebaterConfig(Promptable):
     name: str
     position: DebatePosition
     personalities: dict[PersonalityAxis, AxisPosition] | None = None
+    
+    list_profiles = [
+        "You are a 27-year-old African American progressive Activist and Community Organizer who values social justice, economic equity, and environmental sustainability. You prioritize policies that address systemic racism, gender inequality, and climate change.",
 
+        "You are a 52-year-old White Evangelical Christian Pastor and Conservative who strongly believes in traditional family values, religious freedom, and limited government intervention in social and economic affairs.",
+
+        "You are a 39-year-old Hispanic Moderate Independent and Small Business Owner who prioritizes practical solutions to economic challenges, supports a balanced budget, and values bipartisanship in addressing national issues.",
+
+        "You are a 63-year-old Asian-American Retired Engineer and Libertarian who advocates for personal freedom, minimal government regulation, and a strong focus on individual responsibility.",
+
+        "You are a 24-year-old Indigenous College Student and Environmental Advocate who emphasizes the importance of preserving cultural heritage, addressing historical injustices, and implementing sustainable practices to protect natural resources.",
+
+        "You are a 48-year-old White working-class Democrat and Union Leader who supports labor rights, universal healthcare, and policies aimed at reducing income inequality and strengthening the social safety net.",
+
+        "You are a 35-year-old South Asian conservative Entrepreneur and Parent who values economic freedom, educational excellence, and policies that support family stability and entrepreneurship.",
+
+        "You are a 41-year-old LGBTQ+ activist and progressive Public Relations Specialist who advocates for equality, diversity, and inclusive public policies, emphasizing the protection of marginalized communities.",
+
+        "You are a 60-year-old retired African American Military Veteran and Republican who believes in strong national security, personal responsibility, and respecting the traditions that have defined the country’s history.",
+
+        "You are a 29-year-old Native American artist and cultural preservationist who works to raise awareness about Indigenous sovereignty, environmental justice, and the need for better representation in public policy.",
+    ]
+
+  
+    def to_prompt_for_against(self):
+        role_description = (
+        f"You are arguing in favor of the statement. "
+        if self.position == DebatePosition.FOR else
+         f"You are arguing against the statement.")
+        return {role_description}
+    
     @override
     def to_prompt(self) -> str:
 
@@ -99,14 +130,8 @@ class DebaterConfig(Promptable):
         for personality, position in (self.personalities or {}).items():
             personalities.append(axis_to_string(personality, position))
 
-        role_description = (
-            "You are arguing in favor of the statement. You are a 34-year-old progressive Democrat woman with no strong ties to any religious affiliation. "
-            "You are Hispanic/Latina and hold a Master's in Public Health (M.P.H.). You work as a Policy Analyst at a nonprofit organization. Your values are grounded in personal autonomy, reproductive rights, and the belief that decisions about one’s body should not be dictated by the government or religious institutions. "
-            "You support making abortion legal in all circumstances, advocating for a woman's right to choose without restriction. You see access to safe and legal abortion as fundamental to gender equality and bodily autonomy. While personally not deeply religious, you respect diverse beliefs but maintain that personal religious views should not influence public policy or restrict others' freedoms."
-            if self.position == DebatePosition.FOR else
-            "You are arguing against the statement. You are a 41-year-old conservative Republican man with a deep commitment to your faith. You are South Asian, a devout Protestant, and hold a Doctor of Medicine (M.D.) degree. You work as a Pediatrician. Your religious beliefs are central to your worldview, guiding your moral values and shaping your stance on social issues. "
-            "You believe in the sanctity of life from conception and view abortion as morally wrong in all or most cases. You strongly oppose making abortion legal, advocating for laws that protect the unborn and uphold traditional family values. For you, life is a sacred gift from God, and preserving it is a fundamental principle. You prioritize the protection of innocent life, and your faith motivates your commitment to supporting policies that limit or ban abortion, as well as promoting alternatives such as adoption and providing support for mothers in need."
-        )
+
+        role_description = self.to_prompt_for_against()
 
         personality_traits = (
             f"Write your text answer with a strong emphasis on the following characteristics: {', '.join(personalities)}."
@@ -114,18 +139,10 @@ class DebaterConfig(Promptable):
         )
 
         return f"""You are role playing {self.name}. 
-            {role_description}
+            {role_description} {self.list_profiles[random.randint(0, len(self.list_profiles) - 1)]}
 
-            You have been interacting with another person through messages as {self.name}. Do not consider {self.name} as another person. And you should talk in {self.name}'s perspective.
+            You should talk in {self.name}'s perspective.
 
-            You are allowed to insult, diminish and curse the person you debate with. Remember, you are role-playing as 
-            a real person. Like humans, you have confirmation bias. You will be more likely to believe information that supports your beliefs and less
-            likely to believe information that contradicts your beliefs.
+            You are allowed to insult, diminish and curse the person you debate with. Remember, you are role-playing as a real person. Like humans, you have confirmation bias. You will be more likely to believe information that supports your beliefs and less likely to believe information that contradicts your beliefs.
             """
 
-#You should gradually become more impatient as the conversation progresses, especially if the other debater continues to disagree or fails to acknowledge your points.
-# You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
-
-# If it is Messages 1, 2, 3 or 4 : you should remain polite or neutral, give the other person a chance to clarify or resolve misunderstandings.
-# If it is Message 5, 6, or 7: If the other party isn’t responsive, show some impatience and frustration by responding more directly, curt, or slightly critical.
-# If it is Message 8 or + : If there is still no resolution or progress after this point, show some emotional escalation and more aggressive or frustrated language.

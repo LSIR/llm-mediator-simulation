@@ -21,7 +21,6 @@ class Intervention:
         timestamp: The timestamp of the intervention.
         metrics: The metrics associated with the intervention.
     """
-
     debater: DebaterConfig | None
     text: str | None
     prompt: str
@@ -39,7 +38,13 @@ class Metrics:
     """
 
     perspective: float | None = None
+    distinct3: float | None = None,
+    repetition4: float | None = None,
+    lexicalrep: float | None = None,
+    bertscore: float | None = None,
+        
     argument_qualities: dict[ArgumentQuality, Agreement] | None = None
+    
 
 
 class LLMMessage(TypedDict):

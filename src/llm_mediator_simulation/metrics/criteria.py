@@ -78,6 +78,12 @@ class ArgumentQuality(Enum):
         "Empathy",
         "The argument demonstrates an understanding and consideration of the emotions and perspectives of others, fostering a sense of connection and respect by acknowledging the feelings and experiences of all parties involved.",
     )
+    
+    CONSTRUCTIVITY = (
+        "Constructivity",
+        "The argument focuses on building solutions, fostering progress, and contributing positively to the discussion by offering actionable insights, well-reasoned ideas, or collaborative suggestions that move the conversation toward a productive and meaningful outcome."
+    )
+
 
 
 ###################################################################################################

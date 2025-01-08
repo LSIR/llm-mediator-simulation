@@ -31,9 +31,10 @@ class SummaryHandler(Promptable):
 
         #self.time_indicator = 0 
         self.latest_messages: list[Intervention] = []
+        self.latest_messages_metrics: list[Intervention] = []
         self._model = model
         self._latest_messages_limit = config.latest_messages_limit
-
+        self._latest_messages_limit_metrics = config.latest_messages_limit_metrics
         self.debaters = config.debaters or []
         
 
@@ -42,6 +43,12 @@ class SummaryHandler(Promptable):
         """Return the last message string contents"""
 
         return [message.text for message in self.latest_messages if message.text]
+    
+    @property
+    def message_strings_metrics(self) -> list[str]:
+        """Return the last message string contents for metrics evaluation"""
+
+        return [message.text for message in self.latest_messages_metrics if message.text]
     
     @property
     def message_speakers_and_strings(self) -> list[str]:
@@ -59,7 +66,9 @@ class SummaryHandler(Promptable):
         self.latest_messages = (self.latest_messages + [message])[
             -self._latest_messages_limit :
         ]
-        #self.time_indicator += 1
+        self.latest_messages_metrics = (self.latest_messages + [message])[
+            -self._latest_messages_limit_metrics :
+        ]
 
     def regenerate_summary(self) -> str:
         """Regenerate the summary with the latest messages."""
