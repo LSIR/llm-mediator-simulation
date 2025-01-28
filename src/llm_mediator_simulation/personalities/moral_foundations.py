@@ -30,7 +30,7 @@ class MoralFoundation(Enum):
 
     FAIRNESS_CHEATING_EQUALITY = MoralFoundationValue("fairness/cheating (v1) - equality (v2)",
                                                       "sensitive to indications that another person is likely to be a good (or bad) partner for collaboration and reciprocal altruism",
-                                                      "Intuitions about equal treatment and equal outcome for individuals")
+                                                      "equal treatment and equal outcome for individuals")
 
     FAIRNESS_CHEATING_PROPORTIONALITY = MoralFoundationValue("fairness/cheating (v1) - proportionality (v2)",
                                                              "willing to shun or punish cheaters",

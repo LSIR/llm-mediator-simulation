@@ -20,7 +20,7 @@ class Likert5LevelValue:
     standard: str
     alternative: str | None = None
 
-    def alternative(self) -> str:
+    def get_alternative(self) -> str:
         return self.alternative if self.alternative else self.standard
 
 

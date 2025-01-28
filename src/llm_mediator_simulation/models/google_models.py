@@ -72,7 +72,7 @@ class GoogleModel(LanguageModel):
         ]
 
     @override
-    def sample(self, prompt: str) -> str:
+    def sample(self, prompt: str, seed: int | None = None) -> str:
         """Generate text based on the given prompt."""
 
         response = self.model.generate_content(

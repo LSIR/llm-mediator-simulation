@@ -37,6 +37,7 @@ dependencies = [
   "python-dotenv",
   "rich",
   "transformers",
+  "streamlit",
 ]
 
 [project.urls]

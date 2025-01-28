@@ -17,6 +17,7 @@ class BasicHumanValues(Enum):
     Based on the Schwartz Value Survey:
         - 10.1016/s0065-2601(08)60281-6 (Schwartz, 1992) (III. Empirical Studies A. THE THEORY-BASED VALUE SURVEY for the likert scale)
         - 10.1037/a0029393 (Schwartz, 2012) - Table 2 (list and descriptions of values)
+        - Idem in 10.9707/2307-0919.1173 (Schwartz, 2021) - Table 1
     """
 
     SELF_DIRECTION_THOUGHT = BasicHumanValuesValue("self-direction thought",

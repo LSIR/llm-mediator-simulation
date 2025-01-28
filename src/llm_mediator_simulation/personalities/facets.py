@@ -48,13 +48,13 @@ class PersonalityFacet(Enum):
     #                                     Neuroticism Facets                                          #
     ###################################################################################################
 
-    ANXIEITY = PersonalityTraitValue("anxiety",
+    ANXIETY = PersonalityFacetValue("anxiety",
         PersonalityTrait.NEUROTICISM,
         [item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You worry about things."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You fear for the worst."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You are afraid of many things."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You get stressed out easily."),
-        item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You get caught up in your problems.")]
+        item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You get caught up in your problems.")],
         [item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You are not easilly bothered by things."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You are relaxed most of the time.."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You are not easily disturbed by events."),
@@ -62,7 +62,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You adapt easily to new situations.")])
 
 
-    ANGER = PersonalityTraitValue("anger",
+    ANGER = PersonalityFacetValue("anger",
         PersonalityTrait.NEUROTICISM,
         [item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You get angry easily."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You get irritated easily."),
@@ -76,7 +76,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You rarely complain.")])
 
 
-    DEPRESSION = PersonalityTraitValue("depression",
+    DEPRESSION = PersonalityFacetValue("depression",
         PersonalityTrait.NEUROTICISM,
         [item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You often feel blue."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You dislike yourself."),
@@ -90,7 +90,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You are very pleased with yourself.")])
 
 
-    SELF_CONSCIOUSNESS = PersonalityTraitValue("self-consciousness",
+    SELF_CONSCIOUSNESS = PersonalityFacetValue("self-consciousness",
         PersonalityTrait.NEUROTICISM,
         [item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You are easily intimidated."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You are afraid that you will do the wrong thing."),
@@ -104,7 +104,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You are able to stand up for yourself.")])
 
 
-    IMMODERATION = PersonalityTraitValue("immoderation",
+    IMMODERATION = PersonalityFacetValue("immoderation",
         PersonalityTrait.NEUROTICISM,
         [item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You often eat too much."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You don't know why you do some of the things you do."),
@@ -118,7 +118,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.NEGATIVE, "You never splurge.")])
 
 
-    VULNERABILITY = PersonalityTraitValue("vulnerability",
+    VULNERABILITY = PersonalityFacetValue("vulnerability",
         PersonalityTrait.NEUROTICISM,
         [item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You panic easily."),
         item(PersonalityTrait.NEUROTICISM, KeyingDirection.POSITIVE, "You become overwhelmed by events."),
@@ -136,7 +136,7 @@ class PersonalityFacet(Enum):
     #                                     Extraversion Facets                                         #
     ###################################################################################################
 
-    FRIENDLINESS = PersonalityTraitValue("friendliness",
+    FRIENDLINESS = PersonalityFacetValue("friendliness",
         PersonalityTrait.EXTRAVERSION,
         [item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You make friends easily."),
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You warm up quickly to others."),
@@ -150,7 +150,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.NEGATIVE, "You keep others at a distance.")])
 
 
-    GREGARIOUSNESS = PersonalityTraitValue("gregariousness",
+    GREGARIOUSNESS = PersonalityFacetValue("gregariousness",
         PersonalityTrait.EXTRAVERSION,
         [item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You love large parties."),
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You talk to a lot of different people at parties."),
@@ -164,7 +164,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.NEGATIVE, "You seek quiet.")])
 
 
-    ASSERTIVENESS = PersonalityTraitValue("assertiveness",
+    ASSERTIVENESS = PersonalityFacetValue("assertiveness",
         PersonalityTrait.EXTRAVERSION,
         [item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You take charge."),
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You try to lead others."),
@@ -178,7 +178,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.NEGATIVE, "You hold back your opinions.")])
 
 
-    ACTIVITY_LEVEL = PersonalityTraitValue("activity_level",
+    ACTIVITY_LEVEL = PersonalityFacetValue("activity_level",
         PersonalityTrait.EXTRAVERSION,
         [item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You are always busy."),
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You are always on the go."),
@@ -192,7 +192,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.NEGATIVE, "You react slowly.")])
 
 
-    EXCITEMENT_SEEKING = PersonalityTraitValue("excitement_seeking",
+    EXCITEMENT_SEEKING = PersonalityFacetValue("excitement_seeking",
         PersonalityTrait.EXTRAVERSION,
         [item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You love excitement."),
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You seek adventure."),
@@ -206,7 +206,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.NEGATIVE, "You dislike loud music.")])
 
 
-    CHEERFULNESS = PersonalityTraitValue("cheerfulness",
+    CHEERFULNESS = PersonalityFacetValue("cheerfulness",
         PersonalityTrait.EXTRAVERSION,
         [item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You radiate joy."),
         item(PersonalityTrait.EXTRAVERSION, KeyingDirection.POSITIVE, "You have a lot of fun."),
@@ -224,7 +224,7 @@ class PersonalityFacet(Enum):
     #                                     Openness Facets                                             #
     ###################################################################################################
 
-    IMAGINATION = PersonalityTraitValue("imagination",
+    IMAGINATION = PersonalityFacetValue("imagination",
         PersonalityTrait.OPENNESS,
         [item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You have a vivid imagination."),
         item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You enjoy wild flights of fantasy."),
@@ -238,7 +238,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.OPENNESS, KeyingDirection.NEGATIVE, "You have difficulty imagining things.")])
 
 
-    ARTISTIC_INTERESTS = PersonalityTraitValue("artistic_interests",
+    ARTISTIC_INTERESTS = PersonalityFacetValue("artistic_interests",
         PersonalityTrait.OPENNESS,
         [item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You believe in the importance of art."),
         item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You like music."),
@@ -252,7 +252,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.OPENNESS, KeyingDirection.NEGATIVE, "You do not enjoy watching dance performances.")])
 
 
-    EMOTIONALITY = PersonalityTraitValue("emotionality",
+    EMOTIONALITY = PersonalityFacetValue("emotionality",
         PersonalityTrait.OPENNESS,
         [item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You experience your emotions intensely."),
         item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You feel others' emotions."),
@@ -266,7 +266,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.OPENNESS, KeyingDirection.NEGATIVE, "You don't understand people who get emotional.")])
 
 
-    ADVENTUROUSNESS = PersonalityTraitValue("adventurousness",
+    ADVENTUROUSNESS = PersonalityFacetValue("adventurousness",
         PersonalityTrait.OPENNESS,
         [item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You prefer variety to routine."),
         item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You like to visit new places."),
@@ -280,7 +280,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.OPENNESS, KeyingDirection.NEGATIVE, "You are attached to conventional ways.")])
 
 
-    INTELLECT = PersonalityTraitValue("intellect",
+    INTELLECT = PersonalityFacetValue("intellect",
         PersonalityTrait.OPENNESS,
         [item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You like to solve complex problems."),
         item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You love to read challenging material."),
@@ -294,7 +294,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.OPENNESS, KeyingDirection.NEGATIVE, "You avoid difficult reading material.")])
 
 
-    LIBERALISM = PersonalityTraitValue("liberalism",
+    LIBERALISM = PersonalityFacetValue("liberalism",
         PersonalityTrait.OPENNESS,
         [item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You tend to vote for liberal political candidates."),
         item(PersonalityTrait.OPENNESS, KeyingDirection.POSITIVE, "You believe that there is no absolute right and wrong."),
@@ -311,7 +311,7 @@ class PersonalityFacet(Enum):
     #                                     Agreeableness Facets                                        #
     ###################################################################################################
 
-    TRUST = PersonalityTraitValue("trust",
+    TRUST = PersonalityFacetValue("trust",
         PersonalityTrait.AGREEABLENESS,
         [item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You trust others."),
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You believe that others have good intentions."),
@@ -325,7 +325,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.NEGATIVE, "You believe that people are essentially evil.")])
 
 
-    MORALITY = PersonalityTraitValue("morality",
+    MORALITY = PersonalityFacetValue("morality",
         PersonalityTrait.AGREEABLENESS,
         [item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You would never cheat on your taxes."),
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You stick to the rules.")],
@@ -339,7 +339,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.NEGATIVE, "You obstruct others' plans.")])
 
 
-    ALTRUISM = PersonalityTraitValue("altruism",
+    ALTRUISM = PersonalityFacetValue("altruism",
         PersonalityTrait.AGREEABLENESS,
         [item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You make people feel welcome."),
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You anticipate the needs of others."),
@@ -353,7 +353,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.NEGATIVE, "You take no time for others.")])
 
 
-    COOPERATION = PersonalityTraitValue("cooperation",
+    COOPERATION = PersonalityFacetValue("cooperation",
         PersonalityTrait.AGREEABLENESS,
         [item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You are easy to satisfy."),
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You can't stand confrontations."),
@@ -367,7 +367,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.NEGATIVE, "You hold a grudge.")])
 
 
-    MODESTY = PersonalityTraitValue("modesty",
+    MODESTY = PersonalityFacetValue("modesty",
         PersonalityTrait.AGREEABLENESS,
         [item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You dislike being the center of attention."),
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You dislike talking about yourself."),
@@ -381,7 +381,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.NEGATIVE, "You make yourself the center of attention.")])
 
 
-    SYMPATHY = PersonalityTraitValue("sympathy",
+    SYMPATHY = PersonalityFacetValue("sympathy",
         PersonalityTrait.AGREEABLENESS,
         [item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You sympathize with the homeless."),
         item(PersonalityTrait.AGREEABLENESS, KeyingDirection.POSITIVE, "You feel sympathy for those who are worse off than yourself."),
@@ -398,7 +398,7 @@ class PersonalityFacet(Enum):
     #                                     Conscientiousness Facets                                    #
     ###################################################################################################
 
-    SELF_EFFICACY = PersonalityTraitValue("self_efficacy",
+    SELF_EFFICACY = PersonalityFacetValue("self_efficacy",
         PersonalityTrait.CONSCIENTIOUSNESS,
         [item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You complete tasks successfully."),
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You excel in what you do."),
@@ -412,7 +412,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.NEGATIVE, "You don't see the consequences of things.")])
 
 
-    ORDERLINESS = PersonalityTraitValue("orderliness",
+    ORDERLINESS = PersonalityFacetValue("orderliness",
         PersonalityTrait.CONSCIENTIOUSNESS,
         [item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You like order."),
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You like to tidy up."),
@@ -426,7 +426,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.NEGATIVE, "You are not bothered by disorder.")])
 
 
-    DUTIFULNESS = PersonalityTraitValue("dutifulness",
+    DUTIFULNESS = PersonalityFacetValue("dutifulness",
         PersonalityTrait.CONSCIENTIOUSNESS,
         [item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You try to follow the rules."),
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You keep your promises."),
@@ -440,7 +440,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.NEGATIVE, "You misrepresent the facts.")])
 
 
-    ACHIEVEMENT_STRIVING = PersonalityTraitValue("achievement_striving",
+    ACHIEVEMENT_STRIVING = PersonalityFacetValue("achievement_striving",
         PersonalityTrait.CONSCIENTIOUSNESS,
         [item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You go straight for the goal."),
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You work hard."),
@@ -454,7 +454,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.NEGATIVE, "You put little time and effort into your work.")])
 
 
-    SELF_DISCIPLINE = PersonalityTraitValue("self_discipline",
+    SELF_DISCIPLINE = PersonalityFacetValue("self_discipline",
         PersonalityTrait.CONSCIENTIOUSNESS,
         [item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You get chores done right away."),
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You are always prepared."),
@@ -468,7 +468,7 @@ class PersonalityFacet(Enum):
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.NEGATIVE, "You postpone decisions.")])
 
 
-    CAUTIOUSNESS = PersonalityTraitValue("cautiousness",
+    CAUTIOUSNESS = PersonalityFacetValue("cautiousness",
         PersonalityTrait.CONSCIENTIOUSNESS,
         [item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You avoid mistakes."),
         item(PersonalityTrait.CONSCIENTIOUSNESS, KeyingDirection.POSITIVE, "You choose your words with care."),

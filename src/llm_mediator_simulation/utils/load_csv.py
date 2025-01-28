@@ -5,7 +5,7 @@ from datetime import datetime
 import polars as pd
 
 from llm_mediator_simulation.simulation.debater.config import (
-    DebatePosition,
+    TopicOpinion,
     DebaterConfig,
 )
 from llm_mediator_simulation.utils.types import Intervention
@@ -34,7 +34,7 @@ def load_csv_chat(path: str) -> tuple[list[DebaterConfig], list[Intervention]]:
 
     # ID to debater config
     debaters: dict[str, DebaterConfig] = {
-        id: DebaterConfig(name, position=DebatePosition.FOR, personalities={})
+        id: DebaterConfig(name, topic_opinion=None, personalities={}) # TODO: Check if topic_opinion needed
         for id, name in users_id_map.items()
         if name != "Mediator"
     }

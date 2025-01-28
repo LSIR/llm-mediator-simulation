@@ -34,8 +34,8 @@ class Personality(Promptable):
     variable_facets: bool = False
     variable_moral_foundations: bool = False
     variable_basic_human_values: bool = False
-    variable_cognitive_biases: bool = False # ToDo: If True, randomly sample cognitive biases
-    variable_fallacies: bool = False        # ToDo: If True, randomly sample fallacies
+    variable_cognitive_biases: bool = False # TODO: If True, randomly sample cognitive biases
+    variable_fallacies: bool = False        # TODO: If True, randomly sample fallacies
     variable_ideologies: bool = False
     variable_agreement_with_statements: bool = False
     variable_likelihood_of_beliefs: bool = False
@@ -46,16 +46,16 @@ class Personality(Promptable):
         prompt = ""
         if self.demographic_profile:
             for characteristic, value in self.demographic_profile.items():
-                prompt += f"{characteristic.value}: {value};\n"
+                prompt += f"{characteristic.value}: {value.lower()};\n"
             prompt += "\n"
 
         if self.traits:
             if isinstance(self.traits, list):
                 for trait in self.traits:
-                    prompt += f"{trait.level(level=Likert3Level.HIGH)};\n"
+                    prompt += f"{trait.value.level(level=Likert3Level.HIGH)}\n"
             elif isinstance(self.traits, dict):
                 for trait, level in self.traits.items():
-                    prompt += f"{trait.level(level)};\n"
+                    prompt += f"{trait.value.level(level)}\n"
             else:
                 raise ValueError("Invalid traits type")
             prompt += "\n"
@@ -63,13 +63,17 @@ class Personality(Promptable):
         if self.facets:
             if isinstance(self.facets, list):
                 for facet in self.facets:
-                    for item in facet.level(KeyingDirection.POSITIVE):
-                        prompt += f"{item.description};"
+                    for item in facet.value.level(KeyingDirection.POSITIVE):
+                        if prompt[-1] == ".":
+                            prompt += " "
+                        prompt += f"{item.description}"
                     prompt += "\n"
             elif isinstance(self.facets, dict):
                 for facet, direction in self.facets.items():
-                    for item in facet.level(direction):
-                        prompt += f"{item.description};"
+                    for item in facet.value.level(direction):
+                        if prompt[-1] == ".":
+                            prompt += " "
+                        prompt += f"{item.description}"
                     prompt += "\n"
             else:
                 raise ValueError("Invalid facets type")
@@ -89,8 +93,7 @@ class Personality(Promptable):
                     prompt += f"- You are {self.format_list(descriptions)}.\n"
 
                 if conceptual_definitions:
-                    prompt += f"Intuitions about {self.format_list(conceptual_definitions)} 
-                                are relevant to your thinking.\n"
+                    prompt += f"Intuitions about {self.format_list(conceptual_definitions)} are relevant to your thinking.\n"
 
 
             elif isinstance(self.moral_foundations, dict):
@@ -101,15 +104,17 @@ class Personality(Promptable):
                         descriptions[level].append(foundation.value.description)
                     if foundation.value.conceptual_definition is not None:
                         conceptual_definitions[level].append(foundation.value.conceptual_definition)
-                
+
                 # group by level
                 for level in Likert5Level:
                     if descriptions[level]:
                         prompt += f"You are {level.value.standard} {self.format_list(descriptions[level])}."
 
                     if conceptual_definitions[level]:
-                        prompt += f"Intuitions about {self.format_list(conceptual_definitions[level])} 
-                                    are {level.value.alternative()} relevant to your thinking.\n"
+                        if prompt[-1] == ".": # if there is a description
+                            prompt += " "
+                        prompt += f"""Intuitions about {self.format_list(conceptual_definitions[level])} 
+are {level.value.get_alternative()} relevant to your thinking.\n"""
                     
             else:
                 raise ValueError("Invalid moral foundations type")
@@ -117,10 +122,10 @@ class Personality(Promptable):
 
 
         if self.basic_human_values:
-            prompt += "As a guiding principle in your life, \n"
+            prompt += "As a guiding principle in your life:\n"
             if isinstance(self.basic_human_values, list):
-                prompt += f"{self.format_list_and_conjugate_be([human_value.value.description for human_value in self.basic_human_values])} 
-                             important to your values.\n"
+                prompt += f"""{self.format_list_and_conjugate_be([human_value.value.description for human_value in self.basic_human_values])} 
+important to your values.\n"""
             
             elif isinstance(self.basic_human_values, dict):
                 descriptions = defaultdict(list)
@@ -129,7 +134,8 @@ class Personality(Promptable):
                     descriptions[level].append(human_value.value.description)
 
                 for level, description_list in descriptions.items():
-                    prompt += f"{self.format_list_and_conjugate_be(description_list)} {level.value}.\n"
+                    prompt += f"""- {self.format_list_and_conjugate_be(description_list).capitalize()} 
+{level.value} to your values.\n"""
             
             else:
                 raise ValueError("Invalid basic human values type")
@@ -141,13 +147,16 @@ class Personality(Promptable):
             if self.cognitive_biases:
                 prompt += "cognitive biases:\n"
                 for bias in self.cognitive_biases:
-                    prompt += f"- {bias.value.name}, that is, {bias.value.description}.\n"
+                    prompt += f"- {bias.name}, that is, {bias.description.lower()}\n"
                 prompt += "\n"
+
+                if self.fallacies:
+                    prompt += "And you are also susceptible to the following "
 
             if self.fallacies:
                 prompt += "fallacies:\n"
                 for fallacy in self.fallacies:
-                    prompt += f"- {fallacy.value.name}, that is, {fallacy.value.description}.\n"
+                    prompt += f"- {fallacy.name}, that is, {fallacy.description.lower()}\n"
                 prompt += "\n"
 
 
@@ -156,33 +165,35 @@ class Personality(Promptable):
             prompt += f"In the last presidential election, you {self.vote_last_presidential_election}.\n\n" 
 
         if self.ideologies:
-            prompt += "You identify as:\n"
+            prompt += "You identify as"
             if isinstance(self.ideologies, Ideology):
-                prompt += f"- {self.ideologies.value}.\n"
+                prompt += f" {self.ideologies.value}.\n"
             elif isinstance(self.ideologies, dict):
+                prompt += ":\n"
                 for issue, ideology in self.ideologies.items():
-                    prompt += f"- {issue.value} issues: {ideology.value}.\n"
+                    prompt += f"- {ideology.value.capitalize()} on {issue.value.description}.\n"
             else:
                 raise ValueError("Invalid ideologies type")
             prompt += "\n"
 
-    
+        return prompt
         #TODO Shuffle lists and dict...
+        #TODO agreement_with_statements, likelihood_of_beliefs, free_form_opinions
 
     def conjugate_be(self, str_list: list[str]) -> str:
-        if len(self.str_list) > 1:
-            prompt += " are "
+        if len(str_list) > 1:
+            return "are"
         else: # len(str_list) == 1
-            prompt += " is "
+            return "is"
 
     def format_list(self, str_list: list[str]) -> str:
         """Format a list of strings into a sentence."""
         if len(str_list) > 2:
-            return f"{', '.join(str_list[:-1])}, and {str_list[-1]}."
+            return f"{', '.join(str_list[:-1])}, and {str_list[-1]}"
         elif len(str_list) == 2:
-            return f"{str_list[0]} and {str_list[1]}."
+            return f"{str_list[0]} and {str_list[1]}"
         elif len(str_list) == 1:
-            return f"{str_list[0]}."
+            return f"{str_list[0]}"
         
     def format_list_and_conjugate_be(self, str_list: list[str]) -> str:
         return f"{self.format_list(str_list)} {self.conjugate_be(str_list)}"

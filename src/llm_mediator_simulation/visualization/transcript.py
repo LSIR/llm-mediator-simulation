@@ -3,7 +3,7 @@
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debate.handler import DebatePickle
 from llm_mediator_simulation.simulation.debater.config import (
-    DebatePosition,
+    TopicOpinion,
     DebaterConfig,
 )
 from llm_mediator_simulation.utils.types import Intervention
@@ -38,7 +38,7 @@ def debate_participants_transcript(debaters: list[DebaterConfig]) -> str:
     lines: list[str] = []
 
     for debater in debaters:
-        line = f"{debater.name} is arguing {'for' if debater.position == DebatePosition.FOR else 'against'} the statement."
+        line = f"{debater.name} {debater.topic_opinion.agreement.name} with the statement." 
         lines.append(line)
 
     return "\n".join(lines)

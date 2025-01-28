@@ -22,7 +22,7 @@ class CognitiveBias(Enum):
     """
 
 
-def load_biases_from_csv(file_path: str = "../data/cognitive-bias-tree.csv") -> None:
+def load_biases_from_csv(file_path: str = "data/cognitive-bias-tree.csv") -> None:
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}. Please provide a valid path to the CSV file to load cognitive biases.")
 

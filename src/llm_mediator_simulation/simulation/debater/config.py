@@ -102,9 +102,5 @@ class DebaterConfig(Promptable):
         name: {self.name}; 
         {self.personality.to_prompt() if self.personality else ""}
         
-        
-        
-        
-        You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
-{f"Write your text answer with a strong emphasis on the following characteristics: {', '.join(personalities)}." if len(personalities) > 0 else ""}
-Remember that you are allowed to insult, diminish and curse the people you debate with."""
+        You {self.topic_opinion.agreement.name} with the statement.
+        Remember that you are allowed to insult, diminish and curse the people you debate with."""

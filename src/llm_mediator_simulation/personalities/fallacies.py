@@ -20,7 +20,7 @@ class Fallacy(Enum):
     """
 
 
-def load_fallacies_from_json(file_path: str = "../data/fallacies.json") -> None:
+def load_fallacies_from_json(file_path: str = "data/fallacies.json") -> None:
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}. Please provide a valid path to the JSON file to load cognitive biases.")
 
