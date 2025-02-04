@@ -33,6 +33,7 @@ class SummaryHandler(Promptable):
         self._latest_messages_limit = config.latest_messages_limit
 
         self.debaters = config.debaters or []
+        self.ignore = config.ignore
 
     @property
     def message_strings(self) -> list[str]:
@@ -63,9 +64,13 @@ class SummaryHandler(Promptable):
     @override
     def to_prompt(self) -> str:
         msg_sep = "\n\n"
-
-        return f"""Here is a summary of the last exchanges (if empty, the conversation just started):
-{self.summary}
+        if self.ignore:
+            return f"""Here are the last messages exchanged (you should focus your argumentation on them):
+{msg_sep.join(self.message_strings)}
+"""
+        else:
+            return f"""Here is a summary of the last exchanges (if empty, the conversation just started):
+# {self.summary}
 
 Here are the last messages exchanged (you should focus your argumentation on them):
 {msg_sep.join(self.message_strings)}

@@ -118,7 +118,6 @@ class DebateHandler:
 
                 intervention = debater.intervention(update_personality=i != 0 and self.variable_personality,
                                                     seed=self.seed)
-
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)
 
@@ -134,7 +133,8 @@ class DebateHandler:
                 ##############################################################
 
                 if not self.mediator_handler:
-                    self.summary_handler.regenerate_summary()
+                    if not self.summary_config.ignore:
+                        self.summary_handler.regenerate_summary()
                     continue
 
                 intervention = self.mediator_handler.intervention()

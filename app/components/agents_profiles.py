@@ -1,6 +1,7 @@
 import streamlit as st
 
 # Detailed agent profiles page
+from components.simulator import initialize_debate
 from llm_mediator_simulation.personalities.scales import Likert3Level, Likert7AgreementLevel
 
 
@@ -10,14 +11,24 @@ def agent_profiles_page():
     debate_topic = st.text_input("Set Debate Topic", value=st.session_state.debate_topic)
     st.session_state.debate_topic = debate_topic
 
+    #Add a checkbox to activate mediator
+    st.subheader("Mediator Configuration")
+    st.session_state.activate_mediator = st.checkbox("Activate Mediator", value=st.session_state.activate_mediator)
+    if st.session_state.activate_mediator:
+        initialize_debate()
+        st.text("Mediator Activated")
+
+
     st.subheader("Debaters Configuration")
-    st.session_state.num_debaters = st.sidebar.slider("Number of Debaters", min_value=2, max_value=5, value=2)
+    st.session_state.num_debaters = st.slider("Number of Debaters", min_value=2, max_value=5, value=2)
+
+    st.session_state.debater_model = st.selectbox("Debater Model", options=["deepseek-r1:8b"], index=0)
+
 
     col1, col2, col3 = st.columns([1, 1, 1])
     for i, debater in enumerate(st.session_state.debaters):
         with col1:
             with st.expander(f"**Debater {i + 1}'s profile**", expanded=True):
-                st.markdown("Name")
                 debater.name = st.text_input(f"Name for Debater {i+1}", value=debater.name)
                 if st.button(f"Show Debater {i + 1}'s personality"):
                     with col2:

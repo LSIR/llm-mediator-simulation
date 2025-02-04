@@ -12,7 +12,9 @@ class SummaryConfig:
     Args:
         latest_messages_limit (int, optional): The number of latest messages to keep track of. Defaults to 3.
         debaters (list[DebaterConfig], optional): The list of debaters in the conversation. Only their names are used, as a mean of identification.
+        ignore (bool, optional): If True, the summary will be ignored. Defaults to False.
     """
 
     latest_messages_limit: int = 3
     debaters: list[DebaterConfig] | None = None
+    ignore: bool = False

@@ -38,6 +38,12 @@ def init_session_state_vars():
     if "debaters" not in st.session_state:
         st.session_state.debaters = [get_debater_profile(i) for i in range(st.session_state.num_debaters)]
 
+    if "activate_mediator" not in st.session_state:
+        st.session_state.activate_mediator = False
+
+    if "debater_model" not in st.session_state:
+        st.session_state.debater_model = "deepseek-r1:8b"
+
 def get_debater_profile(agent_num):
     name = UNISEXNAMES[agent_num]
     # avatar = st.sidebar.text_input(f"Agent {agent_num} Avatar URL", value=f"https://via.placeholder.com/50?text=A{agent_num}")
@@ -55,7 +61,7 @@ def get_debater_profile(agent_num):
                              DemographicCharacteristic.RELIGION: random.choice(["Christian", "Muslim", "Jewish", "Atheist"]),
                              DemographicCharacteristic.SEXUAL_ORIENTATION: random.choice(["Heterosexual", "Homosexual", "Bisexual"]),
                              DemographicCharacteristic.HEALTH_CONDITION: random.choice(["Disabled", "Non-disabled"]),
-                             DemographicCharacteristic.INCOME: str(random.randint(0, 100000)),
+                             DemographicCharacteristic.INCOME: str(random.randint(30000, 100000)),
                              DemographicCharacteristic.HOUSEHOLD_SIZE: str(random.randint(1, 5)),
                              DemographicCharacteristic.NUMBER_OF_DEPENDENT: str(random.randint(0, 3)),
                              DemographicCharacteristic.LIVING_QUARTERS: random.choice(["House", "Apartment", "Condo"]),

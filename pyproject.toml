@@ -38,6 +38,7 @@ dependencies = [
   "rich",
   "transformers",
   "streamlit",
+  "ollama",
 ]
 
 [project.urls]
