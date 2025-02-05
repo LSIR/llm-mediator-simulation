@@ -23,5 +23,7 @@ class OllamaLocalModel(LanguageModel):
     def sample(self, prompt: str, seed: int | None = None) -> str:
         """Generate text based on the given prompt."""
 
-        response = ollama.generate(model=self.model_name, prompt=prompt)
+        response = ollama.generate(model=self.model_name, 
+                                   prompt=prompt,
+                                   options={"seed": seed})
         return response.response

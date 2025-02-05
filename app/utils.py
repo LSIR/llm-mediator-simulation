@@ -47,3 +47,6 @@ def get_debater_profile(agent_num):
     return DebaterConfig(name=name,
                          topic_opinion=TopicOpinion(agreement=random.choice(list(Likert7AgreementLevel))),
                          personality = personality)
+
+
+SEED = 42

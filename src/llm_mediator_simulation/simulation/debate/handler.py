@@ -200,7 +200,11 @@ class DebateHandler:
 
         for intervention in interventions:
             self.summary_handler.add_new_message(intervention)
-        self.summary_handler.regenerate_summary()
+        
+        if interventions:
+            self.summary_handler.regenerate_summary()
+        else:
+            self.summary_handler.summary = ""
 
         # Regenerate mediator handler
         self.mediator_handler = (

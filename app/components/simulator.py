@@ -1,5 +1,6 @@
 import random
 import time
+from utils import SEED
 from llm_mediator_simulation.models.dummy_model import DummyModel
 from llm_mediator_simulation.models.ollama_local_server_model import OllamaLocalModel
 from llm_mediator_simulation.personalities.scales import Likert7AgreementLevel
@@ -11,9 +12,6 @@ from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debate.handler import DebateHandler
 from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
-
-SEED = 42
-random.seed(SEED)
 
 def debate_simulator_page():
     # Main chat simulation
@@ -81,6 +79,7 @@ def debate_simulator_page():
         st.rerun()
 
 def reset_chat(debate: DebateHandler):
+    random.seed(SEED)
     st.session_state.debate.preload_chat(debaters=st.session_state.debaters, interventions=[])
 
 # Convert Likert7AgreementLevel to emojis

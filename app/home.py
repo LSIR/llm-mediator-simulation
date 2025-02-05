@@ -1,5 +1,7 @@
 import os
+import random
 from dotenv import load_dotenv
+from utils import SEED
 from utils import get_debater_profile
 from components.simulator import debate_simulator_page
 from components.agents_profiles import agent_profiles_page
@@ -12,6 +14,8 @@ from openai_key_manager import save_api_key
 
 load_dotenv()
 gpt_key = os.getenv("GPT_API_KEY") or ""
+
+random.seed(SEED)
 
 def init_session_state_vars():
     
@@ -37,7 +41,7 @@ def init_session_state_vars():
         st.session_state.activate_mediator = False
 
     if "debater_model" not in st.session_state:
-        st.session_state.debater_model = "mistral"
+        st.session_state.debater_model = "mistral-nemo"
 
     if "remaining_rounds" not in st.session_state:
         st.session_state.remaining_rounds = 0
