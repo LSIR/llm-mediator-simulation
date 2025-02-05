@@ -109,8 +109,8 @@ class DebateHandler:
 
         for i in track(range(rounds)):
             # Shuffle the debaters order
-            random.shuffle(self.debaters)
-            for debater in self.debaters:
+            shuffled_debaters = random.sample(self.debaters, len(self.debaters))
+            for debater in shuffled_debaters:
 
                 ##############################################################
                 #                    DEBATER INTERVENTION                    #

@@ -18,7 +18,9 @@ random.seed(SEED)
 def debate_simulator_page():
     # Main chat simulation
     st.header("Debate Simulator")
-    st.markdown(f"Debate Topic: {st.session_state.debate_topic}")
+    st.markdown(f"**Debate Topic**: {st.session_state.debate_topic}")
+    st.markdown(f"**Debater Model**: {st.session_state.debater_model}")
+    st.markdown(f"**Mediator activated**: {'Yes' if st.session_state.activate_mediator else 'No'}")
     # st.markdown(f"Debaters:")
     cols = st.columns(len(st.session_state.debaters))
     for col, debater in zip(cols, st.session_state.debaters):
@@ -32,11 +34,17 @@ def debate_simulator_page():
                     st.write("*No demographic information available.*")
 
 
-    if "debate" not in st.session_state:
+    if ("debate" not in st.session_state 
+        or st.session_state.debate_topic != st.session_state.debate.config.statement
+        or st.session_state.activate_mediator != (st.session_state.debate.mediator_config is not None)
+        or st.session_state.num_debaters != len(st.session_state.debate.debaters)
+        or st.session_state.debater_model != st.session_state.debate.debater_model.model_name
+        or any(
+            debater != st.session_state.debate.debaters[i].config
+            for i, debater in enumerate(st.session_state.debaters)
+        )   
+    ): 
         initialize_debate()
-        
-    if "remaining_rounds" not in st.session_state:
-        st.session_state.remaining_rounds = 0
 
     chat_container = st.container()
     with chat_container:

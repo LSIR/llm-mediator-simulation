@@ -41,7 +41,8 @@ SEED = 42
 gpt_key = os.getenv("GPT_API_KEY") or ""
 mediator_model =  GPTModel(api_key=gpt_key, model_name="gpt-4o", seed=SEED)
 
-debater_model = OllamaLocalModel(model_name = 'deepseek-r1:8b')
+# debater_model = OllamaLocalModel(model_name = 'deepseek-r1:8b')
+debater_model = OllamaLocalModel(model_name = 'mistral')
 
 
 # Debater participants
