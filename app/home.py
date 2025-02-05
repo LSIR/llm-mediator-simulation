@@ -37,14 +37,19 @@ def init_session_state_vars():
     if "debaters" not in st.session_state:
         st.session_state.debaters = [get_debater_profile(i) for i in range(st.session_state.num_debaters)]
 
-    if "activate_mediator" not in st.session_state:
-        st.session_state.activate_mediator = False
-
     if "debater_model" not in st.session_state:
         st.session_state.debater_model = "mistral-nemo"
 
     if "remaining_rounds" not in st.session_state:
         st.session_state.remaining_rounds = 0
+
+    if "unmediated" not in st.session_state:
+        st.session_state.unmediated = True
+
+    if "mediated" not in st.session_state:
+        st.session_state.mediated = False
+    
+
 
 init_session_state_vars()
 

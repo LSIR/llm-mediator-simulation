@@ -106,6 +106,8 @@ class DebateHandler:
 
         The debaters will all send one intervention per round, in random order.
         """
+        if self.seed is not None:
+            random.seed(self.seed)
 
         for i in track(range(rounds)):
             # Shuffle the debaters order

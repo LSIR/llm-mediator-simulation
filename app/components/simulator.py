@@ -18,8 +18,16 @@ def debate_simulator_page():
     st.header("Debate Simulator")
     st.markdown(f"**Debate Topic**: {st.session_state.debate_topic}")
     st.markdown(f"**Debater Model**: {st.session_state.debater_model}")
-    st.markdown(f"**Mediator activated**: {'Yes' if st.session_state.activate_mediator else 'No'}")
-    # st.markdown(f"Debaters:")
+    
+    st.markdown("**Debate Types**: Select the debate types you want to simulate, selecting both is valid.")
+    #checkboxes for st.session_state.unmediated and st.session_state.mediated
+    st.session_state.unmediated = st.checkbox("Unmediated", st.session_state.unmediated)
+    st.session_state.mediated = st.checkbox("Mediated", st.session_state.mediated)
+    
+    if not st.session_state.unmediated and not st.session_state.mediated:
+        st.warning("Please select at least one debate type.")
+
+
     cols = st.columns(len(st.session_state.debaters))
     for col, debater in zip(cols, st.session_state.debaters):
         with col:
@@ -32,27 +40,28 @@ def debate_simulator_page():
                     st.write("*No demographic information available.*")
 
 
-    if ("debate" not in st.session_state 
-        or st.session_state.debate_topic != st.session_state.debate.config.statement
-        or st.session_state.activate_mediator != (st.session_state.debate.mediator_config is not None)
-        or st.session_state.num_debaters != len(st.session_state.debate.debaters)
-        or st.session_state.debater_model != st.session_state.debate.debater_model.model_name
+    if ("unmediated_debate" not in st.session_state 
+        or st.session_state.debate_topic != st.session_state.unmediated_debate.config.statement
+        or st.session_state.num_debaters != len(st.session_state.unmediated_debate.debaters)
+        or st.session_state.debater_model != st.session_state.unmediated_debate.debater_model.model_name
         or any(
-            debater != st.session_state.debate.debaters[i].config
+            debater != st.session_state.unmediated_debate.debaters[i].config
             for i, debater in enumerate(st.session_state.debaters)
         )   
     ): 
         initialize_debate()
 
-    chat_container = st.container()
-    with chat_container:
-        for intervention in st.session_state.debate.interventions:
-            if intervention.text:
-                col1, col2 = st.columns([1, 9])
-                with col1:
-                    #st.image("https://i.redd.it/67xiprjzuzod1.png", width=50)
-                    pass
-                with col2:
+    debate_cols = st.columns(2)
+    
+    for col, debate, type in zip(debate_cols, 
+                           [st.session_state.unmediated_debate, 
+                            st.session_state.mediated_debate],
+                            ["Without mediator", "With mediator"]):
+        with col:
+            st.subheader(f"{type}")
+            # with chat_container:
+            for intervention in debate.interventions:
+                if intervention.text:
                     if intervention.debater:
                         st.markdown(f"👤 **{intervention.debater.name}**: {intervention.text}")
                     else: # Mediator
@@ -60,27 +69,34 @@ def debate_simulator_page():
     # Chat controls
     col1, col2, col3 = st.columns(3)
     with col1:
-        if st.button("Simulate single round"):
+        if st.button("Simulate single round", 
+                     disabled=not (st.session_state.unmediated or st.session_state.mediated)):
             st.session_state.remaining_rounds = 1
             
     with col2:
-        st.button("Reset Chat", on_click=reset_chat, kwargs={"debate": st.session_state})
+        st.button("Reset Chat", on_click=reset_chat,
+                  disabled=not (st.session_state.unmediated or st.session_state.mediated))
 
     with col3:
         rounds = st.number_input("Number of rounds", min_value=1, value=3)
-        if st.button("Simulate multiple rounds"):
+        if st.button("Simulate multiple rounds",
+                     disabled=not (st.session_state.unmediated or st.session_state.mediated)):
             st.session_state.remaining_rounds = rounds
 
     
     if st.session_state.remaining_rounds:
-        st.session_state.debate.run(rounds=1)
+        if st.session_state.unmediated:
+            st.session_state.unmediated_debate.run(rounds=1)
+        if st.session_state.mediated:
+            st.session_state.mediated_debate.run(rounds=1)
         # Refresh the interface
         st.session_state.remaining_rounds -= 1
         st.rerun()
 
-def reset_chat(debate: DebateHandler):
+def reset_chat():
     random.seed(SEED)
-    st.session_state.debate.preload_chat(debaters=st.session_state.debaters, interventions=[])
+    st.session_state.unmediated_debate.preload_chat(debaters=st.session_state.debaters, interventions=[])
+    st.session_state.mediated_debate.preload_chat(debaters=st.session_state.debaters, interventions=[])
 
 # Convert Likert7AgreementLevel to emojis
 def likert7_to_emoji(level: Likert7AgreementLevel) -> str:
@@ -108,22 +124,33 @@ def initialize_debate():
     )
 
     mediator_model =  GPTModel(api_key=st.session_state.api_key, model_name="gpt-4o", seed=SEED)
-    #debater_model = DummyModel() #  # GPTModel(api_key=st.session_state.api_key, model_name="gpt-4o", seed=SEED)
+    # debater_model = DummyModel(model_name = st.session_state.debater_model) #  # GPTModel(api_key=st.session_state.api_key, model_name="gpt-4o", seed=SEED)
     debater_model = OllamaLocalModel(model_name = st.session_state.debater_model)
 
-    if st.session_state.activate_mediator:
-        mediator_config = MediatorConfig()
-    else:
-        mediator_config = None
-
-    st.session_state.debate = DebateHandler(
+    st.session_state.unmediated_debate = DebateHandler(
         debater_model=debater_model,
         mediator_model=mediator_model,
         debaters=st.session_state.debaters,
         config=debate_config,
         summary_config=summary_config,
         metrics_handler=None,
-        mediator_config=mediator_config,
+        mediator_config=None,
         seed=SEED,
         variable_personality=False,
     )
+
+    st.session_state.mediated_debate = DebateHandler(
+        debater_model=debater_model,
+        mediator_model=mediator_model,
+        debaters=st.session_state.debaters,
+        config=debate_config,
+        summary_config=summary_config,
+        metrics_handler=None,
+        mediator_config=MediatorConfig(),
+        seed=SEED,
+        variable_personality=False,
+    )
+
+
+
+    
