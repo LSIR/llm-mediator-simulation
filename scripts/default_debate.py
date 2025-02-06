@@ -35,7 +35,7 @@ SEED = 42
 google_key = os.getenv("VERTEX_AI_API_KEY") or ""
 gpt_key = os.getenv("GPT_API_KEY") or ""
 
-mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o", seed=SEED) # GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
+mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o") # GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
 
 debater_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro")
 

@@ -49,7 +49,7 @@ def summarize_conversation_with_last_messages(
     Summarize the conversation above, with an emphasis on the latest messages.
     """
 
-    return model.sample(prompt)
+    return model.sample(prompt, seed)
 
 
 async def summarize_conversation_with_last_messages_async(

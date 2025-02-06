@@ -19,7 +19,7 @@ def debate_simulator_page():
     st.markdown(f"**Debate Topic**: {st.session_state.debate_topic}")
     st.markdown(f"**Debater Model**: {st.session_state.debater_model}")
     
-    st.markdown("**Debate Types**: Select the debate types you want to simulate, selecting both is valid.")
+    st.markdown("**Debate Type**: Select the debate types you want to simulate, selecting both is valid.")
     #checkboxes for st.session_state.unmediated and st.session_state.mediated
     st.session_state.unmediated = st.checkbox("Unmediated", st.session_state.unmediated)
     st.session_state.mediated = st.checkbox("Mediated", st.session_state.mediated)
@@ -117,13 +117,15 @@ def likert7_to_emoji(level: Likert7AgreementLevel) -> str:
     
 
 def initialize_debate():
-    summary_config = SummaryConfig(latest_messages_limit=5, debaters=st.session_state.debaters)
+    summary_config = SummaryConfig(latest_messages_limit=5, 
+                                   debaters=st.session_state.debaters,
+                                   ignore=False)
 
     debate_config = DebateConfig(
         statement=st.session_state.debate_topic,
     )
 
-    mediator_model =  GPTModel(api_key=st.session_state.api_key, model_name="gpt-4o", seed=SEED)
+    mediator_model =  GPTModel(api_key=st.session_state.api_key, model_name="gpt-4o")
     # debater_model = DummyModel(model_name = st.session_state.debater_model) #  # GPTModel(api_key=st.session_state.api_key, model_name="gpt-4o", seed=SEED)
     debater_model = OllamaLocalModel(model_name = st.session_state.debater_model)
 

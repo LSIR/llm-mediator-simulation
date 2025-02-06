@@ -52,12 +52,14 @@ class SummaryHandler(Promptable):
             -self._latest_messages_limit :
         ]
 
-    def regenerate_summary(self) -> str:
+    def regenerate_summary(self, seed: int | None = None) -> str:
         """Regenerate the summary with the latest messages."""
-
-        self.summary = summarize_conversation_with_last_messages(
-            self._model, self.summary, self.message_strings
-        )
+        if self.ignore:
+            pass
+        else:
+            self.summary = summarize_conversation_with_last_messages(
+                self._model, self.summary, self.message_strings, seed
+            )
 
         return self.summary
 

@@ -131,6 +131,7 @@ def mediator_intervention(
     mediator: MediatorConfig,
     summary: SummaryHandler,
     probability_mapper: ProbabilityMapper | None = None,
+    seed: int | None = None,
 ) -> tuple[LLMProbaMessage, str, bool]:
     """Mediator intervention: decision, motivation for the intervention, and intervention content.
 
@@ -152,7 +153,7 @@ CONVERSATION HISTORY WITH TIMESTAMPS:
 {json_prompt(LLM_PROBA_RESPONSE_FORMAT)}
     """
 
-    response = model.sample(prompt)
+    response = model.sample(prompt, seed=seed)
     parsed_response = parse_llm_json(response, LLMProbaMessage)
 
     p = parsed_response["do_intervene"]

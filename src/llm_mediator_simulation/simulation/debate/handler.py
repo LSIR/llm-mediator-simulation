@@ -135,17 +135,16 @@ class DebateHandler:
                 ##############################################################
 
                 if not self.mediator_handler:
-                    if not self.summary_config.ignore:
-                        self.summary_handler.regenerate_summary()
+                    self.summary_handler.regenerate_summary(seed=self.seed)
                     continue
 
-                intervention = self.mediator_handler.intervention()
+                intervention = self.mediator_handler.intervention(seed=self.seed)
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)
 
                 # Regenerate the summary for the next debater
                 # (either way, a debater or mediator has intervened here)
-                self.summary_handler.regenerate_summary()
+                self.summary_handler.regenerate_summary(seed=self.seed)
 
     ###############################################################################################
     #                                        SERIALIZATION                                        #

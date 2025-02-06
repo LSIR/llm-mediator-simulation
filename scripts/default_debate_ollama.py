@@ -39,7 +39,7 @@ SEED = 42
 # mediator_model = GoogleModel(api_key=google_key, model_name="gemini-1.5-pro", seed=None)
 
 gpt_key = os.getenv("GPT_API_KEY") or ""
-mediator_model =  GPTModel(api_key=gpt_key, model_name="gpt-4o", seed=SEED)
+mediator_model =  GPTModel(api_key=gpt_key, model_name="gpt-4o")
 
 # debater_model = OllamaLocalModel(model_name = 'deepseek-r1:8b')
 debater_model = OllamaLocalModel(model_name = 'mistral')
