@@ -1,6 +1,8 @@
 import random
 import time
-from utils import SEED
+from llm_mediator_simulation.metrics.criteria import ArgumentQuality
+from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
+from utils import SEED, streamlit_plot_metrics
 from llm_mediator_simulation.models.dummy_model import DummyModel
 from llm_mediator_simulation.models.ollama_local_server_model import OllamaLocalModel
 from llm_mediator_simulation.personalities.scales import Likert7AgreementLevel
@@ -19,15 +21,24 @@ def debate_simulator_page():
     st.markdown(f"**Debate Topic**: {st.session_state.debate_topic}")
     st.markdown(f"**Debater Model**: {st.session_state.debater_model}")
     
-    st.markdown("**Debate Type**: Select the debate types you want to simulate, selecting both is valid.")
-    #checkboxes for st.session_state.unmediated and st.session_state.mediated
-    st.session_state.unmediated = st.checkbox("Unmediated", st.session_state.unmediated)
-    st.session_state.mediated = st.checkbox("Mediated", st.session_state.mediated)
+    checks = st.columns([1, 5, 5])
+    with checks[0]:
+        st.markdown("**Debate Type**: Select the debate types you want to simulate, selecting both is valid.")
+    with checks[1]:
+        st.session_state.unmediated = st.checkbox("Unmediated", st.session_state.unmediated)
+    with checks[2]:
+        st.session_state.mediated = st.checkbox("Mediated", st.session_state.mediated)
     
+    metrics_columns = st.columns([1, 10])
+    with metrics_columns[0]:
+        st.markdown("**Metrics**")
+    with metrics_columns[1]:
+        st.session_state.metrics = st.checkbox("Compute metrics", st.session_state.metrics)
+
     if not st.session_state.unmediated and not st.session_state.mediated:
         st.warning("Please select at least one debate type.")
 
-
+    st.markdown("**Debater profiles**")
     cols = st.columns(len(st.session_state.debaters))
     for col, debater in zip(cols, st.session_state.debaters):
         with col:
@@ -47,25 +58,44 @@ def debate_simulator_page():
         or any(
             debater != st.session_state.unmediated_debate.debaters[i].config
             for i, debater in enumerate(st.session_state.debaters)
-        )   
+        )
+        or st.session_state.metrics != (st.session_state.unmediated_debate.metrics_handler is not None)   
     ): 
         initialize_debate()
 
-    debate_cols = st.columns(2)
+    debate_cols = st.columns([10, 1, 10, 1])
+
+    debates = [st.session_state.unmediated_debate, 
+               st.session_state.mediated_debate]
     
-    for col, debate, type in zip(debate_cols, 
-                           [st.session_state.unmediated_debate, 
-                            st.session_state.mediated_debate],
-                            ["Without mediator", "With mediator"]):
-        with col:
-            st.subheader(f"{type}")
-            # with chat_container:
+    headers = ["Without mediator", "With mediator"]
+    counters = [1, 1]
+
+    
+    for i in range(2):
+        debate = debates[i]
+        with debate_cols[2*i]:
+            # Make the subheader centered
+            # st.subheader(f"{headers[i]}")
+            st.markdown(f"<h2 style='text-align: center; color: grey;'>{headers[i]}</h2>", unsafe_allow_html=True)
+            if st.session_state.metrics:
+                streamlit_plot_metrics(debate)
             for intervention in debate.interventions:
                 if intervention.text:
                     if intervention.debater:
-                        st.markdown(f"👤 **{intervention.debater.name}**: {intervention.text}")
+                        st.markdown(f"👤 ({counters[i]}) **{intervention.debater.name}**: {intervention.text}")
+                        counters[i] += 1
                     else: # Mediator
                         st.markdown(f"🤝 **Mediator**: {intervention.text}")
+    
+        # with debate_cols[2*i+1]:
+        #     if st.session_state.metrics:
+        #         st.subheader(f"")
+        #         for intervention in debate.interventions:
+        #             if intervention.metrics:
+        #                 for argument_quality, value in intervention.metrics.argument_qualities.items():
+        #                     st.markdown(f"**{argument_quality.value[0]}**: {value.value}")
+    
     # Chat controls
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -119,7 +149,7 @@ def likert7_to_emoji(level: Likert7AgreementLevel) -> str:
 def initialize_debate():
     summary_config = SummaryConfig(latest_messages_limit=5, 
                                    debaters=st.session_state.debaters,
-                                   ignore=False)
+                                   ignore=True)
 
     debate_config = DebateConfig(
         statement=st.session_state.debate_topic,
@@ -129,13 +159,25 @@ def initialize_debate():
     # debater_model = DummyModel(model_name = st.session_state.debater_model) #  # GPTModel(api_key=st.session_state.api_key, model_name="gpt-4o", seed=SEED)
     debater_model = OllamaLocalModel(model_name = st.session_state.debater_model)
 
+    if st.session_state.metrics:
+        metrics = MetricsHandler(
+            model=mediator_model,
+            argument_qualities=[
+                ArgumentQuality.APPROPRIATENESS,
+                #ArgumentQuality.CLARITY,
+                #ArgumentQuality.LOCAL_ACCEPTABILITY,
+                #ArgumentQuality.EMOTIONAL_APPEAL,
+            ],)
+    else:
+        metrics = None
+
     st.session_state.unmediated_debate = DebateHandler(
         debater_model=debater_model,
         mediator_model=mediator_model,
         debaters=st.session_state.debaters,
         config=debate_config,
         summary_config=summary_config,
-        metrics_handler=None,
+        metrics_handler=metrics,
         mediator_config=None,
         seed=SEED,
         variable_personality=False,
@@ -147,7 +189,7 @@ def initialize_debate():
         debaters=st.session_state.debaters,
         config=debate_config,
         summary_config=summary_config,
-        metrics_handler=None,
+        metrics_handler=metrics,
         mediator_config=MediatorConfig(),
         seed=SEED,
         variable_personality=False,

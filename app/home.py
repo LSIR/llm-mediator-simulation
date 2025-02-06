@@ -48,6 +48,9 @@ def init_session_state_vars():
 
     if "mediated" not in st.session_state:
         st.session_state.mediated = False
+
+    if "metrics" not in st.session_state:
+        st.session_state.metrics = False
     
 
 

@@ -5,6 +5,8 @@ import os
 
 from dotenv import load_dotenv
 
+from llm_mediator_simulation.metrics.criteria import ArgumentQuality
+from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulation.models.gpt_models import GPTModel
 from llm_mediator_simulation.models.mistral_local_server_model import MistralLocalServerModel
 from llm_mediator_simulation.models.ollama_local_server_model import OllamaLocalModel
@@ -143,6 +145,16 @@ debate_config = DebateConfig(
 
 # mediator_config = MediatorConfig()
 
+# metrics = None
+metrics = metrics = MetricsHandler(
+            model=mediator_model,
+            argument_qualities=[
+                ArgumentQuality.APPROPRIATENESS,
+                #ArgumentQuality.CLARITY,
+                #ArgumentQuality.LOCAL_ACCEPTABILITY,
+                #ArgumentQuality.EMOTIONAL_APPEAL,
+            ],)
+
 # The debate runner
 debate = DebateHandler(
     debater_model=debater_model,
@@ -150,7 +162,7 @@ debate = DebateHandler(
     debaters=debaters,
     config=debate_config,
     summary_config=summary_config,
-    metrics_handler=None,
+    metrics_handler=metrics,
     mediator_config=None,
     seed=SEED,
     variable_personality=False,
