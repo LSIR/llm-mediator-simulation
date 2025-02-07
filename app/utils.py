@@ -104,3 +104,10 @@ def flip_metric(metric):
         st.session_state.metrics[metric] = True
     else:
         st.session_state.metrics[metric] = False    
+
+def flip_debate_type(debate_type):
+    """Workaroun to probel of checkbox not updating session state..."""
+    if st.session_state[debate_type]:
+        st.session_state[debate_type] = False
+    else:
+        st.session_state[debate_type] = True

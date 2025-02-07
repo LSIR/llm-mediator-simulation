@@ -1,14 +1,11 @@
 import random
-import time
 
 from numpy import copy
-from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
-from utils import SEED, flip_metric, streamlit_plot_metrics
+from utils import SEED, flip_debate_type, flip_metric, streamlit_plot_metrics
 from llm_mediator_simulation.models.dummy_model import DummyModel
 from llm_mediator_simulation.models.ollama_local_server_model import OllamaLocalModel
 from llm_mediator_simulation.personalities.scales import Likert7AgreementLevel
-from llm_mediator_simulation.simulation.debater.config import DebaterConfig
 import streamlit as st
 
 from llm_mediator_simulation.models.gpt_models import GPTModel
@@ -27,10 +24,14 @@ def debate_simulator_page():
     with checks[0]:
         st.markdown("**Debate Type**: Select the debate types you want to simulate, selecting both is valid.")
     with checks[1]:
-        st.checkbox("Unmediated", key="unmediated")
+        st.checkbox("Unmediated", value=st.session_state.unmediated, 
+                        on_change=flip_debate_type,
+                        kwargs={"debate_type": "unmediated"})
     with checks[2]:
-        st.checkbox("Mediated", key="mediated")
-    
+        st.checkbox("Mediated", value=st.session_state.mediated, 
+                        on_change=flip_debate_type,
+                        kwargs={"debate_type": "mediated"})
+
     if not st.session_state.unmediated and not st.session_state.mediated:
         if "unmediated_debate" in st.session_state:
             del st.session_state.unmediated_debate
