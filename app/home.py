@@ -1,6 +1,7 @@
 import os
 import random
 from dotenv import load_dotenv
+from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from utils import SEED
 from utils import get_debater_profile
 from components.simulator import debate_simulator_page
@@ -50,7 +51,9 @@ def init_session_state_vars():
         st.session_state.mediated = False
 
     if "metrics" not in st.session_state:
-        st.session_state.metrics = False
+        st.session_state.metrics = {ArgumentQuality.APPROPRIATENESS: False,
+                                    ArgumentQuality.CLARITY: False,
+                                    ArgumentQuality.EMOTIONAL_APPEAL: False}
     
 
 

@@ -56,37 +56,34 @@ def get_debater_profile(agent_num):
 SEED = 42
 
 
-def streamlit_plot_metrics(debate):
+def streamlit_plot_metrics(debate, metric_to_plot):
     fig, ax = plt.subplots()
     if debate:
-        metric_data = {}
+        values = []
         debater_intervention_num = 0
         for intervention in debate.interventions:
             if intervention.metrics:
                 debater_intervention_num += 1
-                for argument_quality, value in intervention.metrics.argument_qualities.items():
-                    if argument_quality not in metric_data:
-                        metric_data[argument_quality] = []
-                    metric_data[argument_quality].append(value.value + 1)
+                values.append(intervention.metrics.argument_qualities[metric_to_plot].value + 1)
         
         cmap = cm.get_cmap('RdYlGn')  # Red (low) to Green (high)
         norm = mcolors.Normalize(vmin=1, vmax=5)  # Normalize between 1 and 5
         
-        for metric, values in metric_data.items():
-            x_values = np.arange(1, len(values) + 1)
-            colors = [cmap(norm(v)) for v in values]
-            
-            for i in range(len(values) - 1):
-                x_segment = [x_values[i], x_values[i+1]]
-                y_segment = [values[i], values[i+1]]
-                lc = np.linspace(norm(values[i]), norm(values[i+1]), 10)
-                for j in range(len(lc) - 1):
-                    ax.plot(
-                        np.linspace(x_segment[0], x_segment[1], 10)[j:j+2],
-                        np.linspace(y_segment[0], y_segment[1], 10)[j:j+2],
-                        color=cmap(lc[j]), linewidth=2
-                    )
-                ax.scatter(x_segment, y_segment, color=[colors[i], colors[i+1]], edgecolors='k')
+
+        x_values = np.arange(1, len(values) + 1)
+        colors = [cmap(norm(v)) for v in values]
+        
+        for i in range(len(values) - 1):
+            x_segment = [x_values[i], x_values[i+1]]
+            y_segment = [values[i], values[i+1]]
+            lc = np.linspace(norm(values[i]), norm(values[i+1]), 10)
+            for j in range(len(lc) - 1):
+                ax.plot(
+                    np.linspace(x_segment[0], x_segment[1], 10)[j:j+2],
+                    np.linspace(y_segment[0], y_segment[1], 10)[j:j+2],
+                    color=cmap(lc[j]), linewidth=2
+                )
+            ax.scatter(x_segment, y_segment, color=[colors[i], colors[i+1]], edgecolors='k')
             
         
     ax.set_xlabel("Intervention")
@@ -98,5 +95,12 @@ def streamlit_plot_metrics(debate):
     ax.set_ylim(0.8, 5.5)
     ax.set_yticks(range(1, 6))
     ax.set_title("Evolution of Argument Quality Metrics")
-    ax.legend(metric_data.keys())
+    ax.legend([metric_to_plot.value[0]])
     st.pyplot(fig)
+
+def flip_metric(metric):
+    """Workaroun to probel of checkbox not updating session state..."""
+    if st.session_state[f"check_{metric.value[0]}"]:
+        st.session_state.metrics[metric] = True
+    else:
+        st.session_state.metrics[metric] = False    
