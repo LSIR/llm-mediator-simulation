@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Detailed agent profiles page
-from utils import MODELS, get_debater_profile
+from utils import MODELS, get_random_debater_profile
 from llm_mediator_simulation.personalities.scales import Likert3Level, Likert7AgreementLevel
 
 
@@ -14,7 +14,7 @@ def agent_profiles_page():
     st.subheader("Debaters Configuration")
     st.session_state.num_debaters = st.slider("Number of Debaters", min_value=2, max_value=5, value=st.session_state.num_debaters)
     if len(st.session_state.debaters) != st.session_state.num_debaters:
-        st.session_state.debaters = [get_debater_profile(i) for i in range(st.session_state.num_debaters)]
+        st.session_state.debaters = [get_random_debater_profile(i) for i in range(st.session_state.num_debaters)]
 
     st.session_state.debater_model = st.selectbox("Debater Model", options=MODELS, index=MODELS.index(st.session_state.debater_model))
 

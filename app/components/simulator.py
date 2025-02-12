@@ -16,13 +16,13 @@ from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 
 def debate_simulator_page():
     # Main chat simulation
-    st.header("Debate Simulator")
+    st.header("Debate Simulator 🗣️ (v.0.1.0)")
     st.markdown(f"**Debate Topic**: {st.session_state.debate_topic}")
     st.markdown(f"**Debater Model**: {st.session_state.debater_model}")
     
-    checks = st.columns([1, 5, 5])
+    checks = st.columns([1, 3, 3, 3])
     with checks[0]:
-        st.markdown("**Debate Type**: Select the debate types you want to simulate, selecting both is valid.")
+        st.markdown("**Debate Type**")
     with checks[1]:
         st.checkbox("Unmediated", value=st.session_state.unmediated, 
                         on_change=flip_debate_type,
@@ -31,6 +31,9 @@ def debate_simulator_page():
         st.checkbox("Mediated", value=st.session_state.mediated, 
                         on_change=flip_debate_type,
                         kwargs={"debate_type": "mediated"})
+
+    with checks[3]:
+        st.markdown("Select the debate types you want to simulate, selecting both is valid.")
 
     if not st.session_state.unmediated and not st.session_state.mediated:
         if "unmediated_debate" in st.session_state:

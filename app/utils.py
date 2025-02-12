@@ -16,7 +16,7 @@ MODELS = ["deepseek-r1:8b", "deepseek-r1:1.5b", "llama3.2", "mistral", "mistral-
 UNISEXNAMES = ["Alex", "Riley", "Jordan", "Parker", "Sawyer", "Taylor", "Casey", "Avery", "Jamie", "Quinn"]
 
 
-def get_debater_profile(agent_num):
+def get_random_debater_profile(agent_num):
     name = UNISEXNAMES[agent_num]
     # avatar = st.sidebar.text_input(f"Agent {agent_num} Avatar URL", value=f"https://via.placeholder.com/50?text=A{agent_num}")
     # return {"name": name} # , "avatar": avatar}
@@ -52,6 +52,77 @@ def get_debater_profile(agent_num):
                          topic_opinion=TopicOpinion(agreement=random.choice(list(Likert7AgreementLevel))),
                          personality = personality)
 
+
+def get_predefined_debater_profile(agent_num):
+    name = UNISEXNAMES[agent_num]
+    if agent_num == 0:
+        personality = Personality(
+            demographic_profile={DemographicCharacteristic.ETHNICITY: "White",
+                                DemographicCharacteristic.BIOLOGICAL_SEX: "Male",
+                                DemographicCharacteristic.NATIONALITY: "American",
+                                DemographicCharacteristic.AGE: "70",
+                                DemographicCharacteristic.MARITAL_STATUS: "Married",
+                                DemographicCharacteristic.EDUCATION: "High School",
+                                DemographicCharacteristic.OCCUPATION: "Worker",
+                                DemographicCharacteristic.POLITICAL_LEANING: "Republican",
+                                DemographicCharacteristic.RELIGION: "Christian",
+                                DemographicCharacteristic.SEXUAL_ORIENTATION: "Heterosexual",
+                                DemographicCharacteristic.HEALTH_CONDITION: "Non-disabled",
+                                DemographicCharacteristic.INCOME: "US$ 50,000",
+                                DemographicCharacteristic.HOUSEHOLD_SIZE: "5",
+                                DemographicCharacteristic.NUMBER_OF_DEPENDENT: "3",
+                                DemographicCharacteristic.LIVING_QUARTERS: "House",
+                                DemographicCharacteristic.CITY_OF_RESIDENCE: "Midland, Texas",
+                                DemographicCharacteristic.PRIMARY_MODE_OF_TRANSPORTATION: "Car",
+                                },
+            traits={PersonalityTrait.AGREEABLENESS: Likert3Level.LOW,
+                    PersonalityTrait.CONSCIENTIOUSNESS: Likert3Level.LOW,
+                    PersonalityTrait.EXTRAVERSION: Likert3Level.LOW,
+                    PersonalityTrait.NEUROTICISM: Likert3Level.LOW,
+                    PersonalityTrait.OPENNESS: Likert3Level.LOW}
+        )
+        return DebaterConfig(name=name, 
+                             topic_opinion=TopicOpinion(agreement=Likert7AgreementLevel.STRONGLY_AGREE), 
+                             personality=personality)
+    
+    if agent_num == 1:
+        personality = Personality(
+            demographic_profile={DemographicCharacteristic.ETHNICITY: "Black",
+                                 DemographicCharacteristic.BIOLOGICAL_SEX: "Female",
+                                 DemographicCharacteristic.NATIONALITY: "American",
+                                 DemographicCharacteristic.AGE: "28",
+                                    DemographicCharacteristic.MARITAL_STATUS: "Single",
+                                    DemographicCharacteristic.EDUCATION: "Ph.D.",
+                                    DemographicCharacteristic.OCCUPATION: "Social Scientist",
+                                    DemographicCharacteristic.POLITICAL_LEANING: "Democrat",
+                                    DemographicCharacteristic.RELIGION: "Muslim",
+                                    DemographicCharacteristic.SEXUAL_ORIENTATION: "Homosexual",
+                                    DemographicCharacteristic.HEALTH_CONDITION: "Non-disabled",
+                                    DemographicCharacteristic.INCOME: "US$ 180,000",
+                                    DemographicCharacteristic.HOUSEHOLD_SIZE: "1",
+                                    DemographicCharacteristic.NUMBER_OF_DEPENDENT: "0",
+                                    DemographicCharacteristic.LIVING_QUARTERS: "Apartment",
+                                    DemographicCharacteristic.CITY_OF_RESIDENCE: "San Francisco, California",
+                                    DemographicCharacteristic.PRIMARY_MODE_OF_TRANSPORTATION: "Bike",
+                                    },
+            traits={PersonalityTrait.AGREEABLENESS: Likert3Level.LOW,
+                    PersonalityTrait.CONSCIENTIOUSNESS: Likert3Level.HIGH,
+                    PersonalityTrait.EXTRAVERSION: Likert3Level.HIGH,
+                    PersonalityTrait.NEUROTICISM: Likert3Level.HIGH,
+                    PersonalityTrait.OPENNESS: Likert3Level.LOW}
+        )
+        return DebaterConfig(name=name,
+                                topic_opinion=TopicOpinion(agreement=Likert7AgreementLevel.STRONGLY_DISAGREE),
+                                personality=personality)
+
+
+
+    
+
+
+
+
+                             
 
 SEED = 42
 
