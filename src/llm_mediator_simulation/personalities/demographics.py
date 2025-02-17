@@ -3,13 +3,13 @@ from enum import Enum
 
 class DemographicCharacteristic(Enum):
     """Demographic characteristic for agents.
-        Based on:
-            - https://github.com/yunshiuan/llm-agent-opinion-dynamics/blob/main/prompts/opinion_dynamics/Flache_2017/list_agent_descriptions.csv
-            - 10.48550/arXiv.2310.05984 - Fig. 1
-            - 10.5555/3618408.3619652 - Table 2
-            - https://electionstudies.org/wp-content/uploads/2024/05/anes_specialstudy_2024ets_qnnaire_20240403.pdf
-            - https://www.pewresearch.org/wp-content/uploads/sites/20/2024/07/2024-NPORS-Paper-Questionnaire.pdf 
-            - https://yourmorals.org/ 
+    Based on:
+        - https://github.com/yunshiuan/llm-agent-opinion-dynamics/blob/main/prompts/opinion_dynamics/Flache_2017/list_agent_descriptions.csv
+        - 10.48550/arXiv.2310.05984 - Fig. 1
+        - 10.5555/3618408.3619652 - Table 2
+        - https://electionstudies.org/wp-content/uploads/2024/05/anes_specialstudy_2024ets_qnnaire_20240403.pdf
+        - https://www.pewresearch.org/wp-content/uploads/sites/20/2024/07/2024-NPORS-Paper-Questionnaire.pdf
+        - https://yourmorals.org/
     """
 
     # NAME = "name" ; name is not a demographic characteristic but a required field for agents

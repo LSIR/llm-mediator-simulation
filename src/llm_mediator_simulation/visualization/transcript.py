@@ -38,7 +38,9 @@ def debate_participants_transcript(debaters: list[DebaterConfig]) -> str:
     lines: list[str] = []
 
     for debater in debaters:
-        line = f"{debater.name} {debater.topic_opinion.agreement.name} with the statement." 
+        line = (
+            f"{debater.name} {debater.topic_opinion.agreement.name} with the statement."
+        )
         lines.append(line)
 
     return "\n".join(lines)

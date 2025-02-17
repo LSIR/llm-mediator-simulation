@@ -75,7 +75,13 @@ tests = ["tests", "*/llm-mediator-simulation/tests"]
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
-[tool.ruff]
+
+line-length = 88
+
+# Assume Python 3.12
+target-version = "py312"
+
+[tool.ruff.lint]
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
 # Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
 # McCabe complexity (`C901`) by default.
@@ -112,14 +118,8 @@ exclude = [
 ]
 per-file-ignores = {}
 
-# Same as Black.
-line-length = 88
-
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-# Assume Python 3.8
-target-version = "py38"
 
 ################################################################################
 # EXAMPLE BLACK CONFIG (https://github.com/psf/black/blob/main/pyproject.toml) #
@@ -128,7 +128,7 @@ target-version = "py38"
 [tool.black]
 
 line-length = 88
-target-version = ['py37', 'py38']
+target-version = ['py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(

@@ -62,7 +62,6 @@ def aggregate_average_personalities(debate: DebatePickle):
     round = 1
     debater_count = 0
     for intervention in debate.interventions:
-
         if intervention.debater is None:
             continue
 
@@ -128,7 +127,6 @@ def aggregate_average_metrics(debate: DebatePickle):
     aggregate: dict[ArgumentQuality, list[float]] = {}
 
     for intervention in debate.interventions:
-
         if intervention.debater is None:
             continue
 

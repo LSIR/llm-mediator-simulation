@@ -58,9 +58,9 @@ class AsyncSummaryHandler(AsyncPromptable):
 active or not. Empty messages are ignored.
         """
 
-        assert (
-            len(messages) == self.parallel_debates
-        ), "The number of messages must match the number of debates."
+        assert len(messages) == self.parallel_debates, (
+            "The number of messages must match the number of debates."
+        )
 
         for index, message in enumerate(messages):
             if not message.text:

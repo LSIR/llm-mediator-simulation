@@ -25,7 +25,7 @@ def save_api_key():
     Save the OpenAI API key to the session state.
     """
     if "user_openai_key_input" in st.session_state:
-        api_key = st.session_state.user_openai_key_input 
+        api_key = st.session_state.user_openai_key_input
     else:
         api_key = st.session_state.api_key
 

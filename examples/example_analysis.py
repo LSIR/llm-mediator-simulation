@@ -143,7 +143,6 @@ def transcript(debate: str):
         )
         debate = debates[-1]
 
-
     data = DebateHandler.unpickle(debate)
 
     print(debate_transcript(data))

@@ -1,6 +1,6 @@
 """Example script to run parallel debate simulations on nuclear energy.
 
-BUG: Google async models may raise an error when deallocated at the end due to this bug. It is harmless. 
+BUG: Google async models may raise an error when deallocated at the end due to this bug. It is harmless.
 -> https://github.com/google-gemini/generative-ai-python/issues/207#issuecomment-2308952931
 """
 

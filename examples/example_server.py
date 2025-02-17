@@ -140,9 +140,11 @@ def server():
     from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
     # Load the model
 
-    model = MistralLocalModel(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2",
-                              max_length=500,
-                              json=True)
+    model = MistralLocalModel(
+        model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2",
+        max_length=500,
+        json=True,
+    )
     from flask import Flask, request
 
     app = Flask("LLM Server")

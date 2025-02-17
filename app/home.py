@@ -18,8 +18,8 @@ gpt_key = os.getenv("GPT_API_KEY") or ""
 
 random.seed(SEED)
 
+
 def init_session_state_vars():
-    
     if "api_key" not in st.session_state:
         st.session_state.api_key = gpt_key
 
@@ -30,13 +30,18 @@ def init_session_state_vars():
         st.session_state.show_key_input = True
 
     if "debate_topic" not in st.session_state:
-        st.session_state.debate_topic = "Companies and governments should end their DEI programs."
+        st.session_state.debate_topic = (
+            "Companies and governments should end their DEI programs."
+        )
 
     if "num_debaters" not in st.session_state:
         st.session_state.num_debaters = 2
 
     if "debaters" not in st.session_state:
-        st.session_state.debaters = [get_predefined_debater_profile(i) for i in range(st.session_state.num_debaters)]
+        st.session_state.debaters = [
+            get_predefined_debater_profile(i)
+            for i in range(st.session_state.num_debaters)
+        ]
 
     if "debater_model" not in st.session_state:
         st.session_state.debater_model = "mistral-nemo"
@@ -51,10 +56,11 @@ def init_session_state_vars():
         st.session_state.mediated = False
 
     if "metrics" not in st.session_state:
-        st.session_state.metrics = {ArgumentQuality.APPROPRIATENESS: False,
-                                    ArgumentQuality.CLARITY: False,
-                                    ArgumentQuality.EMOTIONAL_APPEAL: False}
-    
+        st.session_state.metrics = {
+            ArgumentQuality.APPROPRIATENESS: False,
+            ArgumentQuality.CLARITY: False,
+            ArgumentQuality.EMOTIONAL_APPEAL: False,
+        }
 
 
 init_session_state_vars()
@@ -87,8 +93,9 @@ st.sidebar.text(" \n")
 
 # Page navigation
 # st.sidebar.header("Navigation")
-page = st.sidebar.radio("Go to",
-                        ["Debate Simulator", "Debate Settings", "OpenAI API Settings"])
+page = st.sidebar.radio(
+    "Go to", ["Debate Simulator", "Debate Settings", "OpenAI API Settings"]
+)
 
 if page == "Debate Settings":
     agent_profiles_page()

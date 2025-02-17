@@ -38,7 +38,6 @@ class AsyncMetricsHandler:
         self.argument_qualities = argument_qualities
 
     async def compute_metrics(self, texts: list[str]) -> list[Metrics]:
-
         metrics: list[Metrics] = [Metrics() for _ in range(len(texts))]
 
         # Measure Perspective API toxicity
@@ -52,7 +51,6 @@ class AsyncMetricsHandler:
 
         # Measure custom LLM-based metrics
         if self.model is not None and self.argument_qualities is not None:
-
             qualities = await async_measure_argument_qualities(
                 self.model, texts, self.argument_qualities
             )

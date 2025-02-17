@@ -9,12 +9,12 @@ class IssueValue:
     name: str
     description: str | None = None
 
+
 class Issues(Enum):
     GENERAL = IssueValue("general", None)
     ECONOMIC = IssueValue("economic", "economic issues")
     SOCIAL = IssueValue("social", "social issues")
     # SOCIETAL = IssueValue("societal", "societal issues")
-
 
 
 class Ideology(Enum):
@@ -29,5 +29,3 @@ class Ideology(Enum):
     EXTREMELY_CONSERVATIVE = "extremely conservative"
     LIBERTARIAN = "libertarian"
     INDEPENDENT = "independent"
-
-

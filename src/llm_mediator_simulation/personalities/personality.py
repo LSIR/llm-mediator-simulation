@@ -10,17 +10,29 @@ from llm_mediator_simulation.personalities.moral_foundations import MoralFoundat
 from llm_mediator_simulation.personalities.ideologies import Ideology, Issues
 from llm_mediator_simulation.personalities.traits import PersonalityTrait
 from llm_mediator_simulation.personalities.demographics import DemographicCharacteristic
-from llm_mediator_simulation.personalities.scales import KeyingDirection, Likert11LikelihoodLevel, Likert3Level, Likert5ImportanceLevel, Likert5Level, Likert7AgreementLevel
+from llm_mediator_simulation.personalities.scales import (
+    KeyingDirection,
+    Likert11LikelihoodLevel,
+    Likert3Level,
+    Likert5ImportanceLevel,
+    Likert5Level,
+    Likert7AgreementLevel,
+)
 from llm_mediator_simulation.utils.interfaces import Promptable
 
 
 @dataclass
 class Personality(Promptable):
     """Personality of an agent."""
+
     demographic_profile: dict[DemographicCharacteristic, str] | None = None
     traits: dict[PersonalityTrait, Likert3Level] | list[PersonalityTrait] | None = None
-    facets: dict[PersonalityFacet, KeyingDirection] | list[PersonalityFacet] | None = None
-    moral_foundations: dict[MoralFoundation, Likert5Level] | list[MoralFoundation] | None = None
+    facets: dict[PersonalityFacet, KeyingDirection] | list[PersonalityFacet] | None = (
+        None
+    )
+    moral_foundations: (
+        dict[MoralFoundation, Likert5Level] | list[MoralFoundation] | None
+    ) = None
     basic_human_values: dict[BasicHumanValues, Likert5ImportanceLevel] | None = None
     cognitive_biases: list[CognitiveBias] | None = None
     fallacies: list[Fallacy] | None = None
@@ -34,8 +46,10 @@ class Personality(Promptable):
     variable_facets: bool = False
     variable_moral_foundations: bool = False
     variable_basic_human_values: bool = False
-    variable_cognitive_biases: bool = False # TODO: If True, randomly sample cognitive biases
-    variable_fallacies: bool = False        # TODO: If True, randomly sample fallacies
+    variable_cognitive_biases: bool = (
+        False  # TODO: If True, randomly sample cognitive biases
+    )
+    variable_fallacies: bool = False  # TODO: If True, randomly sample fallacies
     variable_ideologies: bool = False
     variable_agreement_with_statements: bool = False
     variable_likelihood_of_beliefs: bool = False
@@ -88,13 +102,14 @@ class Personality(Promptable):
                     if foundation.value.description is not None:
                         descriptions.append(foundation.value.description)
                     if foundation.value.conceptual_definition is not None:
-                        conceptual_definitions.append(foundation.value.conceptual_definition)
+                        conceptual_definitions.append(
+                            foundation.value.conceptual_definition
+                        )
                 if descriptions:
                     prompt += f"- You are {self.format_list(descriptions)}.\n"
 
                 if conceptual_definitions:
                     prompt += f"Intuitions about {self.format_list(conceptual_definitions)} are relevant to your thinking.\n"
-
 
             elif isinstance(self.moral_foundations, dict):
                 descriptions = defaultdict(list)
@@ -103,7 +118,9 @@ class Personality(Promptable):
                     if foundation.value.description is not None:
                         descriptions[level].append(foundation.value.description)
                     if foundation.value.conceptual_definition is not None:
-                        conceptual_definitions[level].append(foundation.value.conceptual_definition)
+                        conceptual_definitions[level].append(
+                            foundation.value.conceptual_definition
+                        )
 
                 # group by level
                 for level in Likert5Level:
@@ -111,22 +128,21 @@ class Personality(Promptable):
                         prompt += f"You are {level.value.standard} {self.format_list(descriptions[level])}."
 
                     if conceptual_definitions[level]:
-                        if prompt[-1] == ".": # if there is a description
+                        if prompt[-1] == ".":  # if there is a description
                             prompt += " "
                         prompt += f"""Intuitions about {self.format_list(conceptual_definitions[level])} 
 are {level.value.get_alternative()} relevant to your thinking.\n"""
-                    
+
             else:
                 raise ValueError("Invalid moral foundations type")
             prompt += "\n"
-
 
         if self.basic_human_values:
             prompt += "As a guiding principle in your life:\n"
             if isinstance(self.basic_human_values, list):
                 prompt += f"""{self.format_list_and_conjugate_be([human_value.value.description for human_value in self.basic_human_values])} 
 important to your values.\n"""
-            
+
             elif isinstance(self.basic_human_values, dict):
                 descriptions = defaultdict(list)
                 # group by level
@@ -136,10 +152,10 @@ important to your values.\n"""
                 for level, description_list in descriptions.items():
                     prompt += f"""- {self.format_list_and_conjugate_be(description_list).capitalize()} 
 {level.value} to your values.\n"""
-            
+
             else:
                 raise ValueError("Invalid basic human values type")
-            
+
             prompt += "\n"
 
         if self.cognitive_biases or self.fallacies:
@@ -156,13 +172,14 @@ important to your values.\n"""
             if self.fallacies:
                 prompt += "fallacies:\n"
                 for fallacy in self.fallacies:
-                    prompt += f"- {fallacy.name}, that is, {fallacy.description.lower()}\n"
+                    prompt += (
+                        f"- {fallacy.name}, that is, {fallacy.description.lower()}\n"
+                    )
                 prompt += "\n"
-
 
         if self.vote_last_presidential_election:
             # self.vote_last_presidential_election can be "voted for the Democratic candidate", "voted with an invalid ballot", "were an eligible voter but did not vote", "were disenfranchised".
-            prompt += f"In the last presidential election, you {self.vote_last_presidential_election}.\n\n" 
+            prompt += f"In the last presidential election, you {self.vote_last_presidential_election}.\n\n"
 
         if self.ideologies:
             prompt += "You identify as"
@@ -177,13 +194,13 @@ important to your values.\n"""
             prompt += "\n"
 
         return prompt
-        #TODO Shuffle lists and dict...
-        #TODO agreement_with_statements, likelihood_of_beliefs, free_form_opinions
+        # TODO Shuffle lists and dict...
+        # TODO agreement_with_statements, likelihood_of_beliefs, free_form_opinions
 
     def conjugate_be(self, str_list: list[str]) -> str:
         if len(str_list) > 1:
             return "are"
-        else: # len(str_list) == 1
+        else:  # len(str_list) == 1
             return "is"
 
     def format_list(self, str_list: list[str]) -> str:
@@ -194,6 +211,6 @@ important to your values.\n"""
             return f"{str_list[0]} and {str_list[1]}"
         elif len(str_list) == 1:
             return f"{str_list[0]}"
-        
+
     def format_list_and_conjugate_be(self, str_list: list[str]) -> str:
         return f"{self.format_list(str_list)} {self.conjugate_be(str_list)}"

@@ -38,9 +38,9 @@ class DebaterHandler:
         self.debate_config = debate_config
         self.summary_handler = summary_handler
 
-    def intervention(self, 
-                     update_personality=False, 
-                     seed: int | None = None) -> Intervention:
+    def intervention(
+        self, update_personality=False, seed: int | None = None
+    ) -> Intervention:
         """Do a debater intervention.
 
         Args:

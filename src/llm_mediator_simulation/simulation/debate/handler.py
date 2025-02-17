@@ -94,12 +94,11 @@ class DebateHandler:
 
         # Seed
         if seed is not None:
-            self.seed = seed # setting the seed for sampling in generation
-            random.seed(seed) # shuffling the list of debaters consulted in each round
+            self.seed = seed  # setting the seed for sampling in generation
+            random.seed(seed)  # shuffling the list of debaters consulted in each round
 
         # Constant or variable personality
         self.variable_personality = variable_personality
-
 
     def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
@@ -113,13 +112,14 @@ class DebateHandler:
             # Shuffle the debaters order
             shuffled_debaters = random.sample(self.debaters, len(self.debaters))
             for debater in shuffled_debaters:
-
                 ##############################################################
                 #                    DEBATER INTERVENTION                    #
                 ##############################################################
 
-                intervention = debater.intervention(update_personality=i != 0 and self.variable_personality,
-                                                    seed=self.seed)
+                intervention = debater.intervention(
+                    update_personality=i != 0 and self.variable_personality,
+                    seed=self.seed,
+                )
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)
 
@@ -161,7 +161,7 @@ class DebateHandler:
             self.initial_debaters,
             self.interventions,
         )
-    
+
     def pickle(self, path: str) -> None:
         """Serialize the debate configuration and logs to a pickle file.
         This does not include the model configuration.
@@ -201,7 +201,7 @@ class DebateHandler:
 
         for intervention in interventions:
             self.summary_handler.add_new_message(intervention)
-        
+
         if interventions:
             self.summary_handler.regenerate_summary()
         else:

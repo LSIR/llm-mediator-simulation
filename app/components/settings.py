@@ -5,7 +5,10 @@ from openai_key_manager import remove_api_key, save_api_key
 def settings_page():
     st.write("#### 🔑 OpenAI API Key")
     st.header("Settings")
-    openai_key_prompt = "No API key? No problem! " "Create one easily [here](https://platform.openai.com/account/api-keys)"
+    openai_key_prompt = (
+        "No API key? No problem! "
+        "Create one easily [here](https://platform.openai.com/account/api-keys)"
+    )
     api_key_placeholder = "Paste your OpenAI API Key here (sk-...)"
 
     if st.session_state.show_key_input:
@@ -15,14 +18,14 @@ def settings_page():
         show_error = False
 
         with cols[0]:
-            st.session_state.api_key =st.text_input(
-                        "Enter your OpenAI API Key",
-                        key="user_openai_key_input",
-                        type="password",
-                        autocomplete="current-password",
-                        placeholder=api_key_placeholder,
-                        label_visibility="collapsed",
-                    )
+            st.session_state.api_key = st.text_input(
+                "Enter your OpenAI API Key",
+                key="user_openai_key_input",
+                type="password",
+                autocomplete="current-password",
+                placeholder=api_key_placeholder,
+                label_visibility="collapsed",
+            )
         with cols[1]:
             if st.button("Save", on_click=save_api_key, use_container_width=True):
                 show_error = True

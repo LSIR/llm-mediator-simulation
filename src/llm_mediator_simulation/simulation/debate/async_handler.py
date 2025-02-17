@@ -98,7 +98,6 @@ class AsyncDebateHandler:
 
         for i in track(range(rounds)):
             for debater in self.debaters:
-
                 ######################################################################
                 #                        DEBATER INTERVENTION                        #
                 ######################################################################
@@ -143,9 +142,9 @@ class AsyncDebateHandler:
         if valid_indexes is None:
             valid_indexes = list(range(self.parallel_debates))
 
-        assert len(interventions) == len(
-            valid_indexes
-        ), "Interventions and valid indexes must have the same length."
+        assert len(interventions) == len(valid_indexes), (
+            "Interventions and valid indexes must have the same length."
+        )
 
         for i, intervention in zip(valid_indexes, interventions):
             self.interventions[i].append(intervention)

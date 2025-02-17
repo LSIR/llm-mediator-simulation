@@ -12,6 +12,7 @@ from llm_mediator_simulation.utils.interfaces import Promptable
 #                                   Debater Characteristics                                       #
 ###################################################################################################
 
+
 @dataclass
 class TopicOpinion:
     """Agent opinion on a topic."""
@@ -97,7 +98,6 @@ class DebaterConfig(Promptable):
 
     @override
     def to_prompt(self) -> str:
-
         return f"""You are roleplaying this real person: 
         name: {self.name}; 
         {self.personality.to_prompt() if self.personality else ""}

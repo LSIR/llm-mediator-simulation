@@ -94,7 +94,7 @@ def measure_argument_qualities(
 
     {json_prompt(json_format)}
 
-    Each JSON value should be on a scale from 0 to 4, where: {', '.join(scale_description())}
+    Each JSON value should be on a scale from 0 to 4, where: {", ".join(scale_description())}
     """
 
     response = parse_llm_json(model.sample(prompt))
@@ -131,7 +131,7 @@ async def async_measure_argument_qualities(
 
         {json_prompt(json_format)}
 
-        Each JSON value should be on a scale from 0 to 4, where: {', '.join(scale_description())}
+        Each JSON value should be on a scale from 0 to 4, where: {", ".join(scale_description())}
         """
         prompts.append(prompt)
 

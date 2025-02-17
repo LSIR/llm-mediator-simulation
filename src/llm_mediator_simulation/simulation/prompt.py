@@ -99,7 +99,7 @@ Here is your current personality:
 {sep.join(positions)}
 
 Here are the last messages:
-{sep.join([intervention.text for intervention in interventions if intervention.text ])}
+{sep.join([intervention.text for intervention in interventions if intervention.text])}
 
 You can choose to evolve your personality on all axes by +1, -1 or 0.
 {json_prompt(answer_format)}
@@ -185,7 +185,6 @@ async def async_debater_interventions(
     summary_prompts = await summary.to_prompts()
 
     for debater, debate_summary in zip(debaters, summary_prompts):
-
         prompts.append(
             f"""{config.to_prompt()}. {debater.to_prompt()} {debate_summary}
 
@@ -238,7 +237,6 @@ async def async_mediator_interventions(
     valid_indexes: list[int] | None = None,
     retry_attempts: int = 5,
 ) -> tuple[list[LLMMessage], list[str]]:
-
     prompts: list[str] = []
 
     summary_prompts = summary.raw_history_prompts()
@@ -304,9 +302,9 @@ async def async_debater_personality_update(
 
     Returns the prompts used for the personality updates."""
 
-    assert len(debaters) == len(
-        interventions
-    ), "Debaters and interventions must have the same length."
+    assert len(debaters) == len(interventions), (
+        "Debaters and interventions must have the same length."
+    )
 
     if len(debaters) == 0 or debaters[0].personalities is None:
         return [""] * len(debaters)
@@ -334,7 +332,7 @@ Here is your current personality:
 {sep.join(positions)}
 
 Here are the last messages:
-{sep.join([intervention.text for intervention in debater_interventions if intervention.text ])}
+{sep.join([intervention.text for intervention in debater_interventions if intervention.text])}
 
 You can choose to evolve your personality on all axes by +1, -1 or 0.
 {json_prompt(answer_format)}

@@ -34,13 +34,15 @@ class GPTModel(LanguageModel):
 
     @override
     def sample(self, prompt: str, seed: int | None = None) -> str:
-
         messages: list[ChatCompletionMessageParam] = [
             {"role": "user", "content": prompt}
         ]
 
         result = self.client.chat.completions.create(
-            messages=messages, model=self.model_name, n=1, seed=seed,
+            messages=messages,
+            model=self.model_name,
+            n=1,
+            seed=seed,
             temperature=0,
         )
         content = result.choices[0].message.content

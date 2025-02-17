@@ -8,15 +8,21 @@ from llm_mediator_simulation.personalities.ideologies import Ideology, Issues
 from llm_mediator_simulation.personalities.moral_foundations import MoralFoundation
 from llm_mediator_simulation.personalities.personality import Personality
 from llm_mediator_simulation.personalities.demographics import DemographicCharacteristic
-from llm_mediator_simulation.personalities.scales import KeyingDirection, Likert3Level, Likert5ImportanceLevel, Likert5Level
+from llm_mediator_simulation.personalities.scales import (
+    KeyingDirection,
+    Likert3Level,
+    Likert5ImportanceLevel,
+    Likert5Level,
+)
 from llm_mediator_simulation.personalities.traits import PersonalityTrait
 
+
 class TestPersonality(unittest.TestCase):
-   def test_to_prompt(self):
+    def test_to_prompt(self):
         """Test to_prompt with a full profile."""
         demo_profile = {
             DemographicCharacteristic.ETHNICITY: "White",
-            DemographicCharacteristic.BIOLOGICAL_SEX: "male"
+            DemographicCharacteristic.BIOLOGICAL_SEX: "male",
         }
 
         traits = {
@@ -30,7 +36,7 @@ class TestPersonality(unittest.TestCase):
         facets = {
             PersonalityFacet.ALTRUISM: KeyingDirection.POSITIVE,
             PersonalityFacet.ANGER: KeyingDirection.NEGATIVE,
-            PersonalityFacet.ANXIETY: KeyingDirection.POSITIVE
+            PersonalityFacet.ANXIETY: KeyingDirection.POSITIVE,
         }
 
         moral_foundations = {
@@ -38,7 +44,7 @@ class TestPersonality(unittest.TestCase):
             MoralFoundation.AUTHORITY_SUBVERSION: Likert5Level.SLIGHTLY,
             MoralFoundation.FAIRNESS_CHEATING_PROPORTIONALITY: Likert5Level.MODERATELY,
             MoralFoundation.LOYALTY_BETRAYAL: Likert5Level.NOT_AT_ALL,
-            MoralFoundation.SANCTITY_DEGRADATION_PURITY: Likert5Level.SLIGHTLY
+            MoralFoundation.SANCTITY_DEGRADATION_PURITY: Likert5Level.SLIGHTLY,
         }
 
         basic_human_values = {
@@ -47,7 +53,7 @@ class TestPersonality(unittest.TestCase):
             BasicHumanValues.HEDONISM: Likert5ImportanceLevel.VERY_IMPORTANT,
             BasicHumanValues.ACHIEVEMENT: Likert5ImportanceLevel.IMPORTANT,
             BasicHumanValues.POWER_DOMINANCE: Likert5ImportanceLevel.NOT_IMPORTANT,
-            BasicHumanValues.TRADITION: Likert5ImportanceLevel.OF_SUPREME_IMPORTANCE
+            BasicHumanValues.TRADITION: Likert5ImportanceLevel.OF_SUPREME_IMPORTANCE,
         }
 
         cognitive_biases = [CognitiveBias.ADDITIVE_BIAS, CognitiveBias.AGENT_DETECTION]
@@ -58,7 +64,7 @@ class TestPersonality(unittest.TestCase):
 
         ideologies = {
             Issues.ECONOMIC: Ideology.MODERATE,
-            Issues.SOCIAL: Ideology.CONSERVATIVE
+            Issues.SOCIAL: Ideology.CONSERVATIVE,
         }
 
         personality = Personality(
@@ -70,11 +76,13 @@ class TestPersonality(unittest.TestCase):
             cognitive_biases=cognitive_biases,
             fallacies=fallacies,
             vote_last_presidential_election=vote_last_presidential_election,
-            ideologies=ideologies
+            ideologies=ideologies,
         )
         prompt = personality.to_prompt()
 
-        assert prompt.strip() == """ethnicity: white;
+        assert (
+            prompt.strip()
+            == """ethnicity: white;
 biological sex: male;
 
 You are compassionate, good-natured, and eager to cooperate and avoid conflict.
@@ -120,6 +128,8 @@ In the last presidential election, you voted for Donald Trump.
 You identify as:
 - Moderate on economic issues.
 - Conservative on social issues."""
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

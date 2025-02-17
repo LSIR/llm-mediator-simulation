@@ -12,7 +12,6 @@ def plot_metrics(interventions: list[Intervention]) -> None:
     metrics = {}
 
     for message in interventions:
-
         if message.text is None or message.text == "" or message.metrics is None:
             continue
 

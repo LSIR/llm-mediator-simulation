@@ -35,7 +35,7 @@ class GoogleModel(LanguageModel):
             model_name: OpenAI model name.
             harm_block_threshold: Harm block threshold.
             temperature: the model temperature.
-            seed: Seeding sampling at generation time. Currently not avalaible through the GenerativeAI Python SDK. 
+            seed: Seeding sampling at generation time. Currently not avalaible through the GenerativeAI Python SDK.
         """
         genai.configure(api_key=api_key)
 
@@ -43,12 +43,13 @@ class GoogleModel(LanguageModel):
             "temperature": temperature,
         }
 
-        # https://github.com/google-gemini/generative-ai-python/issues/605 
+        # https://github.com/google-gemini/generative-ai-python/issues/605
         # Currently seeding Gemin not available through the GenerativeAI Python SDK
         if seed is not None:
-            raise NotImplementedError("Seed not available through the GenerativeAI Python SDK")
+            raise NotImplementedError(
+                "Seed not available through the GenerativeAI Python SDK"
+            )
         #    config["seed"] = seed
-        
 
         self.model = genai.GenerativeModel(model_name, generation_config=config)
 
@@ -76,7 +77,8 @@ class GoogleModel(LanguageModel):
         """Generate text based on the given prompt."""
 
         response = self.model.generate_content(
-            prompt, safety_settings=self.safety_settings  # type: ignore
+            prompt,
+            safety_settings=self.safety_settings,  # type: ignore
         )
 
         return response.text

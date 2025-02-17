@@ -36,7 +36,10 @@ def summarize_conversation(model: LanguageModel, conversation: list[str]) -> str
 
 
 def summarize_conversation_with_last_messages(
-    model: LanguageModel, previous_summary: str, latest_messages: list[str], seed: int | None = None
+    model: LanguageModel,
+    previous_summary: str,
+    latest_messages: list[str],
+    seed: int | None = None,
 ) -> str:
     """Generate a summary of the given conversation, with an emphasis on the latest messages."""
 
@@ -106,7 +109,7 @@ def measure_statement(model: LanguageModel, text: str, statement: str) -> Agreem
 
     prompt = f"""{text}
 
-    On a scale from 0 to 4, {', '.join(scale_description())}, how much do you agree with the following statement about the text above?
+    On a scale from 0 to 4, {", ".join(scale_description())}, how much do you agree with the following statement about the text above?
     {statement}
     Answer with a single digit.
     """

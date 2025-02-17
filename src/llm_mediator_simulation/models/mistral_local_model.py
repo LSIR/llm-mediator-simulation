@@ -63,7 +63,7 @@ class MistralLocalModel(LanguageModel):
             temperature: Sampling temperature.
             top_p: Top-p sampling ratio.
             do_sample: Whether to sample or not.
-            quantization: BitsAndBytes precision. 
+            quantization: BitsAndBytes precision.
             debug: Displays verbose prompts and responses.
             json: Whether to enforce JSON generation.
         """
@@ -92,7 +92,6 @@ class MistralLocalModel(LanguageModel):
 
     @override
     def sample(self, prompt: str, seed: int | None = None) -> str:
-
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
 
@@ -108,7 +107,7 @@ class MistralLocalModel(LanguageModel):
 
         # Seeding
         if seed is not None:
-           set_transformers_seed(seed) # sampling tokens generation time
+            set_transformers_seed(seed)  # sampling tokens generation time
 
         with torch.no_grad():
             outputs = self.model.generate(
@@ -185,7 +184,6 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
 
     @override
     async def sample(self, prompts: list[str]) -> list[str]:
-
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
 

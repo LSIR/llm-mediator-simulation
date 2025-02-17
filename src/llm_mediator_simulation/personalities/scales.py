@@ -3,7 +3,7 @@ from enum import Enum
 
 
 class Likert5ImportanceLevel(Enum):
-    """Level on a 5-point likert scale axis. 
+    """Level on a 5-point likert scale axis.
     From (Schwartz, 1992) (III. Empirical Studies A. THE THEORY-BASED VALUE SURVEY)"""
 
     OPPOSED_TO_MY_VALUES = "opposed to my values"
@@ -37,7 +37,7 @@ class Likert5Level(Enum):
 class KeyingDirection(Enum):
     """Binary value.
     Based on:
-            - 10.1016/j.jrp.2014.05.003 
+            - 10.1016/j.jrp.2014.05.003
     """
 
     NEGATIVE = 0
