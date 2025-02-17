@@ -5,7 +5,6 @@ from datetime import datetime
 import polars as pd
 
 from llm_mediator_simulation.simulation.debater.config import (
-    TopicOpinion,
     DebaterConfig,
 )
 from llm_mediator_simulation.utils.types import Intervention

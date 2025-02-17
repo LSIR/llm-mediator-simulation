@@ -216,7 +216,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
 
 
 # Quantization configs
-from transformers import BitsAndBytesConfig
+from transformers import BitsAndBytesConfig  # noqa: E402
 
 # 4 bit precision
 config_4bits = BitsAndBytesConfig(

@@ -3,13 +3,11 @@ import random
 from dotenv import load_dotenv
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from utils import SEED, get_predefined_debater_profile
-from utils import get_random_debater_profile
 from components.simulator import debate_simulator_page
 from components.agents_profiles import agent_profiles_page
 from components.settings import settings_page
 import streamlit as st
 
-from llm_mediator_simulation.simulation.debate.handler import DebateHandler
 
 from openai_key_manager import save_api_key
 

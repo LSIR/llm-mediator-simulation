@@ -28,7 +28,6 @@ from llm_mediator_simulation.personalities.traits import PersonalityTrait
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debate.handler import DebateHandler
 from llm_mediator_simulation.simulation.debater.config import (
-    AxisPosition,
     TopicOpinion,
     DebaterConfig,
 )
@@ -174,7 +173,7 @@ debate = DebateHandler(
 debate.run(rounds=4)
 
 name_timestamp = time.strftime("%Y%m%d-%H%M%S")
-output_path = f"debates_sandbox"
+output_path = "debates_sandbox"
 data = debate.to_debate_pickle()
 print(debate_transcript(data))
 debate.pickle(os.path.join(output_path, f"debate_{name_timestamp}"))

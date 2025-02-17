@@ -8,9 +8,6 @@ from dotenv import load_dotenv
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulation.models.gpt_models import GPTModel
-from llm_mediator_simulation.models.mistral_local_server_model import (
-    MistralLocalServerModel,
-)
 from llm_mediator_simulation.models.ollama_local_server_model import OllamaLocalModel
 from llm_mediator_simulation.personalities.cognitive_biases import CognitiveBias
 from llm_mediator_simulation.personalities.demographics import DemographicCharacteristic
@@ -31,7 +28,6 @@ from llm_mediator_simulation.personalities.traits import PersonalityTrait
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debate.handler import DebateHandler
 from llm_mediator_simulation.simulation.debater.config import (
-    AxisPosition,
     TopicOpinion,
     DebaterConfig,
 )
@@ -190,7 +186,7 @@ debate = DebateHandler(
 debate.run(rounds=2)
 
 name_timestamp = time.strftime("%Y%m%d-%H%M%S")
-output_path = f"debates_sandbox"
+output_path = "debates_sandbox"
 data = debate.to_debate_pickle()
 print(debate_transcript(data))
 debate.pickle(os.path.join(output_path, f"debate_{name_timestamp}"))

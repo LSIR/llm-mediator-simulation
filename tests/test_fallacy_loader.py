@@ -1,5 +1,4 @@
 import unittest
-import csv
 import os
 from tempfile import NamedTemporaryFile
 

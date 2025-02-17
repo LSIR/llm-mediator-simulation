@@ -2,7 +2,6 @@ from enum import Enum
 from llm_mediator_simulation.personalities.scales import KeyingDirection
 from llm_mediator_simulation.personalities.traits import (
     PersonalityTrait,
-    PersonalityTraitValue,
 )
 
 

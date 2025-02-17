@@ -3,7 +3,6 @@
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debate.handler import DebatePickle
 from llm_mediator_simulation.simulation.debater.config import (
-    TopicOpinion,
     DebaterConfig,
 )
 from llm_mediator_simulation.utils.types import Intervention

@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 from llm_mediator_simulation.models.google_models import GoogleModel
 from llm_mediator_simulation.models.gpt_models import GPTModel
-from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
 from llm_mediator_simulation.personalities.cognitive_biases import CognitiveBias
 from llm_mediator_simulation.personalities.demographics import DemographicCharacteristic
 from llm_mediator_simulation.personalities.facets import PersonalityFacet
@@ -176,7 +175,7 @@ debate = DebateHandler(
 debate.run(rounds=3)
 
 name_timestamp = time.strftime("%Y%m%d-%H%M%S")
-output_path = f"debates_sandbox"
+output_path = "debates_sandbox"
 data = debate.to_debate_pickle()
 print(debate_transcript(data))
 debate.pickle(os.path.join(output_path, f"debate_{name_timestamp}"))
