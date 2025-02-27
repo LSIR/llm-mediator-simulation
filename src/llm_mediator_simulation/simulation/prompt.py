@@ -1,16 +1,34 @@
 """Prompt utilities for the debate simulation."""
 
-from numpy import random
+import random
+from typing import Literal, Sequence, Type, TypeVar, cast
 
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
     LanguageModel,
 )
+from llm_mediator_simulation.personalities.cognitive_biases import (
+    CognitiveBias,
+    ReasoningError,
+)
+from llm_mediator_simulation.personalities.facets import PersonalityFacet
+from llm_mediator_simulation.personalities.fallacies import Fallacy
+from llm_mediator_simulation.personalities.human_values import BasicHumanValues
+from llm_mediator_simulation.personalities.ideologies import Ideology, Issues
+from llm_mediator_simulation.personalities.moral_foundations import MoralFoundation
+from llm_mediator_simulation.personalities.scales import (
+    KeyingDirection,
+    Likert3Level,
+    Likert5ImportanceLevel,
+    Likert5Level,
+    Likert7AgreementLevel,
+    Scale,
+)
+from llm_mediator_simulation.personalities.traits import PersonalityTrait
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debater.config import (
-    AxisPosition,
     DebaterConfig,
-    PersonalityAxis,
+    TopicOpinion,
 )
 from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
 from llm_mediator_simulation.simulation.summary.async_handler import AsyncSummaryHandler
@@ -21,13 +39,16 @@ from llm_mediator_simulation.utils.json import (
     parse_llm_json,
     parse_llm_jsons,
 )
-from llm_mediator_simulation.utils.model_utils import clip
 from llm_mediator_simulation.utils.probabilities import ProbabilityMapper
+from llm_mediator_simulation.utils.prompt_utils import format_list
 from llm_mediator_simulation.utils.types import (
     Intervention,
     LLMMessage,
     LLMProbaMessage,
 )
+
+T_scale = TypeVar("T_scale", bound=Scale)
+T_resonning_error = TypeVar("T_resonning_error", bound=ReasoningError)
 
 LLM_RESPONSE_FORMAT: dict[str, str] = {
     "do_intervene": "bool",
@@ -67,61 +88,651 @@ supports your position. Use short chat messages, no more than 3 sentences.
 
 
 @retry(attempts=5, verbose=True)
-def debater_personality_update(
+def debater_update(
     model: LanguageModel,
+    debate_statement: str,
     debater: DebaterConfig,
     interventions: list[Intervention],
 ) -> str:
-    """Update a debater's personality based on the interventions passed as arguments.
-    The debater configuration personality is updated in place.
+    """Update a debater's topic opinion and personality based on the interventions passed as arguments.
+    The debater configuration topic opinion and personality are updated in place.
 
     Returns the prompt used for the personality update."""
+    if not debater.variable_topic_opinion:
+        if debater.personality is None or not (
+            debater.personality.variable_personality()
+        ):
+            return ""
 
-    if debater.personalities is None:
-        return ""
+    ################################################
+    # Build the prompt for the debater's current personality
+    ################################################
+    prompt = f"""You are roleplaying this real person:
+name: {debater.name};\n"""
+    personality = debater.personality
+    if personality is not None:
+        if personality.demographic_profile is not None:
+            for (
+                characteristic,
+                value,
+            ) in personality.demographic_profile.items():
+                prompt += f"{characteristic.value}: {value.lower()};\n"
+            prompt += "\n"
 
-    sep = "\n"
+        prompt += """Here is your current personality:\n"""
 
-    positions: list[str] = []
-    for axis, position in (debater.personalities or {}).items():
-        positions.append(
-            f"{axis.value.name}: from {axis.value.left} to {axis.value.right} on a scale from 0 to 4, you are currently at {position.value}"
+        if personality.vote_last_presidential_election:
+            prompt += f"In the last presidential election, you {personality.vote_last_presidential_election}.\n\n"
+
+        if personality.traits:
+            traits = personality.traits
+            prompt += f"Trait{"s" if len(traits) > 1 else ""}:\n"
+            if isinstance(traits, list):
+                for trait in traits:
+                    prompt += f"- {trait.value.name.capitalize()}: {Likert3Level.HIGH.value}\n"
+            elif isinstance(traits, dict):  # type: ignore
+                for trait, value in traits.items():
+                    prompt += f"- {trait.value.name.capitalize()}: {value.value}\n"
+            else:
+                raise ValueError("Personality traits must be a list or a dictionary.")
+            prompt += "\n"
+
+        if personality.facets:
+            facets = personality.facets
+            prompt += f"Facet{"s" if len(facets) > 1 else ""}:\n"
+            if isinstance(facets, list):
+                for facet in facets:
+                    prompt += f"- {facet.value.name.capitalize()}: {KeyingDirection.POSITIVE.value}\n"
+            elif isinstance(facets, dict):  # type: ignore
+                for facet, value in facets.items():  # type: ignore
+                    prompt += f"- {facet.value.name.capitalize()}: {value.value}\n"
+            else:
+                raise ValueError("Personality facets must be a list or a dictionary.")
+            prompt += "\n"
+
+        if personality.moral_foundations:
+            moral_foundations = personality.moral_foundations
+            prompt += f"Moral foundation{"s" if len(moral_foundations) > 1 else ""}:\n"
+            if isinstance(moral_foundations, list):
+                for foundation in moral_foundations:
+                    prompt += f"- {foundation.value.name.capitalize()}: {Likert5Level.EXTREMELY.value.standard}\n"
+            elif isinstance(personality.moral_foundations, dict):  # type: ignore
+                for foundation, value in personality.moral_foundations.items():
+                    prompt += f"- {foundation.value.name.capitalize().split(" (v1) ")[0]}: {value.value.standard}\n"
+            else:
+                raise ValueError("Moral foundations must be a list or a dictionary.")
+            prompt += "\n"
+
+        if personality.basic_human_values:
+            basic_human_values = personality.basic_human_values
+            prompt += (
+                f"Basic human value{"s" if len(basic_human_values) > 1 else ""}:\n"
+            )
+            if isinstance(basic_human_values, list):
+                for value in basic_human_values:
+                    prompt += f"- {value.value.name.capitalize()}: {Likert5ImportanceLevel.IMPORTANT.value}\n"
+            elif isinstance(basic_human_values, dict):  # type: ignore
+                for value, importance in basic_human_values.items():
+                    prompt += f"- {value.value.name.capitalize()}: {importance.value}\n"
+            else:
+                raise ValueError("Basic human values must be a list or a dictionary.")
+            prompt += "\n"
+
+        if personality.cognitive_biases:
+            cognitive_biases = personality.cognitive_biases
+            prompt += f"Cognitive bias{"es" if len(cognitive_biases) > 1 else ""}:\n"
+            for bias in cognitive_biases:
+                prompt += f"- {bias.value.name.capitalize()}\n"
+            prompt += "\n"
+
+        if personality.fallacies:
+            fallacies = personality.fallacies
+            prompt += f"Fallac{"y" if len(fallacies) > 1 else "ies"}:\n"
+            for fallacy in fallacies:
+                prompt += f"- {fallacy.value.name.capitalize()}\n"
+            prompt += "\n"
+
+        if personality.ideologies:
+            if isinstance(personality.ideologies, Ideology):
+                prompt += f"Ideology: {personality.ideologies.value}\n"
+            elif isinstance(personality.ideologies, dict):  # type: ignore
+                prompt += (
+                    f"Ideolog{"y" if len(personality.ideologies) > 1 else "ies"}:\n"
+                )
+                for issue, ideology in personality.ideologies.items():
+                    prompt += f"- {issue.value.name.capitalize()}: {ideology.value}\n"
+            else:
+                raise ValueError("Ideologies must be a single value or a dictionary.")
+            prompt += "\n"
+
+    if personality and personality.agreement_with_statements:
+        prompt += "Statements:\n"
+    else:
+        prompt += "Statement:\n"
+    prompt += f"- {debate_statement.capitalize().rstrip(".")} (current debate statement): {debater.topic_opinion.agreement.value if debater.topic_opinion is not None else Likert7AgreementLevel.NEUTRAL.value}\n"
+
+    if personality:
+        if personality.agreement_with_statements:
+            for (
+                statement,
+                agreement,
+            ) in personality.agreement_with_statements.items():
+                prompt += f"- {statement.capitalize()}: {agreement.value}\n"
+    prompt += "\n"
+
+    if personality:
+        if personality.likelihood_of_beliefs:
+            likelihood_of_beliefs = personality.likelihood_of_beliefs
+            prompt += f"Belief{"s" if len(likelihood_of_beliefs) > 1 else ""}:\n"
+            for belief, likelihood in likelihood_of_beliefs.items():
+                prompt += (
+                    f"- {belief.capitalize()}: {likelihood.name.replace("_", " ")}\n"
+                )
+            prompt += "\n"
+
+        if personality.free_form_opinions:
+            free_form_opinions = personality.free_form_opinions
+            prompt += f"You have the following opinion{"s" if len(free_form_opinions) else ""}:\n"
+            for opinion in free_form_opinions:
+                prompt += f"- {opinion.capitalize()}\n"
+            prompt += "\n"
+
+    ################################################
+    # Build the prompt for the debate's last interventions
+    ################################################
+
+    prompt += """You have the opportunity to make your personality evolve based on the things people have said after your last intervention.\n\n"""  # TODO Check if agent knows context at that moment
+
+    prompt += """Here are the last messages:\n"""
+    for intervention in interventions:
+        if intervention.debater is None:
+            name = "Mediator"
+        else:
+            name = intervention.debater.name
+        prompt += f"""— {name}: {intervention.text}\n"""  # https://en.wikipedia.org/wiki/Quotation_mark#Quotation_dash
+    prompt += "\n"
+
+    ################################################
+    # Build the prompt for the debater's personality update instructions and format
+    ################################################
+
+    answer_format: dict[str, str] = dict()
+    more_less_feature_to_evolve_list = []
+    more_less_text_in_answer_format = (
+        """a string ("more", "less", or "same") to update"""
+    )
+    if personality is not None:
+        if personality.variable_traits and personality.traits:
+            more_less_feature_to_evolve_list.append("traits")
+            answer_format.update(
+                {
+                    "_".join(
+                        trait.value.name.split(" ")
+                    ): f"""{more_less_text_in_answer_format} this trait"""
+                    for trait in personality.traits
+                }
+            )
+
+        if personality.variable_moral_foundations and personality.moral_foundations:
+            more_less_feature_to_evolve_list.append("moral foundations")
+            answer_format.update(
+                {
+                    "_".join(
+                        foundation.value.name.split(" ")
+                    ): f"""{more_less_text_in_answer_format} this moral foundation"""
+                    for foundation in personality.moral_foundations
+                }
+            )
+        if personality.variable_basic_human_values and personality.basic_human_values:
+            more_less_feature_to_evolve_list.append("basic human values")
+            answer_format.update(
+                {
+                    "_".join(
+                        value.value.name.split(" ")
+                    ): f"""{more_less_text_in_answer_format} this basic human value"""
+                    for value in personality.basic_human_values
+                }
+            )
+
+    if debater.variable_topic_opinion:
+        more_less_feature_to_evolve_list.append("agreement with statements")
+        answer_format.update(
+            {
+                "current_dabate_statement": f"""{more_less_text_in_answer_format} your agreement with the current debate statement"""
+            }
         )
 
-    answer_format: dict[str, str] = {
-        axis.value.name: "an integer (-1, 0, 1) to update this axis"
-        for axis in (debater.personalities or {}).keys()
-    }
+    elif personality is not None:
+        if (
+            personality.variable_agreement_with_statements
+            and personality.agreement_with_statements
+        ):
+            more_less_feature_to_evolve_list.append("agreement with statements")
+            answer_format.update(
+                {
+                    "_".join(
+                        statement.lower().split(" ")
+                    ): f"""{more_less_text_in_answer_format} your agreement with this statement"""
+                    for statement in personality.agreement_with_statements
+                }
+            )
+    if personality is not None:
+        if (
+            personality.variable_likelihood_of_beliefs
+            and personality.likelihood_of_beliefs
+        ):
+            more_less_feature_to_evolve_list.append("likelihood of beliefs")
+            answer_format.update(
+                {
+                    "_".join(
+                        belief.lower().split(" ")
+                    ): f"""{more_less_text_in_answer_format} your assessment of this belief's likelihood"""
+                    for belief in personality.likelihood_of_beliefs
+                }
+            )
 
-    prompt = f"""You have the opportunity to make your personality evolve based on the things people have said after your last intervention.
+    if more_less_feature_to_evolve_list:
+        prompt += "You can choose to evolve your "
+        prompt += format_list(more_less_feature_to_evolve_list)
+        prompt += """ with "more", "less", or "same".\n"""
 
-Here is your current personality:
-{sep.join(positions)}
+    if personality is not None:
+        if personality.variable_facets and personality.facets:
+            prompt += """You can choose to evolve your facets with "yes" or "no".\n"""
+            answer_format.update(
+                {
+                    "_".join(
+                        facet.value.name.split(" ")
+                    ): """a string ("yes" or "no") to update this facet"""
+                    for facet in personality.facets
+                }
+            )
 
-Here are the last messages:
-{sep.join([intervention.text for intervention in interventions if intervention.text])}
+        if personality.variable_ideologies and personality.ideologies:
+            prompt += """You can choose to evolve your """
+            if isinstance(personality.ideologies, Ideology):
+                prompt += """ideology """
+                answer_format.update(
+                    {
+                        "ideology": """a string ("more liberal", "more conservative", "same", or "libertarian") to update your ideology"""
+                    }
+                )
+            elif isinstance(personality.ideologies, dict):  # type: ignore
+                prompt += """ideologies """
+                answer_format.update(
+                    {
+                        "_".join(
+                            issue.value.name.split(" ")
+                        ): """a string ("more liberal", "more conservative", "same", or "libertarian") to update your ideology on this issue"""
+                        for issue in personality.ideologies
+                    }
+                )
+            else:
+                raise ValueError("Ideologies must be a single value or a dictionary.")
+            prompt += """with "more liberal", "more conservative", "same" or "libertarian".\n"""
+    prompt += "\n"
+    prompt += f"""{json_prompt(answer_format)}"""
 
-You can choose to evolve your personality on all axes by +1, -1 or 0.
-{json_prompt(answer_format)}
-"""
+    # If only cognitive bias or fallacies can evolve, then no need for an LLM call since it's purely based on random sampling
+    if debater.variable_topic_opinion or (
+        personality is not None
+        and any(
+            [
+                personality.variable_traits,
+                personality.variable_facets,
+                personality.variable_moral_foundations,
+                personality.variable_basic_human_values,
+                personality.variable_ideologies,
+                personality.variable_agreement_with_statements,
+                personality.variable_likelihood_of_beliefs,
+            ]
+        )
+    ):
+        response = model.sample(prompt)
+        data: dict[str, str] = parse_llm_json(response)
 
-    response = model.sample(prompt)
-    data: dict[str, str] = parse_llm_json(response)
+        ################################################
+        # Process the personality updates
+        ################################################
+        feature_key_to_personality_field_name: dict[
+            str, Literal["trait", "facet", "moral_foundation", "basic_human_value"]
+        ] = {}
+        feature_key_to_feature: dict[str, Scale] = {}
+        for feature_type, personality_field_name in [
+            (PersonalityTrait, "traits"),
+            (PersonalityFacet, "facets"),
+            (MoralFoundation, "moral_foundations"),
+            (BasicHumanValues, "basic_human_values"),
+        ]:
+            for feature in list(feature_type):
+                feature_key_to_personality_field_name[
+                    "_".join(feature.value.name.split(" "))
+                ] = personality_field_name
+                feature_key_to_feature["_".join(feature.value.name.split(" "))] = (
+                    feature
+                )
 
-    # Process the axis updates
-    for axis, update in data.items():
-        update = int(update)  # Fails on error
-        axis = PersonalityAxis.from_string(axis)
-        if update not in [-1, 0, 1]:
-            raise ValueError("Personality update must be -1, 0 or 1.")
-        if axis not in debater.personalities:
-            raise ValueError(f"Unknown personality axis: {axis}")
+        statement_name_to_statement: dict[str, str] = {}
+        belief_name_to_belief: dict[str, str] = {}
 
-        new_value = clip(debater.personalities[axis].value + update, 0, 4)
-        new_position = AxisPosition(new_value)
-        debater.personalities[axis] = new_position
+        if personality is not None:
+            if (
+                personality.variable_agreement_with_statements
+                and personality.agreement_with_statements
+            ):
+                statement_name_to_statement.update(
+                    {
+                        "_".join(statement.split(" ")): statement
+                        for statement in personality.agreement_with_statements
+                    }
+                )
+            if (
+                personality.variable_likelihood_of_beliefs
+                and personality.likelihood_of_beliefs
+            ):
+                belief_name_to_belief.update(
+                    {
+                        "_".join(belief.split(" ")): belief
+                        for belief in personality.likelihood_of_beliefs
+                    }
+                )
+
+        for feature_key, update in data.items():
+            if feature_key == "current_debate_statement":
+                if debater.variable_topic_opinion:
+                    if debater.topic_opinion is not None:
+                        previous_value = debater.topic_opinion.agreement
+                        updated_value = update_to_scale_value(previous_value, update)
+                        debater.topic_opinion.agreement = updated_value
+                    else:
+                        debater.topic_opinion = TopicOpinion(
+                            agreement=update_to_scale_value(
+                                Likert7AgreementLevel.NEUTRAL, update
+                            )
+                        )
+                else:
+                    raise ValueError(
+                        "Agent wants to update its topic opinon but the debater's topic opinion is not variable."
+                    )
+            if (
+                feature_key in feature_key_to_personality_field_name
+            ):  # e.g. feature_key = "openness_to_experience" and update = "more"
+                # update the personality field with the update
+                personality_field_name = feature_key_to_personality_field_name[
+                    feature_key
+                ]  # e.g. personality_field = "traits"
+                # Check that the personality field was set in the previous personality
+                if personality is not None:
+                    if getattr(
+                        personality, f"variable_{personality_field_name}"
+                    ):  # Check that e.g. personality.variable_traits is True
+                        if (
+                            getattr(personality, personality_field_name) is not None
+                        ):  # Check that e.g. personality.traits is set
+                            personality_field = getattr(
+                                personality, personality_field_name
+                            )
+                            if (
+                                feature_key_to_feature[feature_key] in personality_field
+                            ):  # Check that e.g. PersonalityTrait.OPENNESS is in personality.traits
+                                if isinstance(personality_field, list):
+                                    # Transform the list (e.g. debater.personality.traits = [Personality.OPENNESS, Personality.CONSCIENTIOUSNESS])
+                                    # into a dictionary with default values (e.g. {Personality.OPENNESS: Likert3Level.AVERAGE, Personality.CONSCIENTIOUSNESS: Likert3Level.AVERAGE])
+                                    if personality_field_name == "trait":
+                                        new_personality_field = {
+                                            feature: update_to_scale_value(
+                                                Likert3Level.HIGH, update
+                                            )
+                                            for feature in personality_field
+                                        }
+                                    elif personality_field_name == "facet":
+                                        new_personality_field = {
+                                            feature: update_to_scale_value(
+                                                KeyingDirection.POSITIVE, update
+                                            )
+                                            for feature in personality_field
+                                        }
+                                    elif personality_field_name == "moral_foundation":
+                                        new_personality_field = {
+                                            feature: update_to_scale_value(
+                                                Likert5Level.FAIRLY, update
+                                            )
+                                            for feature in personality_field
+                                        }
+                                    elif personality_field_name == "basic_human_value":
+                                        new_personality_field = {
+                                            feature: update_to_scale_value(
+                                                Likert5ImportanceLevel.IMPORTANT, update
+                                            )
+                                            for feature in personality_field
+                                        }
+                                    else:
+                                        raise ValueError(
+                                            f"Invalid personality field {personality_field_name}."
+                                        )
+                                    setattr(
+                                        personality,
+                                        personality_field_name,
+                                        new_personality_field,
+                                    )
+
+                                elif isinstance(personality_field, dict):
+                                    previous_value = personality_field[
+                                        feature_key_to_feature[feature_key]
+                                    ]
+                                    updated_value = update_to_scale_value(
+                                        previous_value, update
+                                    )
+                                    personality_field[
+                                        feature_key_to_feature[feature_key]
+                                    ] = updated_value
+
+                                else:
+                                    raise ValueError(
+                                        f"Personality field {personality_field_name} must be a list or a dictionary."
+                                    )
+                            else:
+                                raise ValueError(
+                                    f"Feature {feature_key} is not set in the previous personality's {personality_field_name}."
+                                )
+                        else:
+                            raise ValueError(
+                                f"Personality field {personality_field_name} is not set in the previous personality."
+                            )
+                    else:
+                        raise ValueError(
+                            f"Personality field {personality_field_name} is not variable in the previous personality."
+                        )
+                else:
+                    raise ValueError(
+                        "Personality is not set in the previous personality."
+                    )
+
+            elif feature_key == "ideology":
+                if personality is not None:
+                    if personality.variable_ideologies:
+                        if isinstance(personality.ideologies, Ideology):
+                            new_ideology = update_to_ideology_value(
+                                personality.ideologies, update
+                            )
+                            personality.ideologies = new_ideology
+                        else:
+                            raise ValueError(
+                                "Agent tries to update single ideology while the personality field ideologies is breakdown into ideologies related to specific issues."
+                            )
+                    else:
+                        raise ValueError(
+                            "Personality field ideologies is not variable in the previous personality"
+                        )
+                else:
+                    raise ValueError(
+                        "Personality is not set in the previous personality."
+                    )
+
+            elif feature_key in [
+                "_".join(issue.value.name.split(" ")) for issue in Issues
+            ]:
+                if personality is not None:
+                    if personality.variable_ideologies:
+                        if isinstance(personality.ideologies, dict):
+                            issue_name_to_issue = {
+                                "_".join(issue.value.name.split(" ")): issue
+                                for issue in Issues
+                            }
+                            issue = issue_name_to_issue[feature_key]
+                            if issue in personality.ideologies:
+                                new_ideology = update_to_ideology_value(
+                                    personality.ideologies[issue], update
+                                )
+                                personality.ideologies[issue] = new_ideology
+                            else:
+                                raise ValueError(
+                                    f"Issue {issue} is not set in the previous personality's ideologies."
+                                )
+                        else:
+                            raise ValueError(
+                                "Agent tries to update ideologies related to aspecific issues while the personality field ideology is summarized into a single ideology."
+                            )
+                    else:
+                        raise ValueError(
+                            "Personality field ideologies is not variable in the previous personality."
+                        )
+                else:
+                    raise ValueError(
+                        "Personality is not set in the previous personality."
+                    )
+
+            elif personality is not None:
+                if (
+                    personality.variable_agreement_with_statements
+                    and personality.agreement_with_statements
+                ):
+                    if feature_key in statement_name_to_statement:
+                        statement = statement_name_to_statement[feature_key]
+                        assert statement in personality.agreement_with_statements
+                        previous_value = personality.agreement_with_statements[
+                            statement
+                        ]
+                        updated_value = update_to_scale_value(previous_value, update)
+                        personality.agreement_with_statements[statement] = updated_value
+                if (
+                    personality.variable_likelihood_of_beliefs
+                    and personality.likelihood_of_beliefs
+                ):
+                    if feature_key in belief_name_to_belief:
+                        belief = belief_name_to_belief[feature_key]
+                        assert belief in personality.likelihood_of_beliefs
+                        previous_value = personality.likelihood_of_beliefs[belief]
+                        updated_value = update_to_scale_value(previous_value, update)
+                        personality.likelihood_of_beliefs[belief] = updated_value
+            else:
+                raise ValueError(f"Feature {feature_key} is not valid.")
+
+    if personality is not None:
+        if personality.variable_cognitive_biases:
+            previous_biases = personality.cognitive_biases
+            new_biases = update_feature_list_randomly(
+                cast(Sequence[ReasoningError] | None, previous_biases), CognitiveBias
+            )
+            if previous_biases is not None and new_biases:
+                personality.cognitive_biases = cast(list[CognitiveBias], new_biases)
+
+        if personality.variable_fallacies:
+            previous_fallacies = personality.fallacies
+            new_fallacies = update_feature_list_randomly(
+                cast(Sequence[ReasoningError], previous_fallacies), Fallacy
+            )
+            if previous_fallacies is not None and new_fallacies:
+                personality.fallacies = cast(list[Fallacy], new_fallacies)
 
     return prompt
+
+
+def update_to_scale_value(previous_value: T_scale, update: str) -> T_scale:
+    """Update a Likert scale or a binary value based on the update string.
+    e.g. update_to_value(Likert3Level.AVERAGE, "more") -> Likert3Level.HIGH"""
+    members: list[Scale] = list(type(previous_value))
+    if update == "more" or update == "yes":
+        return cast(
+            T_scale, members[min(members.index(previous_value) + 1, len(members) - 1)]
+        )
+    elif update == "less" or update == "no":
+        return cast(T_scale, members[max(members.index(previous_value) - 1, 0)])
+    elif update == "same":
+        return previous_value
+    else:
+        raise ValueError(f"Invalid update {update}.")
+
+
+def update_to_ideology_value(
+    previous_value: Ideology,
+    update: str,
+) -> Ideology:
+    """Update an ideology based on the update string.
+    e.g. update_to_value(Ideology.MODERATE, "more conservative") -> Ideology.SLIGHTLY_CONSERVATIVE
+    """
+    if update == "libertarian":
+        return Ideology.LIBERTARIAN
+    elif update == "more liberal":
+        if previous_value in (Ideology.LIBERTARIAN, Ideology.MODERATE):
+            return Ideology.SLIGHTLY_LIBERAL
+        elif previous_value == Ideology.LIBERAL:
+            return Ideology.EXTREMELY_LIBERAL
+        elif previous_value == Ideology.SLIGHTLY_LIBERAL:
+            return Ideology.LIBERAL
+        elif previous_value == Ideology.SLIGHTLY_CONSERVATIVE:
+            return Ideology.CONSERVATIVE
+        elif previous_value == Ideology.CONSERVATIVE:
+            return Ideology.SLIGHTLY_CONSERVATIVE
+        elif previous_value == Ideology.EXTREMELY_CONSERVATIVE:
+            return Ideology.CONSERVATIVE
+        else:
+            raise ValueError("Invalid ideology.")
+    elif update == "more conservative":
+        if previous_value in (Ideology.LIBERTARIAN, Ideology.MODERATE):
+            return Ideology.SLIGHTLY_CONSERVATIVE
+        elif previous_value == Ideology.CONSERVATIVE:
+            return Ideology.EXTREMELY_CONSERVATIVE
+        elif previous_value == Ideology.SLIGHTLY_CONSERVATIVE:
+            return Ideology.CONSERVATIVE
+        elif previous_value == Ideology.SLIGHTLY_LIBERAL:
+            return Ideology.MODERATE
+        elif previous_value == Ideology.LIBERAL:
+            return Ideology.SLIGHTLY_LIBERAL
+        elif previous_value == Ideology.EXTREMELY_LIBERAL:
+            return Ideology.LIBERAL
+        else:
+            raise ValueError("Invalid ideology.")
+    elif update == "same":
+        return previous_value
+    else:
+        raise ValueError("Invalid update for ideology.")
+
+
+def update_feature_list_randomly(
+    previous_reasoning_error_list: Sequence[T_resonning_error] | None,
+    resonning_error: Type[CognitiveBias] | Type[Fallacy],
+) -> Sequence[T_resonning_error]:
+    """Randomly update a list of ReasoningError, where the ResoningError list is a CognitiveBias list or a Fallacy list."""
+    # Randomly remove a random number of existing elements in the list
+    if previous_reasoning_error_list:
+        new_feature_list = random.sample(
+            previous_reasoning_error_list,
+            random.randint(0, len(previous_reasoning_error_list)),
+        )
+    else:
+        new_feature_list = []
+    # Add a random number between 0 and min(number of existing elements, 1) new elements
+    previous_feature_list_num = (
+        len(previous_reasoning_error_list) if previous_reasoning_error_list else 0
+    )
+
+    new_feature_list += random.sample(
+        list(resonning_error),
+        random.randint(0, min(previous_feature_list_num, 1)),
+    )
+
+    return cast(Sequence[T_resonning_error], new_feature_list)
 
 
 @retry(attempts=5, verbose=True)
@@ -153,13 +764,13 @@ CONVERSATION HISTORY WITH TIMESTAMPS:
 {json_prompt(LLM_PROBA_RESPONSE_FORMAT)}
     """
 
-    response = model.sample(prompt, seed=seed)
+    response = model.sample(prompt, seed=seed)  # TODO Check
     parsed_response = parse_llm_json(response, LLMProbaMessage)
 
     p = parsed_response["do_intervene"]
     if probability_mapper is not None:
         p = probability_mapper.map(p)
-    do_intervene = random.rand() < p
+    do_intervene = random.rand() < p  # TODO Check
 
     return parsed_response, prompt, do_intervene
 
@@ -291,6 +902,7 @@ async def async_mediator_interventions(
     return coerced, prompts
 
 
+# TODO Adapt to async
 @retry(attempts=5, verbose=True)
 async def async_debater_personality_update(
     model: AsyncLanguageModel,
@@ -302,9 +914,9 @@ async def async_debater_personality_update(
 
     Returns the prompts used for the personality updates."""
 
-    assert len(debaters) == len(interventions), (
-        "Debaters and interventions must have the same length."
-    )
+    assert len(debaters) == len(
+        interventions
+    ), "Debaters and interventions must have the same length."
 
     if len(debaters) == 0 or debaters[0].personalities is None:
         return [""] * len(debaters)
@@ -362,3 +974,6 @@ You can choose to evolve your personality on all axes by +1, -1 or 0.
             debater.personalities[axis] = new_position
 
     return prompts
+
+
+# TODO Randomly swap order more / less ; more liberal / more conservative

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from llm_mediator_simulation.personalities.scales import Scale
+
 
 @dataclass
 class IssueValue:
@@ -17,7 +19,7 @@ class Issues(Enum):
     # SOCIETAL = IssueValue("societal", "societal issues")
 
 
-class Ideology(Enum):
+class Ideology(Scale):
     """Ideologies for agents."""
 
     EXTREMELY_LIBERAL = "extremely liberal"

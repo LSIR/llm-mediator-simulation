@@ -1,11 +1,10 @@
+from dataclasses import dataclass
 from enum import Enum
+
 from llm_mediator_simulation.personalities.scales import KeyingDirection
 from llm_mediator_simulation.personalities.traits import (
     PersonalityTrait,
 )
-
-
-from dataclasses import dataclass
 
 
 @dataclass
@@ -30,7 +29,7 @@ class PersonalityFacetValue:
     positively_keyed_items: list[item]
     negatively_keyed_items: list[item]
 
-    def level(self, direction: KeyingDirection) -> str:
+    def level(self, direction: KeyingDirection) -> list[item]:
         """Return a level of the personality trait based on the keying direction."""
         if direction == KeyingDirection.POSITIVE:
             return self.positively_keyed_items
@@ -90,7 +89,7 @@ class PersonalityFacet(Enum):
             item(
                 PersonalityTrait.NEUROTICISM,
                 KeyingDirection.NEGATIVE,
-                "You are relaxed most of the time..",
+                "You are relaxed most of the time.",
             ),
             item(
                 PersonalityTrait.NEUROTICISM,

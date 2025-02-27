@@ -1,6 +1,6 @@
-import unittest
 import csv
 import os
+import unittest
 from tempfile import NamedTemporaryFile
 
 from llm_mediator_simulation.personalities.cognitive_biases import CognitiveBias
@@ -47,7 +47,7 @@ class TestCognitiveBiasLoading(unittest.TestCase):
         self.assertTrue(hasattr(CognitiveBias, "AGENT_DETECTION"))
 
         # Check sample data integrity
-        additive_bias = CognitiveBias.ADDITIVE_BIAS
+        additive_bias = CognitiveBias.ADDITIVE_BIAS.value  # type: ignore
         self.assertEqual(additive_bias.name, "Additive bias")
         self.assertEqual(additive_bias.group, "Belief, decision-making and behavioral")
         self.assertEqual(additive_bias.type, "")
@@ -56,7 +56,7 @@ class TestCognitiveBiasLoading(unittest.TestCase):
             "The tendency to solve problems through addition, even when subtraction is a better approach.",
         )
 
-        agent_detection = CognitiveBias.AGENT_DETECTION
+        agent_detection = CognitiveBias.AGENT_DETECTION.value  # type: ignore
         self.assertEqual(agent_detection.name, "Agent detection")
         self.assertEqual(
             agent_detection.group, "Belief, decision-making and behavioral"

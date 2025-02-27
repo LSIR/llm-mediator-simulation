@@ -1,8 +1,8 @@
 """Full debate simulation handler class"""
 
 import pickle
-from dataclasses import dataclass
 import random
+from dataclasses import dataclass
 
 from rich.progress import track
 
@@ -33,7 +33,6 @@ class DebateHandler:
         summary_config: SummaryConfig | None = None,
         metrics_handler: MetricsHandler | None = None,
         seed: int | None = None,
-        variable_personality: bool = False,
     ) -> None:
         """Instanciate a debate simulation handler.
 
@@ -46,7 +45,6 @@ class DebateHandler:
             summary_config: The summary configuration. Defaults to None. A default config will be used.
             metrics_handler: The metrics handler to use. Defaults to None.
             seed: The seed to use for the random sampling at generation.
-            variable_personality: If True, the debaters will keep the same personality throughout the debate. Defaults to True.
         """
 
         # Configuration
@@ -97,15 +95,12 @@ class DebateHandler:
             self.seed = seed  # setting the seed for sampling in generation
             random.seed(seed)  # shuffling the list of debaters consulted in each round
 
-        # Constant or variable personality
-        self.variable_personality = variable_personality
-
     def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
 
         The debaters will all send one intervention per round, in random order.
         """
-        if self.seed is not None:
+        if self.seed is not None:  # type: ignore
             random.seed(self.seed)
 
         for i in track(range(rounds)):
@@ -117,7 +112,7 @@ class DebateHandler:
                 ##############################################################
 
                 intervention = debater.intervention(
-                    update_personality=i != 0 and self.variable_personality,
+                    initial_intervention=i == 0,
                     seed=self.seed,
                 )
                 self.interventions.append(intervention)

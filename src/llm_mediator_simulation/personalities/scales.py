@@ -2,7 +2,11 @@ from dataclasses import dataclass
 from enum import Enum
 
 
-class Likert5ImportanceLevel(Enum):
+class Scale(Enum):
+    """Base class for scales."""
+
+
+class Likert5ImportanceLevel(Scale):
     """Level on a 5-point likert scale axis.
     From (Schwartz, 1992) (III. Empirical Studies A. THE THEORY-BASED VALUE SURVEY)"""
 
@@ -24,7 +28,7 @@ class Likert5LevelValue:
         return self.alternative if self.alternative else self.standard
 
 
-class Likert5Level(Enum):
+class Likert5Level(Scale):
     """Level on a 5-point likert scale axis. From MFQ2 in yourmorals.org."""
 
     NOT_AT_ALL = Likert5LevelValue("not at all")
@@ -34,17 +38,17 @@ class Likert5Level(Enum):
     EXTREMELY = Likert5LevelValue("extremely")
 
 
-class KeyingDirection(Enum):
+class KeyingDirection(Scale):
     """Binary value.
     Based on:
             - 10.1016/j.jrp.2014.05.003
     """
 
-    NEGATIVE = 0
-    POSITIVE = 1
+    NEGATIVE = "no"
+    POSITIVE = "yes"
 
 
-class Likert3Level(Enum):
+class Likert3Level(Scale):
     """Level on a 3-point likert scale axis."""
 
     LOW = "low"
@@ -52,7 +56,7 @@ class Likert3Level(Enum):
     HIGH = "high"
 
 
-class Likert7AgreementLevel(Enum):
+class Likert7AgreementLevel(Scale):
     """Agreement on a 7-point likert scale axis."""
 
     STRONGLY_DISAGREE = "strongly disagree"
@@ -64,7 +68,7 @@ class Likert7AgreementLevel(Enum):
     STRONGLY_AGREE = "strongly agree"
 
 
-class Likert11LikelihoodLevel(Enum):
+class Likert11LikelihoodLevel(Scale):
     """Likelihood on a 11-point likert scale axis."""
 
     CERTAINLY_FALSE = "you believe it is certainly false that"

@@ -8,7 +8,7 @@ from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debater.config import DebaterConfig
 from llm_mediator_simulation.simulation.prompt import (
     debater_intervention,
-    debater_personality_update,
+    debater_update,
 )
 from llm_mediator_simulation.simulation.summary.handler import SummaryHandler
 from llm_mediator_simulation.utils.types import Intervention
@@ -38,20 +38,30 @@ class DebaterHandler:
         self.debate_config = debate_config
         self.summary_handler = summary_handler
 
+    def variable_debater(self) -> bool:
+        """Check if the debater is variable."""
+        return self.config.variable_topic_opinion or (
+            self.config.personality.variable_personality()
+            if self.config.personality is not None
+            else False
+        )
+
     def intervention(
-        self, update_personality=False, seed: int | None = None
+        self, initial_intervention: bool = False, seed: int | None = None
     ) -> Intervention:
         """Do a debater intervention.
 
         Args:
-            update_personality: Whether to update the debater personality based on the last messages before intervention.
+            initial_intervention: If this is the first intervention from this debater.
+            seed: The seed to use for the random sampling at generation.
         """
 
         # Update the debater personality
-        if update_personality:
-            debater_personality_update(
+        if not (initial_intervention) and self.variable_debater():
+            debater_update(
                 model=self.model,
                 debater=self.config,
+                debate_statement=self.debate_config.statement,
                 interventions=self.summary_handler.latest_messages,
             )
 
