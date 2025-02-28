@@ -82,6 +82,31 @@ class DebateHandler:
             for debater in debaters
         ]
 
+        # remove the statement from the list of statements if it is in the debater's agreement_with_statements
+        for debater in self.debaters:
+            if (
+                debater.config.personality is not None
+                and debater.config.personality.agreement_with_statements
+            ):
+                if (
+                    self.config.statement
+                    in debater.config.personality.agreement_with_statements
+                ):
+                    if isinstance(
+                        debater.config.personality.agreement_with_statements, list
+                    ):
+                        debater.config.personality.agreement_with_statements.remove(
+                            self.config.statement
+                        )
+                    elif isinstance(debater.config.personality.agreement_with_statements, dict):  # type: ignore
+                        debater.config.personality.agreement_with_statements.pop(
+                            self.config.statement
+                        )
+                    else:
+                        raise ValueError(
+                            "agreement_with_statements should be a list or a dict"
+                        )
+
         self.metrics_handler = metrics_handler
 
         # Logs

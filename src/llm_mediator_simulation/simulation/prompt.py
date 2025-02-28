@@ -1,7 +1,9 @@
 """Prompt utilities for the debate simulation."""
 
-import random
+from random import randint, sample, shuffle
 from typing import Literal, Sequence, Type, TypeVar, cast
+
+from numpy import random
 
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
@@ -107,10 +109,13 @@ def debater_update(
     ################################################
     # Build the prompt for the debater's current personality
     ################################################
-    prompt = f"""You are roleplaying this real person:
+    prompt = f"""You are taking part in an online debate about the following topic: {debate_statement}
+
+You are roleplaying this real person:
 name: {debater.name};\n"""
     personality = debater.personality
     if personality is not None:
+        # Not shuffled
         if personality.demographic_profile is not None:
             for (
                 characteristic,
@@ -121,85 +126,109 @@ name: {debater.name};\n"""
 
         prompt += """Here is your current personality:\n"""
 
+        # Not shuffled
         if personality.vote_last_presidential_election:
             prompt += f"In the last presidential election, you {personality.vote_last_presidential_election}.\n\n"
 
+        # Shuffled
         if personality.traits:
-            traits = personality.traits
+            traits = personality.traits.copy()
             prompt += f"Trait{"s" if len(traits) > 1 else ""}:\n"
             if isinstance(traits, list):
+                shuffle(traits)
                 for trait in traits:
                     prompt += f"- {trait.value.name.capitalize()}: {Likert3Level.HIGH.value}\n"
             elif isinstance(traits, dict):  # type: ignore
-                for trait, value in traits.items():
+                traits_and_values = list(traits.items())
+                shuffle(traits_and_values)
+                for trait, value in traits_and_values:
                     prompt += f"- {trait.value.name.capitalize()}: {value.value}\n"
             else:
                 raise ValueError("Personality traits must be a list or a dictionary.")
             prompt += "\n"
 
+        # Shuffled
         if personality.facets:
-            facets = personality.facets
+            facets = personality.facets.copy()
             prompt += f"Facet{"s" if len(facets) > 1 else ""}:\n"
             if isinstance(facets, list):
+                shuffle(facets)
                 for facet in facets:
                     prompt += f"- {facet.value.name.capitalize()}: {KeyingDirection.POSITIVE.value}\n"
             elif isinstance(facets, dict):  # type: ignore
-                for facet, value in facets.items():  # type: ignore
+                facets_and_values = list(facets.items())
+                shuffle(facets_and_values)
+                for facet, value in facets_and_values:
                     prompt += f"- {facet.value.name.capitalize()}: {value.value}\n"
             else:
                 raise ValueError("Personality facets must be a list or a dictionary.")
             prompt += "\n"
 
+        # Shuffled
         if personality.moral_foundations:
-            moral_foundations = personality.moral_foundations
+            moral_foundations = personality.moral_foundations.copy()
             prompt += f"Moral foundation{"s" if len(moral_foundations) > 1 else ""}:\n"
             if isinstance(moral_foundations, list):
+                shuffle(moral_foundations)
                 for foundation in moral_foundations:
                     prompt += f"- {foundation.value.name.capitalize()}: {Likert5Level.EXTREMELY.value.standard}\n"
             elif isinstance(personality.moral_foundations, dict):  # type: ignore
-                for foundation, value in personality.moral_foundations.items():
+                moral_foundations_and_values = list(moral_foundations.items())
+                shuffle(moral_foundations_and_values)
+                for foundation, value in moral_foundations_and_values:
                     prompt += f"- {foundation.value.name.capitalize().split(" (v1) ")[0]}: {value.value.standard}\n"
             else:
                 raise ValueError("Moral foundations must be a list or a dictionary.")
             prompt += "\n"
 
+        # Shuffled
         if personality.basic_human_values:
-            basic_human_values = personality.basic_human_values
+            basic_human_values = personality.basic_human_values.copy()
             prompt += (
                 f"Basic human value{"s" if len(basic_human_values) > 1 else ""}:\n"
             )
             if isinstance(basic_human_values, list):
+                shuffle(basic_human_values)
                 for value in basic_human_values:
                     prompt += f"- {value.value.name.capitalize()}: {Likert5ImportanceLevel.IMPORTANT.value}\n"
             elif isinstance(basic_human_values, dict):  # type: ignore
-                for value, importance in basic_human_values.items():
-                    prompt += f"- {value.value.name.capitalize()}: {importance.value}\n"
+                basic_human_values_and_level = list(basic_human_values.items())
+                shuffle(basic_human_values_and_level)
+                for value, level in basic_human_values_and_level:
+                    prompt += f"- {value.value.name.capitalize()}: {level.value}\n"
             else:
                 raise ValueError("Basic human values must be a list or a dictionary.")
             prompt += "\n"
 
+        # Shuffled
         if personality.cognitive_biases:
-            cognitive_biases = personality.cognitive_biases
+            cognitive_biases = personality.cognitive_biases.copy()
+            shuffle(cognitive_biases)
             prompt += f"Cognitive bias{"es" if len(cognitive_biases) > 1 else ""}:\n"
             for bias in cognitive_biases:
                 prompt += f"- {bias.value.name.capitalize()}\n"
             prompt += "\n"
 
+        # Shuffled
         if personality.fallacies:
-            fallacies = personality.fallacies
+            fallacies = personality.fallacies.copy()
+            shuffle(fallacies)
             prompt += f"Fallac{"y" if len(fallacies) > 1 else "ies"}:\n"
             for fallacy in fallacies:
                 prompt += f"- {fallacy.value.name.capitalize()}\n"
             prompt += "\n"
 
+        # Shuffled iif ideologies per issue
         if personality.ideologies:
             if isinstance(personality.ideologies, Ideology):
                 prompt += f"Ideology: {personality.ideologies.value}\n"
             elif isinstance(personality.ideologies, dict):  # type: ignore
+                issues_and_ideologies = list(personality.ideologies.items())
+                shuffle(issues_and_ideologies)
                 prompt += (
                     f"Ideolog{"y" if len(personality.ideologies) > 1 else "ies"}:\n"
                 )
-                for issue, ideology in personality.ideologies.items():
+                for issue, ideology in issues_and_ideologies:
                     prompt += f"- {issue.value.name.capitalize()}: {ideology.value}\n"
             else:
                 raise ValueError("Ideologies must be a single value or a dictionary.")
@@ -211,27 +240,33 @@ name: {debater.name};\n"""
         prompt += "Statement:\n"
     prompt += f"- {debate_statement.capitalize().rstrip(".")} (current debate statement): {debater.topic_opinion.agreement.value if debater.topic_opinion is not None else Likert7AgreementLevel.NEUTRAL.value}\n"
 
-    if personality:
-        if personality.agreement_with_statements:
-            for (
-                statement,
-                agreement,
-            ) in personality.agreement_with_statements.items():
-                prompt += f"- {statement.capitalize()}: {agreement.value}\n"
+    # Shuffled
+    if personality is not None and personality.agreement_with_statements:
+        agreement_with_statements = list(personality.agreement_with_statements.items())
+        shuffle(agreement_with_statements)
+        for (
+            statement,
+            agreement,
+        ) in agreement_with_statements:
+            prompt += f"- {statement.capitalize()}: {agreement.value}\n"
     prompt += "\n"
 
-    if personality:
+    if personality is not None:
+        # Shuffled
         if personality.likelihood_of_beliefs:
-            likelihood_of_beliefs = personality.likelihood_of_beliefs
+            likelihood_of_beliefs = list(personality.likelihood_of_beliefs.items())
+            shuffle(likelihood_of_beliefs)
             prompt += f"Belief{"s" if len(likelihood_of_beliefs) > 1 else ""}:\n"
-            for belief, likelihood in likelihood_of_beliefs.items():
+            for belief, likelihood in likelihood_of_beliefs:
                 prompt += (
                     f"- {belief.capitalize()}: {likelihood.name.replace("_", " ")}\n"
                 )
             prompt += "\n"
 
+        # Shuffled
         if personality.free_form_opinions:
-            free_form_opinions = personality.free_form_opinions
+            free_form_opinions = personality.free_form_opinions.copy()
+            shuffle(free_form_opinions)
             prompt += f"You have the following opinion{"s" if len(free_form_opinions) else ""}:\n"
             for opinion in free_form_opinions:
                 prompt += f"- {opinion.capitalize()}\n"
@@ -241,7 +276,7 @@ name: {debater.name};\n"""
     # Build the prompt for the debate's last interventions
     ################################################
 
-    prompt += """You have the opportunity to make your personality evolve based on the things people have said after your last intervention.\n\n"""  # TODO Check if agent knows context at that moment
+    prompt += """You have the opportunity to make your personality evolve based on the things people have said after your last intervention.\n\n"""
 
     prompt += """Here are the last messages:\n"""
     for intervention in interventions:
@@ -258,47 +293,53 @@ name: {debater.name};\n"""
 
     answer_format: dict[str, str] = dict()
     more_less_feature_to_evolve_list = []
-    more_less_text_in_answer_format = (
-        """a string ("more", "less", or "same") to update"""
-    )
+    more_less_text_in_answer_format = """a string ("{0}", "{1}", or "{2}") to update"""
+    update_options_yes_no = [
+        "more",
+        "less",
+        "same",
+    ]  # The order is shuffle each time to avoid bias for one specific option on average...
     if personality is not None:
         if personality.variable_traits and personality.traits:
             more_less_feature_to_evolve_list.append("traits")
-            answer_format.update(
-                {
-                    "_".join(
-                        trait.value.name.split(" ")
-                    ): f"""{more_less_text_in_answer_format} this trait"""
-                    for trait in personality.traits
-                }
-            )
+            update_options_trait = update_options_yes_no.copy()
+            traits = list(personality.traits.copy())
+            shuffle(traits)
+            for trait in traits:
+                shuffle(update_options_trait)
+                answer_format["_".join(trait.value.name.split(" "))] = (
+                    f"""{more_less_text_in_answer_format.format(*update_options_trait)} this trait"""
+                )
 
         if personality.variable_moral_foundations and personality.moral_foundations:
             more_less_feature_to_evolve_list.append("moral foundations")
-            answer_format.update(
-                {
-                    "_".join(
-                        foundation.value.name.split(" ")
-                    ): f"""{more_less_text_in_answer_format} this moral foundation"""
-                    for foundation in personality.moral_foundations
-                }
-            )
+            update_options_moral_foundation = update_options_yes_no.copy()
+            moral_foundations = list(personality.moral_foundations.copy())
+            shuffle(moral_foundations)
+            for foundation in moral_foundations:
+                shuffle(update_options_moral_foundation)
+                answer_format["_".join(foundation.value.name.split(" "))] = (
+                    f"""{more_less_text_in_answer_format.format(*update_options_moral_foundation)} this moral foundation"""
+                )
+
         if personality.variable_basic_human_values and personality.basic_human_values:
             more_less_feature_to_evolve_list.append("basic human values")
-            answer_format.update(
-                {
-                    "_".join(
-                        value.value.name.split(" ")
-                    ): f"""{more_less_text_in_answer_format} this basic human value"""
-                    for value in personality.basic_human_values
-                }
-            )
+            update_options_moral_basic_human_values = update_options_yes_no.copy()
+            basic_human_values = list(personality.basic_human_values.copy())
+            shuffle(basic_human_values)
+            for value in basic_human_values:
+                shuffle(update_options_moral_basic_human_values)
+                answer_format["_".join(value.value.name.split(" "))] = (
+                    f"""{more_less_text_in_answer_format.format(*update_options_moral_basic_human_values)} this basic human value"""
+                )
 
     if debater.variable_topic_opinion:
         more_less_feature_to_evolve_list.append("agreement with statements")
+        update_options_topic_opinion = update_options_yes_no.copy()
+        shuffle(update_options_topic_opinion)
         answer_format.update(
             {
-                "current_dabate_statement": f"""{more_less_text_in_answer_format} your agreement with the current debate statement"""
+                "current_dabate_statement": f"""{more_less_text_in_answer_format.format(*update_options_topic_opinion)} your agreement with the current debate statement"""
             }
         )
 
@@ -308,68 +349,93 @@ name: {debater.name};\n"""
             and personality.agreement_with_statements
         ):
             more_less_feature_to_evolve_list.append("agreement with statements")
-            answer_format.update(
-                {
-                    "_".join(
-                        statement.lower().split(" ")
-                    ): f"""{more_less_text_in_answer_format} your agreement with this statement"""
-                    for statement in personality.agreement_with_statements
-                }
+            update_options_agreement_with_statements = update_options_yes_no.copy()
+            agreement_with_statements = list(
+                personality.agreement_with_statements.copy()
             )
+            shuffle(agreement_with_statements)
+            for debate_statement in agreement_with_statements:
+                shuffle(update_options_agreement_with_statements)
+                answer_format["_".join(debate_statement.lower().split(" "))] = (
+                    f"""{more_less_text_in_answer_format.format(*update_options_agreement_with_statements)} your agreement with this statement"""
+                )
+
     if personality is not None:
         if (
             personality.variable_likelihood_of_beliefs
             and personality.likelihood_of_beliefs
         ):
             more_less_feature_to_evolve_list.append("likelihood of beliefs")
-            answer_format.update(
-                {
-                    "_".join(
-                        belief.lower().split(" ")
-                    ): f"""{more_less_text_in_answer_format} your assessment of this belief's likelihood"""
-                    for belief in personality.likelihood_of_beliefs
-                }
-            )
+            update_options_likelihood_of_beliefs = update_options_yes_no.copy()
+            likelihood_of_beliefs = list(personality.likelihood_of_beliefs.copy())
+            shuffle(likelihood_of_beliefs)
+            for belief in likelihood_of_beliefs:
+                shuffle(update_options_likelihood_of_beliefs)
+                answer_format["_".join(belief.lower().split(" "))] = (
+                    f"""{more_less_text_in_answer_format.format(*update_options_likelihood_of_beliefs)} your assessment of this belief's likelihood"""
+                )
 
     if more_less_feature_to_evolve_list:
+        update_options_more_less_same = update_options_yes_no.copy()
+        shuffle(update_options_more_less_same)
         prompt += "You can choose to evolve your "
         prompt += format_list(more_less_feature_to_evolve_list)
-        prompt += """ with "more", "less", or "same".\n"""
+        prompt += """ with "{0}", "{1}", or "{2}".\n""".format(
+            *update_options_more_less_same
+        )
 
     if personality is not None:
         if personality.variable_facets and personality.facets:
-            prompt += """You can choose to evolve your facets with "yes" or "no".\n"""
-            answer_format.update(
-                {
-                    "_".join(
-                        facet.value.name.split(" ")
-                    ): """a string ("yes" or "no") to update this facet"""
-                    for facet in personality.facets
-                }
+            update_options_yes_no = ["yes", "no"]
+            shuffle(update_options_yes_no)
+            prompt += """You can choose to evolve your facets with "{0}" or "{1}".\n""".format(
+                *update_options_yes_no
             )
+
+            facets = list(personality.facets.copy())
+            shuffle(facets)
+            for facet in facets:
+                shuffle(update_options_yes_no)
+                answer_format["_".join(facet.value.name.split(" "))] = (
+                    """a string ("{0}" or "{1}") to update this facet"""
+                ).format(*update_options_yes_no)
 
         if personality.variable_ideologies and personality.ideologies:
             prompt += """You can choose to evolve your """
+            update_options_liberal_conservative = [
+                "more liberal",
+                "more conservative",
+                "same",
+                "libertarian",
+            ]
+            shuffle(update_options_liberal_conservative)
             if isinstance(personality.ideologies, Ideology):
                 prompt += """ideology """
                 answer_format.update(
                     {
-                        "ideology": """a string ("more liberal", "more conservative", "same", or "libertarian") to update your ideology"""
+                        "ideology": """a string ("{0}", "{1}", "{2}", or "{3}") to update your ideology""".format(
+                            *update_options_liberal_conservative
+                        )
                     }
                 )
             elif isinstance(personality.ideologies, dict):  # type: ignore
                 prompt += """ideologies """
-                answer_format.update(
-                    {
-                        "_".join(
-                            issue.value.name.split(" ")
-                        ): """a string ("more liberal", "more conservative", "same", or "libertarian") to update your ideology on this issue"""
-                        for issue in personality.ideologies
-                    }
-                )
+                ideologies = list(personality.ideologies.copy())
+                shuffle(ideologies)
+                for issue in ideologies:
+                    shuffle(update_options_liberal_conservative)
+                    answer_format["_".join(issue.value.name.split(" "))] = (
+                        """a string ("{0}", "{1}", "{2}", or "{3}") to update your ideology on this issue""".format(
+                            *update_options_liberal_conservative
+                        )
+                    )
+
             else:
                 raise ValueError("Ideologies must be a single value or a dictionary.")
-            prompt += """with "more liberal", "more conservative", "same" or "libertarian".\n"""
+            shuffle(update_options_liberal_conservative)
+            prompt += """with "{0}", "{1}", "{2}", or "{3}".\n""".format(
+                *update_options_liberal_conservative
+            )
     prompt += "\n"
     prompt += f"""{json_prompt(answer_format)}"""
 
@@ -422,7 +488,7 @@ name: {debater.name};\n"""
             ):
                 statement_name_to_statement.update(
                     {
-                        "_".join(statement.split(" ")): statement
+                        "_".join(statement.lower().split(" ")): statement
                         for statement in personality.agreement_with_statements
                     }
                 )
@@ -432,7 +498,7 @@ name: {debater.name};\n"""
             ):
                 belief_name_to_belief.update(
                     {
-                        "_".join(belief.split(" ")): belief
+                        "_".join(belief.lower().split(" ")): belief
                         for belief in personality.likelihood_of_beliefs
                     }
                 )
@@ -706,7 +772,7 @@ def update_to_ideology_value(
     elif update == "same":
         return previous_value
     else:
-        raise ValueError("Invalid update for ideology.")
+        raise ValueError(f"Invalid update {update} for ideology.")
 
 
 def update_feature_list_randomly(
@@ -716,9 +782,9 @@ def update_feature_list_randomly(
     """Randomly update a list of ReasoningError, where the ResoningError list is a CognitiveBias list or a Fallacy list."""
     # Randomly remove a random number of existing elements in the list
     if previous_reasoning_error_list:
-        new_feature_list = random.sample(
+        new_feature_list = sample(
             previous_reasoning_error_list,
-            random.randint(0, len(previous_reasoning_error_list)),
+            randint(0, len(previous_reasoning_error_list)),
         )
     else:
         new_feature_list = []
@@ -727,9 +793,9 @@ def update_feature_list_randomly(
         len(previous_reasoning_error_list) if previous_reasoning_error_list else 0
     )
 
-    new_feature_list += random.sample(
+    new_feature_list += sample(
         list(resonning_error),
-        random.randint(0, min(previous_feature_list_num, 1)),
+        randint(0, min(previous_feature_list_num, 1)),
     )
 
     return cast(Sequence[T_resonning_error], new_feature_list)
@@ -770,7 +836,7 @@ CONVERSATION HISTORY WITH TIMESTAMPS:
     p = parsed_response["do_intervene"]
     if probability_mapper is not None:
         p = probability_mapper.map(p)
-    do_intervene = random.rand() < p  # TODO Check
+    do_intervene = random.rand() < p
 
     return parsed_response, prompt, do_intervene
 
@@ -974,6 +1040,3 @@ You can choose to evolve your personality on all axes by +1, -1 or 0.
             debater.personalities[axis] = new_position
 
     return prompts
-
-
-# TODO Randomly swap order more / less ; more liberal / more conservative
