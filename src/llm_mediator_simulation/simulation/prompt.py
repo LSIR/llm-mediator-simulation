@@ -83,7 +83,7 @@ position. However, you should almost never add a comment when the previous conte
 supports your position. Use short chat messages, no more than 3 sentences.
 
 {json_prompt(LLM_RESPONSE_FORMAT)}
-"""
+"""  # TODO review these instructions
 
     response = model.sample(prompt, seed=seed)
     return parse_llm_json(response, LLMMessage), prompt
@@ -830,7 +830,7 @@ CONVERSATION HISTORY WITH TIMESTAMPS:
 {json_prompt(LLM_PROBA_RESPONSE_FORMAT)}
     """
 
-    response = model.sample(prompt, seed=seed)  # TODO Check
+    response = model.sample(prompt, seed=seed)
     parsed_response = parse_llm_json(response, LLMProbaMessage)
 
     p = parsed_response["do_intervene"]

@@ -74,7 +74,9 @@ class DebaterHandler:
         )
 
         return Intervention(
-            debater=deepcopy(self.config),  # Freeze the debater configuration
+            debater=deepcopy(
+                self.config
+            ),  # Freeze the debater configuration because the personality can change
             text=response["text"],
             prompt=prompt,
             justification=response["intervention_justification"],

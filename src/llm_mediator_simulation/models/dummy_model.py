@@ -17,13 +17,13 @@ class DummyModel(LanguageModel):
             "You have the opportunity to make your personality evolve" in prompt
         ):  # For testing personality update
 
-            # The problem is the prompt returns sometging like this:
+            # The problem is the prompt returns something like this:
             # """
             # Some text to ignore
             # Answer in valid JSON format with the following structure only:
             # ```json
             # {
-            #     "agreeableness": a string ('more', 'less', or 'same') to update this trait
+            #     "agreeableness": a string ("more", "less", or "same") to update this trait
             #     ...
             # }
             # ```

@@ -26,7 +26,6 @@ class GPTModel(LanguageModel):
         Args:
             api_key: OpenAI API key.
             model_name: OpenAI model name.
-            seed: Seeding sampling at generation time.
         """
         self._api_key = api_key
         self.model_name = model_name
@@ -70,7 +69,7 @@ class AsyncGPTModel(AsyncLanguageModel):
         self.client = AsyncOpenAI(api_key=api_key)
 
     @override
-    async def sample(self, prompts: list[str]) -> list[str]:
+    async def sample(self, prompts: list[str], seed: int | None = None) -> list[str]:
         # Prepare prompts
         messages: list[list[ChatCompletionMessageParam]] = [
             [{"role": "user", "content": prompt}] for prompt in prompts
@@ -80,7 +79,11 @@ class AsyncGPTModel(AsyncLanguageModel):
         results = await asyncio.gather(
             *[
                 self.client.chat.completions.create(
-                    messages=message, model=self.model_name, n=1
+                    messages=message,
+                    model=self.model_name,
+                    n=1,
+                    seed=seed,
+                    temperature=0,
                 )
                 for message in messages
             ]

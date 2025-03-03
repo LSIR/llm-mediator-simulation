@@ -16,7 +16,12 @@ python examples/example_analysis.py personalities -d debate.pkl -a  # Averaged o
 
 Generate a transcript of the debate:
 ```bash
-python examples/example_analysis.py transcript -d debate.pkl
+python examples/example_analysis.py transcript -d debate.pkl 
+```
+
+Generate a transcript of the lst debate from a directory of debates:
+```bash
+python examples/example_analysis.py transcript -d debate_dir
 ```
 
 Print the debate data in a pretty format:
@@ -26,6 +31,7 @@ python examples/example_analysis.py print -d debate.pkl
 """
 
 import os
+
 import click
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -96,33 +102,40 @@ def metrics(debate: str, average: bool):
 
 @click.command("personalities")
 @common_options
-def personalities(debate: str, average: bool):
+def personalities(debate: str, average: bool):  # TODO
     """Plot the debater personalities"""
 
     data = DebateHandler.unpickle(debate)
     n = len(data.debaters)
+    assert data.debaters[0].personality is not None, "No personalities found"
+    scale_variable = data.debaters[0].personality.number_of_scale_variables()
 
-    if average:
+    if average:  # TODO average
         aggregate = aggregate_average_personalities(data)
         axes = plt.gca()
         plot_personalities(axes, aggregate, "Average personalities")
 
     else:
-        _, axs = plt.subplots(n, 1)
-        for i in range(n):
+
+        _, axs = plt.subplots(scale_variable, n, figsize=(10, 30))
+        for j in range(n):
             # Compute personalities
-            debater_personalities = personalities_of_name(data, data.debaters[i].name)
+            debater_personalities = personalities_of_name(data, data.debaters[j].name)
             aggregate = aggregate_personalities(debater_personalities)
 
-            axes: Axes = axs[i]  # type: ignore
+            col_axes: Axes = axs[:, j]
             plot_personalities(
-                axes, aggregate, f"Personalities of {data.debaters[i].name}"
+                col_axes,
+                aggregate,
+                f"Personality evolution of {data.debaters[j].name}",
+                first_column=(j == 0),
             )
     plt.tight_layout()
     plt.show()
+    plt.savefig("plot_sandbox/plot.png")
 
 
-@click.command("print")
+@click.command("print")  # TODO make this print more digest
 @pickle_options
 def pretty_print(debate: str):
     """Print the debate data in a pretty format."""

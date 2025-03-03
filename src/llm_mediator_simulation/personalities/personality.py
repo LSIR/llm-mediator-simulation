@@ -57,49 +57,70 @@ class Personality(Promptable):
     variable_agreement_with_statements: bool = False
     variable_likelihood_of_beliefs: bool = False
 
-    # variable_<feature> implies <feature> is not None and not empty
-    assert not variable_traits or traits
-    assert not variable_facets or variable_facets
-    assert not variable_moral_foundations or variable_moral_foundations
-    assert not variable_basic_human_values or variable_basic_human_values
-    assert not variable_ideologies or ideologies
-    assert not variable_agreement_with_statements or agreement_with_statements
-    assert not variable_likelihood_of_beliefs or likelihood_of_beliefs
+    def check_personality(self):
 
-    # assert no duplicate in general
-    assert len(set(traits)) == len(traits) if traits else True
-    assert len(set(facets)) == len(facets) if facets else True
-    assert (
-        len(set(moral_foundations)) == len(moral_foundations)
-        if moral_foundations
-        else True
-    )
-    assert (
-        len(set(basic_human_values)) == len(basic_human_values)
-        if basic_human_values
-        else True
-    )
-    assert (
-        len(set(cognitive_biases)) == len(cognitive_biases)
-        if cognitive_biases
-        else True
-    )
-    assert len(set(fallacies)) == len(fallacies) if fallacies else True
-    assert len(set(ideologies)) == len(ideologies) if ideologies else True
-    assert (
-        len(set(agreement_with_statements)) == len(agreement_with_statements)
-        if agreement_with_statements
-        else True
-    )
-    assert (
-        len(set(likelihood_of_beliefs)) == len(likelihood_of_beliefs)
-        if likelihood_of_beliefs
-        else True
-    )
+        # variable_<feature> implies <feature> is not None and not empty
+        assert not self.variable_traits or self.traits
+        assert not self.variable_facets or self.variable_facets
+        assert not self.variable_moral_foundations or self.variable_moral_foundations
+        assert not self.variable_basic_human_values or self.variable_basic_human_values
+        assert not self.variable_ideologies or self.ideologies
+        assert (
+            not self.variable_agreement_with_statements
+            or self.agreement_with_statements
+        )
+        assert not self.variable_likelihood_of_beliefs or self.likelihood_of_beliefs
 
-    # assert no duplicates in agreement_with_statements and likelihood_of_beliefs
-    if agreement_with_statements and likelihood_of_beliefs:
-        assert len(set(agreement_with_statements) & set(likelihood_of_beliefs)) == 0
+        # assert no duplicate in general
+        assert len(set(self.traits)) == len(self.traits) if self.traits else True
+        assert len(set(self.facets)) == len(self.facets) if self.facets else True
+        assert (
+            len(set(self.moral_foundations)) == len(self.moral_foundations)
+            if self.moral_foundations
+            else True
+        )
+        assert (
+            len(set(self.basic_human_values)) == len(self.basic_human_values)
+            if self.basic_human_values
+            else True
+        )
+        assert (
+            len(set(self.cognitive_biases)) == len(self.cognitive_biases)
+            if self.cognitive_biases
+            else True
+        )
+        assert (
+            len(set(self.fallacies)) == len(self.fallacies) if self.fallacies else True
+        )
+        assert (
+            len(set(self.ideologies)) == len(self.ideologies)
+            if self.ideologies and isinstance(self.ideologies, dict)
+            else True
+        )
+        assert (
+            len(set(self.agreement_with_statements))
+            == len(self.agreement_with_statements)
+            if self.agreement_with_statements
+            else True
+        )
+        assert (
+            len(set(self.likelihood_of_beliefs)) == len(self.likelihood_of_beliefs)
+            if self.likelihood_of_beliefs
+            else True
+        )
+
+        # assert no duplicates in agreement_with_statements and likelihood_of_beliefs
+        if self.agreement_with_statements and self.likelihood_of_beliefs:
+            assert (
+                len(
+                    set(self.agreement_with_statements)
+                    & set(self.likelihood_of_beliefs)
+                )
+                == 0
+            )
+
+    def __post_init__(self):
+        self.check_personality()
 
     def variable_personality(self) -> bool:
         return (
@@ -322,3 +343,36 @@ class Personality(Promptable):
                 prompt += f"- {opinion.capitalize()}\n"
 
         return prompt.strip()
+
+    def number_of_scale_variables(self) -> int:
+        if isinstance(self.ideologies, Ideology):
+            ideology_num = 1
+        elif isinstance(self.ideologies, dict):
+            ideology_num = len(self.ideologies)
+        elif self.ideologies is None:
+            ideology_num = 0
+        else:
+            raise ValueError("Ideologies must be None, a single value or a dictionary.")
+
+        cnt = 0
+        if self.variable_traits:
+            assert self.traits is not None
+            cnt += len(self.traits)
+        if self.variable_facets:
+            assert self.facets is not None
+            cnt += len(self.facets)
+        if self.variable_moral_foundations:
+            assert self.moral_foundations is not None
+            cnt += len(self.moral_foundations)
+        if self.variable_basic_human_values:
+            assert self.basic_human_values is not None
+            cnt += len(self.basic_human_values)
+        if self.variable_agreement_with_statements:
+            assert self.agreement_with_statements is not None
+            cnt += len(self.agreement_with_statements)
+        if self.variable_likelihood_of_beliefs:
+            assert self.likelihood_of_beliefs is not None
+            cnt += len(self.likelihood_of_beliefs)
+        if self.variable_ideologies:
+            cnt += ideology_num
+        return cnt

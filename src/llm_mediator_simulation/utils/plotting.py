@@ -1,43 +1,58 @@
 """Plotting utilities"""
 
-from typing import Mapping, Sequence
+from enum import Enum
+from typing import Any, Mapping, Sequence, Type
 
+import numpy
 from matplotlib.axes import Axes
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
-from llm_mediator_simulation.simulation.debater.config import (
-    AxisPosition,
-    PersonalityAxis,
-)
+from llm_mediator_simulation.personalities.scales import Scale
 
 
 def plot_personalities(
-    axes: Axes,
-    personalities: Mapping[PersonalityAxis, Sequence[AxisPosition | float]],
+    col_axes: Axes,
+    personalities: Mapping[Any, Sequence[Scale]],
     title: str,
+    first_column: bool = True,
 ):
     """Helper function to plot personalities on a given axis."""
+    assert type(col_axes) is numpy.ndarray
+    col_axes[0].set_title(title)
+    col_axes[-1].set_xlabel("Interventions")
+    for i, (feature, values) in enumerate(
+        personalities.items()
+    ):  # TODO assert that all debaters have the same variable personalities
 
-    n = len(next(iter(personalities.values())))
+        axes = col_axes[i]
+        likert_scale: Type[Enum] = type(values[0])
+        likert_size = len(likert_scale)
 
-    axes.set_title(title)
-    axes.set_xlabel("Interventions")
-    axes.set_ylabel("Value (0 = left, 4 = right)")
-    axes.set_ylim(-0.5, 4.5)
-    axes.set_xticks(range(n))
-    axes.set_yticks(range(5))
+        n = len(next(iter(personalities.values())))
 
-    for axis, positions in personalities.items():
-        values = [p if isinstance(p, (int, float)) else p.value for p in positions]
-        axes.plot(
-            range(len(positions)),
-            values,
-            label=f"{axis.value.name}: {axis.value.left} ↗ {axis.value.right}",
-        )
+        # axes.set_ylabel("Value")
+        axes.set_ylim(-0.5, likert_size - 0.5)
+        axes.set_xticks(range(n))
+        axes.set_yticks(range(likert_size))
+        if first_column:
+            axes.set_yticklabels(
+                [str(value.value.capitalize()) for value in likert_scale]
+            )
+        else:
+            axes.set_yticklabels([])
+
+        numeric_values = [list(likert_scale).index(value) for value in values]
+        if isinstance(feature, str):
+            label = feature
+        else:
+            label = feature.name.capitalize()
+        axes.plot(range(len(values)), numeric_values, label=label)
         axes.legend()
 
-    # Plot a middle line at 2 (the middle value)
-    axes.axhline(y=2, color="k", linestyle="--")
+        # Plot a middle line at the middle value
+        axes.axhline(y=(likert_size - 1) / 2, color="k", linestyle="--")
+
+        # TODO handle the case of ideologies
 
 
 def plot_metrics(

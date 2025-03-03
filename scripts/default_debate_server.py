@@ -50,7 +50,6 @@ debate = DebateHandler(
     metrics_handler=None,
     mediator_config=None,
     seed=SEED,
-    variable_personality=False,
 )
 
 debate.run(rounds=4)

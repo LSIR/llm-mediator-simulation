@@ -8,7 +8,7 @@ from llm_mediator_simulation.personalities.ideologies import Ideology, Issues
 from llm_mediator_simulation.personalities.moral_foundations import MoralFoundation
 from llm_mediator_simulation.personalities.personality import Personality
 from llm_mediator_simulation.personalities.scales import (
-    KeyingDirection,
+    KeyingDirection,  # type: ignore
     Likert3Level,
     Likert5ImportanceLevel,
     Likert5Level,
@@ -66,6 +66,8 @@ debaters = [
                 Issues.ECONOMIC: Ideology.MODERATE,
                 Issues.SOCIAL: Ideology.CONSERVATIVE,
             },
+            variable_traits=True,
+            variable_facets=True,
         ),
     ),
     DebaterConfig(
@@ -113,6 +115,8 @@ debaters = [
                 Issues.ECONOMIC: Ideology.MODERATE,
                 Issues.SOCIAL: Ideology.CONSERVATIVE,
             },
+            variable_traits=True,
+            variable_facets=True,
         ),
     ),
 ]

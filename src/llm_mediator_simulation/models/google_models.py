@@ -125,7 +125,7 @@ class AsyncGoogleModel(AsyncLanguageModel):
         ]
 
     @override
-    async def sample(self, prompts: list[str]) -> list[str]:
+    async def sample(self, prompts: list[str], seed: int | None = None) -> list[str]:
         """Generate text based on the given prompt."""
 
         results = await asyncio.gather(

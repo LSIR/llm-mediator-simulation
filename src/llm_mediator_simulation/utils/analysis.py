@@ -1,11 +1,18 @@
 """Debate analysis utilities."""
 
+from typing import Any, Mapping
+
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
-from llm_mediator_simulation.simulation.debate.handler import DebatePickle
-from llm_mediator_simulation.simulation.debater.config import (
-    AxisPosition,
-    PersonalityAxis,
+from llm_mediator_simulation.personalities.ideologies import Ideology, Issues
+from llm_mediator_simulation.personalities.personality import Personality
+from llm_mediator_simulation.personalities.scales import (
+    KeyingDirection,
+    Likert3Level,
+    Likert5ImportanceLevel,
+    Likert5Level,
+    Scale,
 )
+from llm_mediator_simulation.simulation.debate.handler import DebatePickle
 from llm_mediator_simulation.utils.types import Intervention, Metrics
 
 
@@ -18,9 +25,7 @@ def interventions_of_name(debate: DebatePickle, name: str) -> list[Intervention]
     ]
 
 
-def personalities_of_name(
-    debate: DebatePickle, name: str
-) -> list[dict[PersonalityAxis, AxisPosition]]:
+def personalities_of_name(debate: DebatePickle, name: str) -> list[Personality]:
     """Extract a single debater's personalities from a debate."""
 
     personalities = []
@@ -29,34 +34,75 @@ def personalities_of_name(
         if (
             intervention.debater
             and intervention.debater.name == name
-            and intervention.debater.personalities
+            and intervention.debater.personality is not None
         ):
-            personalities.append(intervention.debater.personalities)
+            personalities.append(intervention.debater.personality)
 
     return personalities
 
 
-def aggregate_personalities(personnalities: list[dict[PersonalityAxis, AxisPosition]]):
-    """Aggregate a list of personalities into lists of personality positions for every personality
+def aggregate_personalities(personnalities: list[Personality]):
+    """Aggregate a list of personalities into lists of personality features for every personality
     (for plotting)"""
 
-    aggregate: dict[PersonalityAxis, list[AxisPosition]] = {}
+    aggregate: Mapping[Any, list[Scale]] = {}
 
-    for p in personnalities:
-        for axis, position in p.items():
-            if axis not in aggregate:
-                aggregate[axis] = []
-            aggregate[axis].append(position)
+    personality_field_names = [
+        "traits",
+        "facets",
+        "moral_foundations",
+        "basic_human_values",
+        "ideologies",
+        "agreement_with_statements",
+        "likelihood_of_beliefs",
+    ]
+
+    for debater_personality in personnalities:
+        for personality_field_name in personality_field_names:  # e.g. "traits"
+            if getattr(debater_personality, f"variable_{personality_field_name}"):
+                personality_field = getattr(
+                    debater_personality, personality_field_name
+                )  # e.g. debater_personality.traits
+                if isinstance(personality_field, Ideology):
+                    if Ideology not in aggregate:
+                        aggregate[Issues.GENERAL] = []
+                    aggregate[Issues.GENERAL].append(personality_field)
+
+                elif isinstance(personality_field, list):
+                    for feature in personality_field:
+                        if personality_field_name == "traits":
+                            default_value = Likert3Level.HIGH
+                        elif personality_field_name == "facets":
+                            default_value = KeyingDirection.POSITIVE
+                        elif personality_field_name == "moral_foundations":
+                            default_value = Likert5Level.FAIRLY
+                        elif personality_field_name == "basic_human_values":
+                            default_value = Likert5ImportanceLevel.IMPORTANT
+                        else:
+                            raise ValueError(
+                                f"Personality field {personality_field_name} cannot be a list."
+                            )
+                        aggregate[feature].append(default_value)
+
+                elif isinstance(personality_field, dict):
+                    for feature, value in personality_field.items():
+                        if feature not in aggregate:
+                            aggregate[feature] = []
+                        aggregate[feature].append(value)
+                else:
+                    raise ValueError(
+                        f"Personality field {personality_field_name} is neither a list nor a dict."
+                    )
 
     return aggregate
 
 
-def aggregate_average_personalities(debate: DebatePickle):
+def aggregate_average_personalities(debate: DebatePickle):  # TODO average personalities
     """Aggregate the average of personalities for each round of interventions"""
 
     n = len(debate.debaters)
 
-    aggregate: dict[PersonalityAxis, list[float]] = {}
+    aggregate: Mapping[Any, list[Scale]] = {}
 
     # Compute average for each round
     round = 1

@@ -28,7 +28,7 @@ class MistralModel(LanguageModel):
         self.model_name = model_name
 
     @override
-    def sample(self, prompt: str) -> str:
+    def sample(self, prompt: str, seed: int | None = None) -> str:
         """Generate text based on the given prompt."""
 
         response = self.client.chat(

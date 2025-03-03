@@ -3,6 +3,7 @@
 import os
 import time
 
+from default_debaters import debaters
 from dotenv import load_dotenv
 
 from llm_mediator_simulation.models.gpt_models import GPTModel
@@ -11,7 +12,6 @@ from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debate.handler import DebateHandler
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 from llm_mediator_simulation.visualization.transcript import debate_transcript
-from scripts.default_debaters import debaters
 
 load_dotenv()
 
@@ -45,7 +45,6 @@ debate = DebateHandler(
     metrics_handler=metrics,
     mediator_config=mediator_config,
     seed=SEED,
-    variable_personality=False,
 )
 
 debate.run(rounds=2)
