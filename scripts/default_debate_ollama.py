@@ -20,7 +20,7 @@ SEED = 42
 gpt_key = os.getenv("GPT_API_KEY") or ""
 mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 
-debater_model = OllamaLocalModel(model_name="mistral")
+debater_model = OllamaLocalModel(model_name="mistral-nemo")
 
 
 # The conversation summary handler (keep track of the general history and of the n latest messages)
@@ -47,7 +47,7 @@ debate = DebateHandler(
     seed=SEED,
 )
 
-debate.run(rounds=2)
+debate.run(rounds=10)
 
 name_timestamp = time.strftime("%Y%m%d-%H%M%S")
 output_path = "debates_sandbox"

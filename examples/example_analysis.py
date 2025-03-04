@@ -1,6 +1,7 @@
 """An example analysis script run via CLI to analyze a pickled debate simulation.
 
 The following commands are available:
+(Note: if you replace the `debate` argument with a directory, the script will use the last debate in the directory.)
 
 Plot the metrics of a debate:
 ```bash
@@ -17,11 +18,6 @@ python examples/example_analysis.py personalities -d debate.pkl -a  # Averaged o
 Generate a transcript of the debate:
 ```bash
 python examples/example_analysis.py transcript -d debate.pkl 
-```
-
-Generate a transcript of the lst debate from a directory of debates:
-```bash
-python examples/example_analysis.py transcript -d debate_dir
 ```
 
 Print the debate data in a pretty format:
@@ -50,11 +46,30 @@ from llm_mediator_simulation.utils.plotting import plot_metrics, plot_personalit
 from llm_mediator_simulation.visualization.transcript import debate_transcript
 
 
+def get_last_debate_in_dir(dir: str) -> str:
+    debates = sorted(
+        [os.path.join(dir, f) for f in os.listdir(dir) if f.endswith(".pkl")]
+    )
+    return debates[-1]
+
+
 def pickle_options(func):
     """Add a pickle option to the command."""
+
+    # If debate is a directory, unpickle the last debate
+    def wrapper(*args, **kwargs):
+        if os.path.isdir(kwargs["debate"]):
+            kwargs["debate"] = get_last_debate_in_dir(kwargs["debate"])
+            print(f"Using the last debate in directory: {kwargs['debate']}")
+        # elif os.path.isfile(args[0]):
+        #     kwargs["debate"] = get_last_debate_in_dir(args[0])
+        #     print(f"Using last debate in directory: {kwargs['debate']}")
+
+        return func(*args, **kwargs)
+
     return click.option(
         "--debate", "-d", help="The pickled debate to analyze.", required=True
-    )(func)
+    )(wrapper)
 
 
 def common_options(func):
@@ -102,13 +117,36 @@ def metrics(debate: str, average: bool):
 
 @click.command("personalities")
 @common_options
-def personalities(debate: str, average: bool):  # TODO
+def personalities(debate: str, average: bool):
     """Plot the debater personalities"""
 
     data = DebateHandler.unpickle(debate)
     n = len(data.debaters)
-    assert data.debaters[0].personality is not None, "No personalities found"
-    scale_variable = data.debaters[0].personality.number_of_scale_variables()
+    # assert that all debaters have personalities
+    assert all(
+        [debater.personality is not None for debater in data.debaters]
+    ), "No personalities found for at least one debater"
+    # Assert that debaters all have the same variable features
+    assert (
+        len(
+            set(
+                map(
+                    frozenset,
+                    [
+                        debater.personality.variable_scale_set()
+                        for debater in data.debaters
+                        if debater.personality is not None
+                    ],
+                )
+            )
+        )
+        == 1
+    ), "Debaters have different variable features"
+
+    if data.debaters[0].personality is not None:
+        scale_variable = data.debaters[0].personality.number_of_scale_variables()
+    else:
+        raise ValueError("The personality of the first debater is None.")
 
     if average:  # TODO average
         aggregate = aggregate_average_personalities(data)
@@ -132,13 +170,21 @@ def personalities(debate: str, average: bool):  # TODO
             )
     plt.tight_layout()
     plt.show()
-    plt.savefig("plot_sandbox/plot.png")
+    debate_timestamp_str = debate.split("_")[-1].split(".")[0]
+    if not debate_timestamp_str:
+        raise ValueError("Expecting a debate name format like '*_YYYYMMDD-HHMMSS.pkl'")
+
+    if not os.path.exists("plot"):
+        os.makedirs("plot")
+    plt.savefig(f"plot/plot_personalities_{debate_timestamp_str}.png")
 
 
 @click.command("print")  # TODO make this print more digest
 @pickle_options
 def pretty_print(debate: str):
     """Print the debate data in a pretty format."""
+    if os.path.isdir(debate):
+        debate = get_last_debate_in_dir(debate)
 
     data = DebateHandler.unpickle(debate)
     pprint(data)
@@ -149,12 +195,6 @@ def pretty_print(debate: str):
 def transcript(debate: str):
     """Print the debate transcript.
     You can pipe it to a file to save it."""
-    # If debate is a directory, unpickle the last debate
-    if os.path.isdir(debate):
-        debates = sorted(
-            [os.path.join(debate, f) for f in os.listdir(debate) if f.endswith(".pkl")]
-        )
-        debate = debates[-1]
 
     data = DebateHandler.unpickle(debate)
 

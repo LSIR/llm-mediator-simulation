@@ -4,7 +4,7 @@ from llm_mediator_simulation.personalities.demographics import DemographicCharac
 from llm_mediator_simulation.personalities.facets import PersonalityFacet
 from llm_mediator_simulation.personalities.fallacies import Fallacy
 from llm_mediator_simulation.personalities.human_values import BasicHumanValues
-from llm_mediator_simulation.personalities.ideologies import Ideology, Issues
+from llm_mediator_simulation.personalities.ideologies import Ideology
 from llm_mediator_simulation.personalities.moral_foundations import MoralFoundation
 from llm_mediator_simulation.personalities.personality import Personality
 from llm_mediator_simulation.personalities.scales import (
@@ -19,6 +19,10 @@ from llm_mediator_simulation.simulation.debater.config import (
     DebaterConfig,
     TopicOpinion,
 )
+
+variable_traits = True
+variable_facets = True
+variable_ideologies = True
 
 debaters = [
     DebaterConfig(
@@ -62,12 +66,10 @@ debaters = [
             ],
             fallacies=[Fallacy.AD_HOMINEM, Fallacy.APPEAL_TO_AUTHORITY],  # type: ignore
             vote_last_presidential_election="voted for Donald Trump",
-            ideologies={
-                Issues.ECONOMIC: Ideology.MODERATE,
-                Issues.SOCIAL: Ideology.CONSERVATIVE,
-            },
-            variable_traits=True,
-            variable_facets=True,
+            ideologies=Ideology.MODERATE,
+            variable_traits=variable_traits,
+            variable_facets=variable_facets,
+            variable_ideologies=variable_ideologies,
         ),
     ),
     DebaterConfig(
@@ -111,12 +113,10 @@ debaters = [
             ],
             fallacies=[Fallacy.AD_HOMINEM, Fallacy.APPEAL_TO_AUTHORITY],  # type: ignore
             vote_last_presidential_election="voted for Donald Trump",
-            ideologies={
-                Issues.ECONOMIC: Ideology.MODERATE,
-                Issues.SOCIAL: Ideology.CONSERVATIVE,
-            },
-            variable_traits=True,
-            variable_facets=True,
+            ideologies=Ideology.MODERATE,
+            variable_traits=variable_traits,
+            variable_facets=variable_facets,
+            variable_ideologies=variable_ideologies,
         ),
     ),
 ]

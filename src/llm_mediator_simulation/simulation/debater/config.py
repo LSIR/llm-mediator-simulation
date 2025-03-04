@@ -47,5 +47,5 @@ class DebaterConfig(Promptable):
         name: {self.name}; 
         {self.personality.to_prompt() if self.personality is not None else ""}
         
-        You {self.topic_opinion.agreement.name if self.topic_opinion is not None else Likert7AgreementLevel.NEUTRAL.value} with the current debate statement.
+        You {self.topic_opinion.agreement.value if self.topic_opinion is not None else Likert7AgreementLevel.NEUTRAL.value} with the current debate statement.
         Remember that you are allowed to insult, diminish and curse the people you debate with."""  # TODO Remove the last sentence

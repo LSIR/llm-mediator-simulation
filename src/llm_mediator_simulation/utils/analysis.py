@@ -3,7 +3,7 @@
 from typing import Any, Mapping
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
-from llm_mediator_simulation.personalities.ideologies import Ideology, Issues
+from llm_mediator_simulation.personalities.ideologies import Ideology
 from llm_mediator_simulation.personalities.personality import Personality
 from llm_mediator_simulation.personalities.scales import (
     KeyingDirection,
@@ -64,9 +64,9 @@ def aggregate_personalities(personnalities: list[Personality]):
                     debater_personality, personality_field_name
                 )  # e.g. debater_personality.traits
                 if isinstance(personality_field, Ideology):
-                    if Ideology not in aggregate:
-                        aggregate[Issues.GENERAL] = []
-                    aggregate[Issues.GENERAL].append(personality_field)
+                    if "Ideology" not in aggregate:
+                        aggregate["Ideology"] = []
+                    aggregate["Ideology"].append(personality_field)
 
                 elif isinstance(personality_field, list):
                     for feature in personality_field:
@@ -89,6 +89,7 @@ def aggregate_personalities(personnalities: list[Personality]):
                         if feature not in aggregate:
                             aggregate[feature] = []
                         aggregate[feature].append(value)
+
                 else:
                     raise ValueError(
                         f"Personality field {personality_field_name} is neither a list nor a dict."

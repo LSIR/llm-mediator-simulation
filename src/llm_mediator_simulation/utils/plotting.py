@@ -7,6 +7,7 @@ import numpy
 from matplotlib.axes import Axes
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
+from llm_mediator_simulation.personalities.ideologies import Ideology
 from llm_mediator_simulation.personalities.scales import Scale
 
 
@@ -20,9 +21,7 @@ def plot_personalities(
     assert type(col_axes) is numpy.ndarray
     col_axes[0].set_title(title)
     col_axes[-1].set_xlabel("Interventions")
-    for i, (feature, values) in enumerate(
-        personalities.items()
-    ):  # TODO assert that all debaters have the same variable personalities
+    for i, (feature, values) in enumerate(personalities.items()):
 
         axes = col_axes[i]
         likert_scale: Type[Enum] = type(values[0])
@@ -50,9 +49,10 @@ def plot_personalities(
         axes.legend()
 
         # Plot a middle line at the middle value
-        axes.axhline(y=(likert_size - 1) / 2, color="k", linestyle="--")
-
-        # TODO handle the case of ideologies
+        if likert_scale == Ideology:
+            axes.axhline(y=(likert_size - 3) / 2, color="k", linestyle="--")
+        else:
+            axes.axhline(y=(likert_size - 1) / 2, color="k", linestyle="--")
 
 
 def plot_metrics(

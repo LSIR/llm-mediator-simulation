@@ -1,7 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from random import shuffle
-from typing import override
+from typing import Set, override
 
 from llm_mediator_simulation.personalities.cognitive_biases import CognitiveBias
 from llm_mediator_simulation.personalities.demographics import DemographicCharacteristic
@@ -58,7 +58,7 @@ class Personality(Promptable):
     variable_likelihood_of_beliefs: bool = False
 
     def check_personality(self):
-
+        """Check that the personality is well-formed."""
         # variable_<feature> implies <feature> is not None and not empty
         assert not self.variable_traits or self.traits
         assert not self.variable_facets or self.variable_facets
@@ -345,6 +345,7 @@ class Personality(Promptable):
         return prompt.strip()
 
     def number_of_scale_variables(self) -> int:
+        """Return the number of variable personality features associated with a Scale value."""
         if isinstance(self.ideologies, Ideology):
             ideology_num = 1
         elif isinstance(self.ideologies, dict):
@@ -376,3 +377,34 @@ class Personality(Promptable):
         if self.variable_ideologies:
             cnt += ideology_num
         return cnt
+
+    def variable_scale_set(self) -> Set:
+        """Return the set of variable personality features associated with a Scale value."""
+        variable_set = set()
+        if self.variable_traits and self.traits is not None:
+            variable_set.union(set(self.traits))
+        if self.variable_facets and self.facets is not None:
+            variable_set.union(set(self.facets))
+        if self.variable_moral_foundations and self.moral_foundations is not None:
+            variable_set.union(set(self.moral_foundations))
+        if self.variable_basic_human_values and self.basic_human_values is not None:
+            variable_set.union(set(self.basic_human_values))
+        if (
+            self.variable_agreement_with_statements
+            and self.agreement_with_statements is not None
+        ):
+            variable_set.union(set(self.agreement_with_statements))
+        if (
+            self.variable_likelihood_of_beliefs
+            and self.likelihood_of_beliefs is not None
+        ):
+            variable_set.union(set(self.likelihood_of_beliefs))
+        if self.variable_ideologies and self.ideologies is not None:
+            if isinstance(self.ideologies, Ideology):
+                variable_set.add(self.ideologies)
+            elif isinstance(self.ideologies, dict):  # type: ignore
+                variable_set.union(set(self.ideologies))
+            else:
+                raise ValueError("Ideologies must be a single value or a dictionary")
+
+        return variable_set

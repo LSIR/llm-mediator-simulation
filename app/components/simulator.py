@@ -280,7 +280,6 @@ def initialize_debate():
         metrics_handler=metrics,
         mediator_config=None,
         seed=SEED,
-        variable_personality=False,
     )
 
     st.session_state.mediated_debate = DebateHandler(
@@ -292,5 +291,4 @@ def initialize_debate():
         metrics_handler=metrics,
         mediator_config=MediatorConfig(),
         seed=SEED,
-        variable_personality=False,
     )
