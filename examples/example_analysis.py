@@ -31,6 +31,7 @@ import os
 import click
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+from rich.console import Console
 from rich.pretty import pprint
 
 from llm_mediator_simulation.simulation.debate.handler import DebateHandler
@@ -188,7 +189,8 @@ def pretty_print(debate: str):
 
     data = DebateHandler.unpickle(debate)
     printable_data = data.to_printable()
-    pprint(printable_data)
+    console = Console(force_terminal=True, record=True)
+    pprint(printable_data, console=console)
 
 
 @click.command("transcript")

@@ -349,6 +349,9 @@ A script is provided to analyze pickled debate files at [examples/example_analys
 
 The following commands are available:
 
+(Note: if you replace the `debate.pkl` argument with a directory `debate_dir/`, the script will use the last debate in the directory.)
+
+
 Plot the metrics of a debate:
 
 ```bash
@@ -379,6 +382,13 @@ Print the debate data in a pretty format:
 ```bash
 python examples/example_analysis.py print -d debate.pkl
 ```
+
+You can save the pretty print on disk and preview it if you install the [ANSI Colors VSCode](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi) extension (with ⌘⇧V on Mac or Ctrl+K V on Windows/Linux).
+
+```bash
+python examples/example_analysis.py print -d debate.pkl > debates_sandbox/output.ans
+```
+![screenshot to preview the pretty print](https://github.com/iliazeus/vscode-ansi/raw/HEAD/images/screenshot-editorTitleButton-darkPlus.png)
 
 ## Other features
 

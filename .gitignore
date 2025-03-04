@@ -10,6 +10,7 @@ __pycache__/
 
 # Transcripts
 *.txt
+*.ans
 # *.csv
 
 # Logs

@@ -7,7 +7,8 @@
 		"ms-python.python", // Python language support
 		"ms-python.vscode-pylance", // Python language server
 		"ms-python.black-formatter", // FORMATTER (black, one of the best python formatters)
-		"charliermarsh.ruff" // LINTER (ruff, blazingly fast python linter, written in rust)
+		"charliermarsh.ruff", // LINTER (ruff, blazingly fast python linter, written in rust)
+		"iliazeus.vscode-ansi" // ANSI color support
 	],
 	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
 	"unwantedRecommendations": []
