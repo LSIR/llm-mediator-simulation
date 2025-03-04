@@ -10,6 +10,19 @@ from llm_mediator_simulation.utils.model_utils import Agreement
 
 
 @dataclass
+class PrintableIntervention:
+    """Simpler / printable version of the Intervention dataclass."""
+
+    debater: str
+    # debater_update: Actually not necessary since we already have CLI to plot evolution of personalities.
+    text: str | None
+    prompt: list[str]
+    justification: str
+    timestamp: datetime
+    metrics: "Metrics | None" = None
+
+
+@dataclass
 class Intervention:
     """Basic intervention data type for the debate simulation
 
@@ -28,6 +41,16 @@ class Intervention:
     justification: str
     timestamp: datetime
     metrics: "Metrics | None" = None
+
+    def to_printable(self) -> PrintableIntervention:
+        return PrintableIntervention(
+            debater=self.debater.name if self.debater else "Mediator",
+            text=self.text,
+            prompt=self.prompt.splitlines(),
+            justification=self.justification,
+            timestamp=self.timestamp,
+            metrics=self.metrics,
+        )
 
 
 @dataclass

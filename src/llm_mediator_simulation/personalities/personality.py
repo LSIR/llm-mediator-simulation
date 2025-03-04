@@ -1,7 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from random import shuffle
-from typing import Set, override
+from typing import Any, Set, override
 
 from llm_mediator_simulation.personalities.cognitive_biases import CognitiveBias
 from llm_mediator_simulation.personalities.demographics import DemographicCharacteristic
@@ -24,6 +24,33 @@ from llm_mediator_simulation.utils.prompt_utils import (
     format_list,
     format_list_and_conjugate_be,
 )
+
+
+@dataclass
+class PrintablePersonality:
+    """Simpler/printable version of the Personality dataclass."""
+
+    demographic_profile: dict[str, str] | None = None
+    traits: dict[str, str] | list[str] | None = None
+    variables_traits: bool = False
+    facets: dict[str, str] | list[str] | None = None
+    variables_facets: bool = False
+    moral_foundations: dict[str, str] | list[str] | None = None
+    variable_moral_foundations: bool = False
+    basic_human_values: dict[str, str] | None = None
+    variable_basic_human_values: bool = False
+    cognitive_biases: list[str] | None = None
+    variable_cognitive_biases: bool = False
+    fallacies: list[str] | None = None
+    variable_fallacies: bool = False
+    vote_last_presidential_election: str | None = None
+    ideologies: dict[str, str] | str | None = None
+    variable_ideologies: bool = False
+    agreement_with_statements: dict[str, str] | None = None
+    variable_agreement_with_statements: bool = False
+    likelihood_of_beliefs: dict[str, str] | None = None
+    variable_likelihood_of_beliefs: bool = False
+    free_form_opinions: list[str] | None = None
 
 
 @dataclass
@@ -408,3 +435,57 @@ class Personality(Promptable):
                 raise ValueError("Ideologies must be a single value or a dictionary")
 
         return variable_set
+
+    def to_printable(self) -> PrintablePersonality:
+        """Return a simpler/printable version of the Personality dataclass."""
+
+        return PrintablePersonality(
+            demographic_profile=field_to_printable(self.demographic_profile),
+            traits=field_to_printable(self.traits),
+            variables_traits=self.variable_traits,
+            facets=field_to_printable(self.facets),
+            variables_facets=self.variable_facets,
+            moral_foundations=field_to_printable(self.moral_foundations),
+            variable_moral_foundations=self.variable_moral_foundations,
+            basic_human_values=field_to_printable(self.basic_human_values),
+            variable_basic_human_values=self.variable_basic_human_values,
+            cognitive_biases=field_to_printable(self.cognitive_biases),
+            variable_cognitive_biases=self.variable_cognitive_biases,
+            fallacies=field_to_printable(self.fallacies),
+            variable_fallacies=self.variable_fallacies,
+            vote_last_presidential_election=self.vote_last_presidential_election,
+            ideologies=field_to_printable(self.ideologies),
+            variable_ideologies=self.variable_ideologies,
+            agreement_with_statements=field_to_printable(
+                self.agreement_with_statements
+            ),
+            variable_agreement_with_statements=self.variable_agreement_with_statements,
+            likelihood_of_beliefs=field_to_printable(self.likelihood_of_beliefs),
+            variable_likelihood_of_beliefs=self.variable_likelihood_of_beliefs,
+            free_form_opinions=self.free_form_opinions,
+        )
+
+
+def field_to_printable(personality_field: Any) -> Any:
+    """Convert a personality field to a printable version."""
+    if not (personality_field):
+        printable_personality_field = None
+
+    elif isinstance(personality_field, dict):
+        printable_personality_field = {
+            str(key).capitalize(): str(value).capitalize()
+            for key, value in personality_field.items()
+        }
+
+    elif isinstance(personality_field, list):  # type: ignore
+        printable_personality_field = [
+            str(item).capitalize() for item in personality_field
+        ]
+
+    elif isinstance(personality_field, Ideology):
+        printable_personality_field = str(personality_field)
+
+    else:
+        raise ValueError("Personality fields must be a dictionary, a list or None.")
+
+    return printable_personality_field

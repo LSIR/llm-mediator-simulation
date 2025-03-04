@@ -66,3 +66,7 @@ class MoralFoundation(Enum):
         "willing to notice and resent any sign of attempted domination",
         None,
     )  # Liberty/Oppression is not part of Table 2 of 10.1037/pspp0000470
+
+    def __str__(self) -> str:
+        """Return a printable version of the moral foundation."""
+        return self.value.name.capitalize()

@@ -70,3 +70,7 @@ class PersonalityTrait(Enum):
         "You are generally calm and able to deal with stress, but sometimes experiences feelings of guilt, anger, or sadness.",
         "You are sensitive, emotional, and prone to experience feelings that are upsetting.",
     )
+
+    def __str__(self) -> str:
+        """Return a printable version of the trait."""
+        return self.value.name.capitalize()

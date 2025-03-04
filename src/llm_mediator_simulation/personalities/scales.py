@@ -5,6 +5,13 @@ from enum import Enum
 class Scale(Enum):
     """Base class for scales."""
 
+    def __str__(self) -> str:
+        """Return a printable version of the scale."""
+        if isinstance(self.value, str):
+            return self.value.capitalize()
+        else:  # isinstance(self.value, Likert5LevelValue)
+            return self.value.standard.capitalize()
+
 
 class Likert5ImportanceLevel(Scale):
     """Level on a 5-point likert scale axis.

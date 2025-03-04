@@ -6,6 +6,14 @@ from llm_mediator_simulation.simulation.debater.config import DebaterConfig
 
 
 @dataclass
+class PrintableSummaryConfig:
+    """Simpler/printable version of the SummaryConfig dataclass."""
+
+    latest_messages_limit: int
+    ignore: bool
+
+
+@dataclass
 class SummaryConfig:
     """Configuration for debate summaries provided to debaters prompts.
 
@@ -18,3 +26,10 @@ class SummaryConfig:
     latest_messages_limit: int = 3
     debaters: list[DebaterConfig] | None = None
     ignore: bool = False
+
+    def to_printable(self):
+        """Convert the SummaryConfig to a simpler PrintableSummaryConfig version for printing with pprint without overwheling informations."""
+        return PrintableSummaryConfig(
+            latest_messages_limit=self.latest_messages_limit,
+            ignore=self.ignore,
+        )

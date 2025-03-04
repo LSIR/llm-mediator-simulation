@@ -9,14 +9,20 @@ from rich.progress import track
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulation.models.language_model import LanguageModel
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
-from llm_mediator_simulation.simulation.debater.config import DebaterConfig
+from llm_mediator_simulation.simulation.debater.config import (
+    DebaterConfig,
+    PrintableDebaterConfig,
+)
 from llm_mediator_simulation.simulation.debater.handler import DebaterHandler
 from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
 from llm_mediator_simulation.simulation.mediator.handler import MediatorHandler
-from llm_mediator_simulation.simulation.summary.config import SummaryConfig
+from llm_mediator_simulation.simulation.summary.config import (
+    PrintableSummaryConfig,
+    SummaryConfig,
+)
 from llm_mediator_simulation.simulation.summary.handler import SummaryHandler
 from llm_mediator_simulation.utils.load_csv import load_csv_chat
-from llm_mediator_simulation.utils.types import Intervention
+from llm_mediator_simulation.utils.types import Intervention, PrintableIntervention
 
 
 class DebateHandler:
@@ -264,6 +270,17 @@ class DebateHandler:
 
 
 @dataclass
+class PrintableDebatePikle:
+    """Simpler/Printable debate data"""
+
+    config: DebateConfig
+    summary_config: PrintableSummaryConfig
+    mediator_config: MediatorConfig | None
+    debaters: list[PrintableDebaterConfig]
+    interventions: list[PrintableIntervention]
+
+
+@dataclass
 class DebatePickle:
     """Pickled debate data"""
 
@@ -272,3 +289,16 @@ class DebatePickle:
     mediator_config: MediatorConfig | None
     debaters: list[DebaterConfig]
     interventions: list[Intervention]
+
+    def to_printable(self) -> PrintableDebatePikle:
+        """Return a simpler version of the debate pickle for printing with pprint without overwhelming informations."""
+
+        return PrintableDebatePikle(
+            config=self.config,
+            summary_config=self.summary_config.to_printable(),
+            mediator_config=self.mediator_config,
+            debaters=[debater.to_printable() for debater in self.debaters],
+            interventions=[
+                intervention.to_printable() for intervention in self.interventions
+            ],
+        )

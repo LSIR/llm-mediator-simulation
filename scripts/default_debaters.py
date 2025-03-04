@@ -31,7 +31,7 @@ debaters = [
         personality=Personality(
             demographic_profile={
                 DemographicCharacteristic.ETHNICITY: "White",
-                DemographicCharacteristic.BIOLOGICAL_SEX: "male",
+                DemographicCharacteristic.BIOLOGICAL_SEX: "female",
             },
             traits={
                 PersonalityTrait.AGREEABLENESS: Likert3Level.HIGH,

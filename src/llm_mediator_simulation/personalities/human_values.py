@@ -98,3 +98,7 @@ class BasicHumanValues(Enum):
         "universalism tolerance",
         "acceptance and understanding of those who are different from oneself",
     )
+
+    def __str__(self) -> str:
+        """Return a printable version of the basic human value."""
+        return self.value.name.capitalize()

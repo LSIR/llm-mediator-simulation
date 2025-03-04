@@ -53,3 +53,7 @@ class DemographicCharacteristic(Enum):
     PRIMARY_MODE_OF_TRANSPORTATION = "primary mode of transportation"
 
     BACKGROUND = "background"
+
+    def __str__(self) -> str:
+        """Return a printable version of the demographic characteristic."""
+        return self.value.capitalize()

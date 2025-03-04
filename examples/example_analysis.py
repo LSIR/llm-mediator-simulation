@@ -179,7 +179,7 @@ def personalities(debate: str, average: bool):
     plt.savefig(f"plot/plot_personalities_{debate_timestamp_str}.png")
 
 
-@click.command("print")  # TODO make this print more digest
+@click.command("print")
 @pickle_options
 def pretty_print(debate: str):
     """Print the debate data in a pretty format."""
@@ -187,7 +187,8 @@ def pretty_print(debate: str):
         debate = get_last_debate_in_dir(debate)
 
     data = DebateHandler.unpickle(debate)
-    pprint(data)
+    printable_data = data.to_printable()
+    pprint(printable_data)
 
 
 @click.command("transcript")

@@ -18,6 +18,10 @@ class Issues(Enum):
     SOCIAL = IssueValue("social", "social issues")
     # SOCIETAL = IssueValue("societal", "societal issues")
 
+    def __str__(self) -> str:
+        """Return a printable version of the issue."""
+        return self.value.name.capitalize()
+
 
 class Ideology(Scale):
     """Ideologies for agents."""
@@ -31,3 +35,7 @@ class Ideology(Scale):
     EXTREMELY_CONSERVATIVE = "extremely conservative"
     LIBERTARIAN = "libertarian"
     INDEPENDENT = "independent"
+
+    def __str__(self) -> str:
+        """Return a printable version of the ideology."""
+        return self.value.capitalize()

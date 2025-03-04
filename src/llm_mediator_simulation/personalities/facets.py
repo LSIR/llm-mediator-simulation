@@ -1831,3 +1831,7 @@ class PersonalityFacet(Enum):
             ),
         ],
     )
+
+    def __str__(self) -> str:
+        """Return a printable version of the facet."""
+        return self.value.name.capitalize()

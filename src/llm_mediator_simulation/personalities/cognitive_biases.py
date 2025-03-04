@@ -7,6 +7,10 @@ from enum import Enum
 class ReasoningError(Enum):
     """Base class for reasoning errors."""
 
+    def __str__(self) -> str:
+        """Return a printable version of the reasoning error."""
+        return self.value.name.capitalize()
+
 
 @dataclass
 class CognitiveBiasValue:
