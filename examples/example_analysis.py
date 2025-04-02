@@ -180,9 +180,9 @@ def personalities(debate: str, average: bool):
     if not os.path.exists("plot"):
         os.makedirs("plot")
     if average:
-        filename = f"plot_sandbox/plot_personalities_average_{debate_timestamp_str}.png"
+        filename = f"plot/plot_personalities_average_{debate_timestamp_str}.png"
     else:
-        filename = f"plot_sandbox/plot_personalities_{debate_timestamp_str}.png"
+        filename = f"plot/plot_personalities_{debate_timestamp_str}.png"
     plt.savefig(filename)
 
 
