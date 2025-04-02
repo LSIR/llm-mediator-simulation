@@ -17,7 +17,7 @@ python examples/example_analysis.py personalities -d debate.pkl -a  # Averaged o
 
 Generate a transcript of the debate:
 ```bash
-python examples/example_analysis.py transcript -d debate.pkl 
+python examples/example_analysis.py transcript -d debate.pkl
 ```
 
 Print the debate data in a pretty format:
@@ -149,13 +149,15 @@ def personalities(debate: str, average: bool):
     else:
         raise ValueError("The personality of the first debater is None.")
 
-    if average:  # TODO average
-        aggregate = aggregate_average_personalities(data)
-        axes = plt.gca()
-        plot_personalities(axes, aggregate, "Average personalities")
+    if average:
+        _, axs = plt.subplots(scale_variable, 1, figsize=(10, 30))
+        aggregated_personalities = aggregate_average_personalities(data)
+
+        plot_personalities(
+            axs, aggregated_personalities, "Average personality evolution", average=True
+        )
 
     else:
-
         _, axs = plt.subplots(scale_variable, n, figsize=(10, 30))
         for j in range(n):
             # Compute personalities
@@ -177,7 +179,11 @@ def personalities(debate: str, average: bool):
 
     if not os.path.exists("plot"):
         os.makedirs("plot")
-    plt.savefig(f"plot/plot_personalities_{debate_timestamp_str}.png")
+    if average:
+        filename = f"plot_sandbox/plot_personalities_average_{debate_timestamp_str}.png"
+    else:
+        filename = f"plot_sandbox/plot_personalities_{debate_timestamp_str}.png"
+    plt.savefig(filename)
 
 
 @click.command("print")

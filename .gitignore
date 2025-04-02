@@ -16,4 +16,5 @@ __pycache__/
 # Logs
 *.log
 sandbox/*
+plot_sandbox/*
 .vscode/restore-terminals.json

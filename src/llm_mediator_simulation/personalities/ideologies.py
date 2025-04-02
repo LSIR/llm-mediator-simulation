@@ -39,3 +39,17 @@ class Ideology(Scale):
     def __str__(self) -> str:
         """Return a printable version of the ideology."""
         return self.value.capitalize()
+
+
+class MonoAxisIdeology(Scale):
+    EXTREMELY_LIBERAL = "extremely liberal"
+    LIBERAL = "liberal"
+    SLIGHTLY_LIBERAL = "slightly liberal"
+    MODERATE = "moderate \n or independent \n or libertarian"
+    SLIGHTLY_CONSERVATIVE = "slightly conservative"
+    CONSERVATIVE = "conservative"
+    EXTREMELY_CONSERVATIVE = "extremely conservative"
+
+    def __str__(self) -> str:
+        """Return a printable version of the ideology."""
+        return self.value.capitalize()

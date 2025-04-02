@@ -7,24 +7,71 @@ import numpy
 from matplotlib.axes import Axes
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
-from llm_mediator_simulation.personalities.ideologies import Ideology
-from llm_mediator_simulation.personalities.scales import Scale
+from llm_mediator_simulation.personalities.facets import PersonalityFacet
+from llm_mediator_simulation.personalities.human_values import BasicHumanValues
+from llm_mediator_simulation.personalities.ideologies import (
+    Ideology,
+    Issues,
+    MonoAxisIdeology,
+)
+from llm_mediator_simulation.personalities.moral_foundations import MoralFoundation
+from llm_mediator_simulation.personalities.scales import (
+    KeyingDirection,
+    Likert3Level,
+    Likert5ImportanceLevel,
+    Likert5Level,
+    Likert7AgreementLevel,
+    Likert11LikelihoodLevel,
+    Scale,
+)
+from llm_mediator_simulation.personalities.traits import PersonalityTrait
 
 
 def plot_personalities(
     col_axes: Axes,
-    personalities: Mapping[Any, Sequence[Scale]],
+    personalities: Mapping[Any, Sequence[Scale]] | Mapping[Any, Sequence[float]],
     title: str,
     first_column: bool = True,
-):
+    average: bool = False,
+):  # TODO For ideodologies, break continuity of plot for independent and libertarian in the case not aggregate.
     """Helper function to plot personalities on a given axis."""
     assert type(col_axes) is numpy.ndarray
+    if average:
+        assert type(next(iter(personalities.values()))[0]) is float
+    else:
+        assert type(next(iter(personalities.values()))[0]) is Scale
     col_axes[0].set_title(title)
     col_axes[-1].set_xlabel("Interventions")
     for i, (feature, values) in enumerate(personalities.items()):
 
         axes = col_axes[i]
-        likert_scale: Type[Enum] = type(values[0])
+
+        if average:
+            if feature == "Ideology" or isinstance(feature, Issues):
+                likert_scale = MonoAxisIdeology
+            elif isinstance(feature, PersonalityTrait):
+                likert_scale = Likert3Level
+            elif isinstance(feature, PersonalityFacet):
+                likert_scale = KeyingDirection
+            elif isinstance(feature, MoralFoundation):
+                likert_scale = Likert5Level
+            elif isinstance(feature, BasicHumanValues):
+                likert_scale = Likert5ImportanceLevel
+            elif isinstance(feature, str):
+                split_on_underscore = feature.split("_")
+                assert split_on_underscore, "Feature name should be split on underscore"
+                if split_on_underscore[0] == "agreement":
+                    likert_scale = Likert7AgreementLevel
+                elif split_on_underscore[0] == "belief":
+                    likert_scale = Likert11LikelihoodLevel
+                else:
+                    raise ValueError(
+                        f"Feature name {feature} does not match any known scale"
+                    )
+                feature = split_on_underscore[1:]
+
+        else:
+            likert_scale: Type[Enum] = type(values[0])
         likert_size = len(likert_scale)
 
         n = len(next(iter(personalities.values())))
@@ -40,7 +87,10 @@ def plot_personalities(
         else:
             axes.set_yticklabels([])
 
-        numeric_values = [list(likert_scale).index(value) for value in values]
+        if average:
+            numeric_values = values
+        else:
+            numeric_values = [list(likert_scale).index(value) for value in values]
         if isinstance(feature, str):
             label = feature
         else:
@@ -49,7 +99,7 @@ def plot_personalities(
         axes.legend()
 
         # Plot a middle line at the middle value
-        if likert_scale == Ideology:
+        if not average and likert_scale == Ideology:
             axes.axhline(y=(likert_size - 3) / 2, color="k", linestyle="--")
         else:
             axes.axhline(y=(likert_size - 1) / 2, color="k", linestyle="--")
