@@ -38,8 +38,6 @@ def plot_personalities(
     assert type(col_axes) is numpy.ndarray
     if average:
         assert type(next(iter(personalities.values()))[0]) is float
-    else:
-        assert type(next(iter(personalities.values()))[0]) is Scale
     col_axes[0].set_title(title)
     col_axes[-1].set_xlabel("Interventions")
     for i, (feature, values) in enumerate(personalities.items()):
@@ -95,7 +93,29 @@ def plot_personalities(
             label = feature
         else:
             label = feature.name.capitalize()
-        axes.plot(range(len(values)), numeric_values, label=label)
+        if (
+            likert_scale == Ideology
+        ):  # Break misleading continuity line between iodelology y-values 7 or 8 since beeing independent or libertarian is not reflected on the Liberal-Conservative axis
+            values = numpy.array(numeric_values)
+            mask = (values == 7) | (values == 8)
+
+            breaks = numpy.where(mask)[0]
+            segments = numpy.split(
+                numpy.column_stack((numpy.arange(len(values)), values)), breaks
+            )
+
+            for segment in segments:
+                axes.plot(
+                    segment[:, 0],
+                    segment[:, 1],
+                    "-x",
+                    color="C0",
+                    # label=label,
+                )
+            # Add a single legend entry for the entire plot
+            axes.plot([], [], "x", color="C0", label=label)
+        else:
+            axes.plot(range(len(values)), numeric_values, "-x", label=label)
         axes.legend()
 
         # Plot a middle line at the middle value
