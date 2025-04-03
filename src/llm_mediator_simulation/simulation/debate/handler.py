@@ -21,6 +21,7 @@ from llm_mediator_simulation.simulation.summary.config import (
     SummaryConfig,
 )
 from llm_mediator_simulation.simulation.summary.handler import SummaryHandler
+from llm_mediator_simulation.utils.debaters import remove_statement_from_personalities
 from llm_mediator_simulation.utils.load_csv import load_csv_chat
 from llm_mediator_simulation.utils.types import Intervention, PrintableIntervention
 
@@ -50,7 +51,7 @@ class DebateHandler:
             mediator_config: The mediator configuration. If None, no mediator will be used. Defaults to None.
             summary_config: The summary configuration. Defaults to None. A default config will be used.
             metrics_handler: The metrics handler to use. Defaults to None.
-            seed: The seed to use for the random sampling at generation.
+            seed: The seed to use for the random sampling at generation. Defaults to None.
         """
 
         # Configuration
@@ -88,30 +89,7 @@ class DebateHandler:
             for debater in debaters
         ]
 
-        # remove the statement from the list of statements if it is in the debater's agreement_with_statements
-        for debater in self.debaters:
-            if (
-                debater.config.personality is not None
-                and debater.config.personality.agreement_with_statements
-            ):
-                if (
-                    self.config.statement
-                    in debater.config.personality.agreement_with_statements
-                ):
-                    if isinstance(
-                        debater.config.personality.agreement_with_statements, list
-                    ):
-                        debater.config.personality.agreement_with_statements.remove(
-                            self.config.statement
-                        )
-                    elif isinstance(debater.config.personality.agreement_with_statements, dict):  # type: ignore
-                        debater.config.personality.agreement_with_statements.pop(
-                            self.config.statement
-                        )
-                    else:
-                        raise ValueError(
-                            "agreement_with_statements should be a list or a dict"
-                        )
+        remove_statement_from_personalities(self.debaters, self.config.statement)
 
         self.metrics_handler = metrics_handler
 
@@ -131,10 +109,16 @@ class DebateHandler:
 
         The debaters will all send one intervention per round, in random order.
         """
-        if self.seed is not None:  # type: ignore
-            random.seed(self.seed)
 
         for i in track(range(rounds)):
+            # Moving the internal random state initialization to the beginning of each round
+            # rather than before the round loop is fairly inelegant,
+            # but it enables better reproducibility through consistancy in the async case, where,
+            # for each round, the order of debaters for the first parallel debate would to be the same
+            # as the order of debaters in the sync case...
+            if self.seed is not None:  # type: ignore[comparison-overlap]
+                random.seed(self.seed + i)
+
             # Shuffle the debaters order
             shuffled_debaters = random.sample(self.debaters, len(self.debaters))
             for debater in shuffled_debaters:

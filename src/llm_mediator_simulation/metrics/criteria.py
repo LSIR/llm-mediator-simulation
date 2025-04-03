@@ -96,7 +96,7 @@ def measure_argument_qualities(
 
     Each JSON value should be on a scale from 0 to 4, where: {", ".join(scale_description())}
     """
-
+    # TODO Add seed to metrics as well
     response = parse_llm_json(model.sample(prompt))
 
     parsed_response: dict[ArgumentQuality, Agreement] = {}

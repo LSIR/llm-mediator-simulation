@@ -279,7 +279,7 @@ Here are the last messages:
 
 You can choose to evolve your traits, agreement with statements, and likelihood of beliefs with "more", "less", or "same".
 You can choose to evolve your facets with "yes" or "no".
-You can choose to evolve your ideologies with "libertarian", "more liberal", "same", or "more conservative".
+You can choose to evolve your ideologies with "same", "more conservative", "independent", "more liberal", or "libertarian".
 
 Answer in valid JSON format with the following structure only:
 ```json
@@ -296,8 +296,8 @@ Answer in valid JSON format with the following structure only:
     "anger": a string ("no" or "yes") to update this facet,
     "altruism": a string ("yes" or "no") to update this facet,
     "anxiety": a string ("no" or "yes") to update this facet,
-    "social": a string ("more conservative", "more liberal", "libertarian", or "same") to update your ideology on this issue,
-    "economic": a string ("same", "more liberal", "more conservative", or "libertarian") to update your ideology on this issue
+    "economic": a string ("same", "independent", "more conservative", "more liberal", or "libertarian") to update your ideology on this issue,
+    "social": a string ("more liberal", "same", "libertarian", "more conservative", or "independent") to update your ideology on this issue
 }
 ```
 """
@@ -388,14 +388,15 @@ Answer in valid JSON format with the following structure only:
         assert personality.fallacies is not None
         assert Fallacy.AD_HOMINEM in personality.fallacies  # type: ignore
         assert Fallacy.APPEAL_TO_AUTHORITY in personality.fallacies  # type: ignore
-        assert len(personality.fallacies) == 2
+        assert Fallacy.EQUIVOCATION in personality.fallacies  # type: ignore
+        assert len(personality.fallacies) == 3
 
         # Ideologies updated
         assert personality.ideologies is not None and isinstance(
             personality.ideologies, dict
         )
         assert personality.ideologies[Issues.ECONOMIC] == Ideology.MODERATE
-        assert personality.ideologies[Issues.SOCIAL] == Ideology.EXTREMELY_CONSERVATIVE
+        assert personality.ideologies[Issues.SOCIAL] == Ideology.SLIGHTLY_CONSERVATIVE
 
         # Agreement with statements not updated
         assert personality.agreement_with_statements is not None and isinstance(

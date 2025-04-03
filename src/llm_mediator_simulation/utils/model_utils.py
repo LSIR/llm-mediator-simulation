@@ -59,6 +59,7 @@ async def summarize_conversation_with_last_messages_async(
     model: AsyncLanguageModel,
     previous_summaries: list[str],
     latest_messages: list[list[str]],
+    seed: int | None = None,
 ) -> list[str]:
     """Generate summaries of the given conversations, with an emphasis on the latest messages, asynchronously."""
 
@@ -75,7 +76,7 @@ Summarize the conversation above, with an emphasis on the latest messages.
 """
         prompts.append(prompt)
 
-    return await model.sample(prompts)
+    return await model.sample(prompts, seed=seed)
 
 
 ###################################################################################################

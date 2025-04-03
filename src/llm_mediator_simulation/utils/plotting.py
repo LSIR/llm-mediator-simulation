@@ -33,7 +33,7 @@ def plot_personalities(
     title: str,
     first_column: bool = True,
     average: bool = False,
-):  # TODO For ideodologies, break continuity of plot for independent and libertarian in the case not aggregate.
+):
     """Helper function to plot personalities on a given axis."""
     assert type(col_axes) is numpy.ndarray
     if average:

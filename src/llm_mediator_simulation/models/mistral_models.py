@@ -1,4 +1,4 @@
-"""Mistral model wrapper."""
+"""Mistral model wrapper."""  # TODO Likely deprecated. Remove or update.
 
 from typing import Literal, override
 

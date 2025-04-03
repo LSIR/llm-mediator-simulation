@@ -44,7 +44,9 @@ class AsyncMediatorHandler:
             ProbabilityMapper(probability_config) if probability_config else None
         )
 
-    async def interventions(self, valid_indexes: list[int]) -> list[Intervention]:
+    async def interventions(
+        self, valid_indexes: list[int], seed: int | None = None
+    ) -> list[Intervention]:
         """Do a mediator intervention on every debate.
 
         Args:
@@ -57,6 +59,7 @@ class AsyncMediatorHandler:
             mediator=self.config,
             summary=self.summary_handler,
             valid_indexes=valid_indexes,
+            seed=seed,
         )
 
         return [

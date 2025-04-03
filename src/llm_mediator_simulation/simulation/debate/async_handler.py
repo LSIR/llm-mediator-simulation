@@ -1,6 +1,7 @@
 """Async debate handler class"""
 
 import pickle
+import random
 from copy import deepcopy
 
 from rich.progress import track
@@ -17,6 +18,7 @@ from llm_mediator_simulation.simulation.mediator.async_handler import (
 from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
 from llm_mediator_simulation.simulation.summary.async_handler import AsyncSummaryHandler
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
+from llm_mediator_simulation.utils.debaters import remove_statement_from_personalities
 from llm_mediator_simulation.utils.types import Intervention
 
 
@@ -34,6 +36,7 @@ class AsyncDebateHandler:
         summary_config: SummaryConfig | None = None,
         metrics_handler: AsyncMetricsHandler | None = None,
         parallel_debates: int = 1,
+        seed: int | None = None,
     ) -> None:
         """Instanciate an asynchronous debate simulation handler.
 
@@ -46,6 +49,7 @@ class AsyncDebateHandler:
             summary_config: The summary configuration. Defaults to None. A default config will be used.
             metrics_handler: The metrics handler to use. Defaults to None.
             parallel_debates: The number of parallel debates to run. Defaults to 1.
+            seed: The seed to use for the random sampling at generation. Defaults to None.
         """
 
         # Configuration
@@ -83,13 +87,22 @@ class AsyncDebateHandler:
             for debater in debaters
         ]
 
+        remove_statement_from_personalities(self.debaters, self.config.statement)
+
         self.metrics_handler = metrics_handler
 
         # Logs
         self.interventions: list[list[Intervention]] = [
             [] for _ in range(parallel_debates)
         ]
-        self.initial_debaters = deepcopy(debaters)
+        self.initial_debaters = [
+            deepcopy(debater.configs[0]) for debater in self.debaters
+        ]
+
+        # Seed
+        if seed is not None:
+            self.seed = seed  # setting the seed for sampling in generation
+            random.seed(seed)  # shuffling the list of debaters consulted in each round
 
     async def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
@@ -97,13 +110,58 @@ class AsyncDebateHandler:
         """
 
         for i in track(range(rounds)):
+            # Moving the internal random state initialization to the beginning of each round
+            # rather than before the round loop is fairly inelegant,
+            # but it enables better reproducibility through consistancy in the async case, where,
+            # for each round, the order of debaters for the first parallel debate would to be the same
+            # as the order of debaters in the sync case...
+            if self.seed is not None:  # type: ignore[comparison-overlap]
+                random.seed(self.seed + i)
+
+            # ###### Shuffle the debaters order ######
+            # Say there are 2 debaters and 3 parallel debates.
+            # self.debaters = [AsyncDebaterHandler(...
+            #                       self.configs = [DebaterConfig(...Alice...),
+            #                                       DebaterConfig(...Alice...),
+            #                                       DebaterConfig(...Alice...)]
+            #                       ...),
+            #                  AsyncDebaterHandler(...
+            #                       self.configs = [DebaterConfig(...Bob...),
+            #                                       DebaterConfig(...Bob...),
+            #                                       DebaterConfig(...Bob...)]
+            #                       ...)]
+            #
+            # After shuffling, we want to have:
+            # self.debaters = [AsyncDebaterHandler(...
+            #                       self.configs = [DebaterConfig(...Bob...),
+            #                                       DebaterConfig(...Alice...),
+            #                                       DebaterConfig(...Bob...)]
+            #                       ...),
+            #                  AsyncDebaterHandler(...
+            #                       self.configs = [DebaterConfig(...Alice...),
+            #                                       DebaterConfig(...Bob...),
+            #                                       DebaterConfig(...Alice...)]
+            #                       ...)]
+            # This is not straightforward but it matches the async calls of the debaters
+
+            for j in range(self.parallel_debates):
+                shuffled_debaters = random.sample(
+                    [debater.configs[j] for debater in self.debaters],
+                    len(self.debaters),
+                )
+                for k, debater in enumerate(self.debaters):
+                    debater.configs[j] = shuffled_debaters[k]
+
             for debater in self.debaters:
                 ######################################################################
                 #                        DEBATER INTERVENTION                        #
                 ######################################################################
 
-                interventions = await debater.interventions(update_personality=i != 0)
-                valid_indexes = [  # Compute the indexes of debates that just had a non-empty intervention
+                interventions = await debater.interventions(
+                    initial_intervention=i == 0,
+                    seed=self.seed,
+                )
+                valid_indexes = [  # Compute the indexes of debates that just had a non-empty text intervention
                     i
                     for i, intervention in enumerate(interventions)
                     if intervention.text
@@ -122,15 +180,17 @@ class AsyncDebateHandler:
                 ######################################################################
 
                 if not self.mediator_handler:
-                    await self.summary_handler.regenerate_summaries()
+                    await self.summary_handler.regenerate_summaries(seed=self.seed)
                     continue
 
-                interventions = await self.mediator_handler.interventions(valid_indexes)
+                interventions = await self.mediator_handler.interventions(
+                    valid_indexes, seed=self.seed
+                )
 
                 # Mediator interventions were only computed for debates where the debater intervened, so we must pass `valid_indexes` this time
                 self.append_interventions(interventions, valid_indexes)
                 self.summary_handler.add_new_messages(interventions)
-                await self.summary_handler.regenerate_summaries()
+                await self.summary_handler.regenerate_summaries(seed=self.seed)
 
     def append_interventions(
         self, interventions: list[Intervention], valid_indexes: list[int] | None = None
@@ -142,12 +202,22 @@ class AsyncDebateHandler:
         if valid_indexes is None:
             valid_indexes = list(range(self.parallel_debates))
 
-        assert len(interventions) == len(valid_indexes), (
-            "Interventions and valid indexes must have the same length."
-        )
+        assert len(interventions) == len(
+            valid_indexes
+        ), "Interventions and valid indexes must have the same length."
 
         for i, intervention in zip(valid_indexes, interventions):
             self.interventions[i].append(intervention)
+
+    def to_first_debate_pickle(self) -> DebatePickle:
+        """Return the first debate configuration and logs as a DebatePickle object."""
+        return DebatePickle(
+            self.config,
+            self.summary_config,
+            self.mediator_config,
+            self.initial_debaters,
+            self.interventions[0],
+        )
 
     def pickle(self, path: str) -> None:
         """Serialize all parallel debate configurations and logs to individual pickle files per debate. This does not include the model configuration.

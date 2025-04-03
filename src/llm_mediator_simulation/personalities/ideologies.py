@@ -45,7 +45,7 @@ class MonoAxisIdeology(Scale):
     EXTREMELY_LIBERAL = "extremely liberal"
     LIBERAL = "liberal"
     SLIGHTLY_LIBERAL = "slightly liberal"
-    MODERATE = "moderate \n or independent \n or libertarian"
+    MODERATE = "moderate \n or libertarian \n or independent"
     SLIGHTLY_CONSERVATIVE = "slightly conservative"
     CONSERVATIVE = "conservative"
     EXTREMELY_CONSERVATIVE = "extremely conservative"
