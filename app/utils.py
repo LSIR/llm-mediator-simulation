@@ -236,7 +236,7 @@ def streamlit_plot_metrics(debate, metric_to_plot):
 
 
 def flip_metric(metric):
-    """Workaroun to probel of checkbox not updating session state..."""
+    """Workaround to problem of checkbox not updating session state..."""
     if st.session_state[f"check_{metric.value[0]}"]:
         st.session_state.metrics[metric] = True
     else:
