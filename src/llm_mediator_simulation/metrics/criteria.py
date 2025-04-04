@@ -76,6 +76,7 @@ def measure_argument_qualities(
     model: LanguageModel,
     text: str,
     argument_qualities: list[ArgumentQuality],
+    seed: int | None = None,
 ) -> dict[ArgumentQuality, Agreement]:
     """Measure the argument quality of the given text based on the given criteria.
     Returns an agreement score."""
@@ -96,8 +97,7 @@ def measure_argument_qualities(
 
     Each JSON value should be on a scale from 0 to 4, where: {", ".join(scale_description())}
     """
-    # TODO Add seed to metrics as well
-    response = parse_llm_json(model.sample(prompt))
+    response = parse_llm_json(model.sample(prompt, seed))
 
     parsed_response: dict[ArgumentQuality, Agreement] = {}
 
@@ -111,6 +111,7 @@ async def async_measure_argument_qualities(
     model: AsyncLanguageModel,
     texts: list[str],
     argument_qualities: list[ArgumentQuality],
+    seed: int | None = None,
 ) -> list[dict[ArgumentQuality, Agreement]]:
     """Measure the argument quality of the given text based on the given criteria asynchronously."""
 
@@ -135,7 +136,7 @@ async def async_measure_argument_qualities(
         """
         prompts.append(prompt)
 
-    responses, *_ = parse_llm_jsons(await model.sample(prompts))
+    responses, *_ = parse_llm_jsons(await model.sample(prompts, seed))
 
     parsed_responses: list[dict[ArgumentQuality, Agreement]] = []
 

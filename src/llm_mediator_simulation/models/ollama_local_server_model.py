@@ -1,4 +1,8 @@
-"""Ollama local model running as a server wrapper"""
+"""Ollama local model running as a server wrapper
+BUG: Seeding with Ollama is not well supported as of April 04th 2025: https://github.com/ollama/ollama/issues/5321
+likely due to KV Caching https://github.com/huggingface/transformers/issues/25420#issuecomment-1775317535
+
+"""
 
 import asyncio
 from typing import override
@@ -28,7 +32,9 @@ class OllamaLocalModel(LanguageModel):
         """Generate text based on the given prompt."""
 
         response = ollama.generate(
-            model=self.model_name, prompt=prompt, options={"seed": seed}
+            model=self.model_name,
+            prompt=prompt,
+            options={"seed": seed},
         )
         return response.response
 

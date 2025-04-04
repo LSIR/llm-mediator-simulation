@@ -100,9 +100,7 @@ class AsyncDebateHandler:
         ]
 
         # Seed
-        if seed is not None:
-            self.seed = seed  # setting the seed for sampling in generation
-            random.seed(seed)  # shuffling the list of debaters consulted in each round
+        self.seed = seed  # setting the seed for sampling in generation
 
     async def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
@@ -116,7 +114,9 @@ class AsyncDebateHandler:
             # for each round, the order of debaters for the first parallel debate would to be the same
             # as the order of debaters in the sync case...
             if self.seed is not None:  # type: ignore[comparison-overlap]
-                random.seed(self.seed + i)
+                random.seed(
+                    self.seed + i
+                )  # shuffling the list of debaters consulted in each round
 
             # ###### Shuffle the debaters order ######
             # Say there are 2 debaters and 3 parallel debates.
@@ -169,7 +169,7 @@ class AsyncDebateHandler:
 
                 if self.metrics_handler:
                     await self.metrics_handler.inject_metrics(
-                        interventions, valid_indexes
+                        interventions, valid_indexes, self.seed
                     )
 
                 self.append_interventions(interventions)

@@ -47,7 +47,7 @@ debate = DebateHandler(
     seed=SEED,
 )
 
-debate.run(rounds=4)
+debate.run(rounds=2)
 
 name_timestamp = time.strftime("%Y%m%d-%H%M%S")
 output_path = "debates_sandbox"

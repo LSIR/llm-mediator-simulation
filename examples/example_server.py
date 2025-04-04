@@ -138,6 +138,7 @@ def main():
 def server():
     """Start a Flask server to keep the LLM loaded"""
     from llm_mediator_simulation.models.mistral_local_model import MistralLocalModel
+
     # Load the model
 
     model = MistralLocalModel(
@@ -150,11 +151,11 @@ def server():
     app = Flask("LLM Server")
 
     @app.route("/")
-    def home():
+    def home():  # type: ignore
         return "Local LLM Server"
 
     @app.route("/call", methods=["POST"])
-    def call():
+    def call():  # type: ignore
         data = request.get_json()
         text = data.get("text")
         seed = data.get("seed")
@@ -162,7 +163,7 @@ def server():
         return model.sample(text, seed=seed)
 
     @app.route("/stop")
-    def stop():
+    def stop():  # type: ignore
         """Stop the server"""
         import os
 

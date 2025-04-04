@@ -35,11 +35,12 @@ class MetricsHandler:
         self.model = model
         self.argument_qualities = argument_qualities
 
-    def compute_metrics(self, text: str) -> Metrics:
+    def compute_metrics(self, text: str, seed: int | None = None) -> Metrics:
         """Compute the metrics for the given text.
 
         Args:
             text (str): The text to compute the metrics for.
+            seed (int | None, optional): The seed to use for the language model. Defaults to None.
 
         Returns:
             Metrics: The computed metrics.
@@ -54,12 +55,14 @@ class MetricsHandler:
         # Measure custom LLM-based metrics
         if self.model is not None and self.argument_qualities is not None:
             metrics.argument_qualities = measure_argument_qualities(
-                self.model, text, self.argument_qualities
+                self.model, text, self.argument_qualities, seed
             )
 
         return metrics
 
-    def inject_metrics(self, intervention: Intervention) -> None:
+    def inject_metrics(
+        self, intervention: Intervention, seed: int | None = None
+    ) -> None:
         """Inject metrics in place into a given intervention."""
         if intervention.text is not None:
-            intervention.metrics = self.compute_metrics(intervention.text)
+            intervention.metrics = self.compute_metrics(intervention.text, seed)

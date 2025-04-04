@@ -26,10 +26,6 @@ mediator_model = AsyncGPTModel(api_key=gpt_key, model_name="gpt-4o")
 PARALLEL_DEBATES = 3
 debater_model = AsyncOllamaLocalModel(model_name="mistral-nemo")
 
-# TODO Add a Github Issue to Parallelize on different:
-# - debate configs (mainly debate statement)
-# - debater configs
-
 # The conversation summary handler (keep track of the general history and of the n latest messages)
 summary_config = SummaryConfig(latest_messages_limit=3, debaters=debaters, ignore=True)
 
@@ -56,7 +52,7 @@ debate = AsyncDebateHandler(
 )
 
 # debate.run(rounds=10)
-asyncio.run(debate.run(rounds=4))
+asyncio.run(debate.run(rounds=2))
 
 name_timestamp = time.strftime("%Y%m%d-%H%M%S")
 output_path = "debates_sandbox"
