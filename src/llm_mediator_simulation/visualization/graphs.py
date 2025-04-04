@@ -12,7 +12,6 @@ def plot_metrics(interventions: list[Intervention]) -> None:
     metrics = {}
 
     for message in interventions:
-
         if message.text is None or message.text == "" or message.metrics is None:
             continue
 
@@ -39,9 +38,9 @@ def plot_metrics(interventions: list[Intervention]) -> None:
             continue
 
         plt.plot(metrics[quality], label=quality)
-    plt.title(f"Quality over time")
+    plt.title("Quality over time")
     plt.xlabel("Message index")
-    plt.ylabel(f"Quality level")
+    plt.ylabel("Quality level")
     plt.yticks(range(1, 6))
     plt.xticks(range(len(metrics["perspective"])))
     plt.legend()

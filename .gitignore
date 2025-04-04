@@ -10,7 +10,11 @@ __pycache__/
 
 # Transcripts
 *.txt
-*.csv
+*.ans
+# *.csv
 
 # Logs
 *.log
+sandbox/*
+plot_sandbox/*
+.vscode/restore-terminals.json

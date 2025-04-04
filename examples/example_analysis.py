@@ -1,6 +1,7 @@
 """An example analysis script run via CLI to analyze a pickled debate simulation.
 
 The following commands are available:
+(Note: if you replace the `debate` argument with a directory, the script will use the last debate in the directory.)
 
 Plot the metrics of a debate:
 ```bash
@@ -26,9 +27,11 @@ python examples/example_analysis.py print -d debate.pkl
 """
 
 import os
+
 import click
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+from rich.console import Console
 from rich.pretty import pprint
 
 from llm_mediator_simulation.simulation.debate.handler import DebateHandler
@@ -44,11 +47,30 @@ from llm_mediator_simulation.utils.plotting import plot_metrics, plot_personalit
 from llm_mediator_simulation.visualization.transcript import debate_transcript
 
 
+def get_last_debate_in_dir(dir: str) -> str:
+    debates = sorted(
+        [os.path.join(dir, f) for f in os.listdir(dir) if f.endswith(".pkl")]
+    )
+    return debates[-1]
+
+
 def pickle_options(func):
     """Add a pickle option to the command."""
+
+    # If debate is a directory, unpickle the last debate
+    def wrapper(*args, **kwargs):
+        if os.path.isdir(kwargs["debate"]):
+            kwargs["debate"] = get_last_debate_in_dir(kwargs["debate"])
+            print(f"Using the last debate in directory: {kwargs['debate']}")
+        # elif os.path.isfile(args[0]):
+        #     kwargs["debate"] = get_last_debate_in_dir(args[0])
+        #     print(f"Using last debate in directory: {kwargs['debate']}")
+
+        return func(*args, **kwargs)
+
     return click.option(
         "--debate", "-d", help="The pickled debate to analyze.", required=True
-    )(func)
+    )(wrapper)
 
 
 def common_options(func):
@@ -101,34 +123,80 @@ def personalities(debate: str, average: bool):
 
     data = DebateHandler.unpickle(debate)
     n = len(data.debaters)
+    # assert that all debaters have personalities
+    assert all(
+        [debater.personality is not None for debater in data.debaters]
+    ), "No personalities found for at least one debater"
+    # Assert that debaters all have the same variable features
+    assert (
+        len(
+            set(
+                map(
+                    frozenset,
+                    [
+                        debater.personality.variable_scale_set()
+                        for debater in data.debaters
+                        if debater.personality is not None
+                    ],
+                )
+            )
+        )
+        == 1
+    ), "Debaters have different variable features"
+
+    if data.debaters[0].personality is not None:
+        scale_variable = data.debaters[0].personality.number_of_scale_variables()
+    else:
+        raise ValueError("The personality of the first debater is None.")
 
     if average:
-        aggregate = aggregate_average_personalities(data)
-        axes = plt.gca()
-        plot_personalities(axes, aggregate, "Average personalities")
+        _, axs = plt.subplots(scale_variable, 1, figsize=(10, 30))
+        aggregated_personalities = aggregate_average_personalities(data)
+
+        plot_personalities(
+            axs, aggregated_personalities, "Average personality evolution", average=True
+        )
 
     else:
-        _, axs = plt.subplots(n, 1)
-        for i in range(n):
+        _, axs = plt.subplots(scale_variable, n, figsize=(10, 30))
+        for j in range(n):
             # Compute personalities
-            debater_personalities = personalities_of_name(data, data.debaters[i].name)
+            debater_personalities = personalities_of_name(data, data.debaters[j].name)
             aggregate = aggregate_personalities(debater_personalities)
 
-            axes: Axes = axs[i]  # type: ignore
+            col_axes: Axes = axs[:, j]
             plot_personalities(
-                axes, aggregate, f"Personalities of {data.debaters[i].name}"
+                col_axes,
+                aggregate,
+                f"Personality evolution of {data.debaters[j].name}",
+                first_column=(j == 0),
             )
     plt.tight_layout()
     plt.show()
+    debate_timestamp_str = debate.split("_")[-1].split(".")[0]
+    if not debate_timestamp_str:
+        raise ValueError("Expecting a debate name format like '*_YYYYMMDD-HHMMSS.pkl'")
+
+    if not os.path.exists("plot"):
+        os.makedirs("plot")
+    if average:
+        filename = f"plot/plot_personalities_average_{debate_timestamp_str}.png"
+    else:
+        filename = f"plot/plot_personalities_{debate_timestamp_str}.png"
+    plt.savefig(filename)
 
 
 @click.command("print")
 @pickle_options
 def pretty_print(debate: str):
     """Print the debate data in a pretty format."""
+    if os.path.isdir(debate):
+        debate = get_last_debate_in_dir(debate)
 
     data = DebateHandler.unpickle(debate)
-    pprint(data)
+    printable_data = data.to_printable()
+    console = Console(force_terminal=True, record=True)
+    pprint(printable_data, console=console)
 
 
 @click.command("transcript")
@@ -136,13 +204,6 @@ def pretty_print(debate: str):
 def transcript(debate: str):
     """Print the debate transcript.
     You can pipe it to a file to save it."""
-    # If debate is a directory, unpickle the last debate
-    if os.path.isdir(debate):
-        debates = sorted(
-            [os.path.join(debate, f) for f in os.listdir(debate) if f.endswith(".pkl")]
-        )
-        debate = debates[-1]
-
 
     data = DebateHandler.unpickle(debate)
 

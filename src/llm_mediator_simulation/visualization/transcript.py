@@ -1,9 +1,9 @@
 """Generate a human-readable conversation transcript from a pickled debate."""
 
+from llm_mediator_simulation.personalities.scales import Likert7AgreementLevel
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debate.handler import DebatePickle
 from llm_mediator_simulation.simulation.debater.config import (
-    DebatePosition,
     DebaterConfig,
 )
 from llm_mediator_simulation.utils.types import Intervention
@@ -38,7 +38,16 @@ def debate_participants_transcript(debaters: list[DebaterConfig]) -> str:
     lines: list[str] = []
 
     for debater in debaters:
-        line = f"{debater.name} is arguing {'for' if debater.position == DebatePosition.FOR else 'against'} the statement."
+        if debater.topic_opinion is None:
+            line = f"{debater.name} has no initial opinion on the statement."
+
+        else:
+            if debater.topic_opinion.agreement == Likert7AgreementLevel.NEUTRAL:
+                line = (
+                    f"{debater.name} neither agrees nor disagrees with the statement."
+                )
+            else:
+                line = f"{debater.name} {debater.topic_opinion.agreement.value}s with the statement."
         lines.append(line)
 
     return "\n".join(lines)

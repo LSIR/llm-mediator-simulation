@@ -1,22 +1,29 @@
 """Full debate simulation handler class"""
 
 import pickle
-from dataclasses import dataclass
 import random
+from dataclasses import dataclass
 
 from rich.progress import track
 
 from llm_mediator_simulation.metrics.metrics_handler import MetricsHandler
 from llm_mediator_simulation.models.language_model import LanguageModel
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
-from llm_mediator_simulation.simulation.debater.config import DebaterConfig
+from llm_mediator_simulation.simulation.debater.config import (
+    DebaterConfig,
+    PrintableDebaterConfig,
+)
 from llm_mediator_simulation.simulation.debater.handler import DebaterHandler
 from llm_mediator_simulation.simulation.mediator.config import MediatorConfig
 from llm_mediator_simulation.simulation.mediator.handler import MediatorHandler
-from llm_mediator_simulation.simulation.summary.config import SummaryConfig
+from llm_mediator_simulation.simulation.summary.config import (
+    PrintableSummaryConfig,
+    SummaryConfig,
+)
 from llm_mediator_simulation.simulation.summary.handler import SummaryHandler
+from llm_mediator_simulation.utils.debaters import remove_statement_from_personalities
 from llm_mediator_simulation.utils.load_csv import load_csv_chat
-from llm_mediator_simulation.utils.types import Intervention
+from llm_mediator_simulation.utils.types import Intervention, PrintableIntervention
 
 
 class DebateHandler:
@@ -33,7 +40,6 @@ class DebateHandler:
         summary_config: SummaryConfig | None = None,
         metrics_handler: MetricsHandler | None = None,
         seed: int | None = None,
-        variable_personality: bool = False,
     ) -> None:
         """Instanciate a debate simulation handler.
 
@@ -45,8 +51,7 @@ class DebateHandler:
             mediator_config: The mediator configuration. If None, no mediator will be used. Defaults to None.
             summary_config: The summary configuration. Defaults to None. A default config will be used.
             metrics_handler: The metrics handler to use. Defaults to None.
-            seed: The seed to use for the random sampling at generation.
-            variable_personality: If True, the debaters will keep the same personality throughout the debate. Defaults to True.
+            seed: The seed to use for the random sampling at generation. Defaults to None.
         """
 
         # Configuration
@@ -84,6 +89,8 @@ class DebateHandler:
             for debater in debaters
         ]
 
+        remove_statement_from_personalities(self.debaters, self.config.statement)
+
         self.metrics_handler = metrics_handler
 
         # Logs
@@ -93,13 +100,8 @@ class DebateHandler:
         ]
 
         # Seed
-        if seed is not None:
-            self.seed = seed # setting the seed for sampling in generation
-            random.seed(seed) # shuffling the list of debaters consulted in each round
 
-        # Constant or variable personality
-        self.variable_personality = variable_personality
-
+        self.seed = seed  # setting the seed for sampling in generation
 
     def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
@@ -108,17 +110,27 @@ class DebateHandler:
         """
 
         for i in track(range(rounds)):
-            # Shuffle the debaters order
-            random.shuffle(self.debaters)
-            for debater in self.debaters:
+            # Moving the internal random state initialization to the beginning of each round
+            # rather than before the round loop is fairly inelegant,
+            # but it enables better reproducibility through consistancy in the async case, where,
+            # for each round, the order of debaters for the first parallel debate would to be the same
+            # as the order of debaters in the sync case...
+            if self.seed is not None:
+                random.seed(
+                    self.seed + i
+                )  # shuffling the list of debaters consulted in each round
 
+            # Shuffle the debaters order
+            shuffled_debaters = random.sample(self.debaters, len(self.debaters))
+            for debater in shuffled_debaters:
                 ##############################################################
                 #                    DEBATER INTERVENTION                    #
                 ##############################################################
 
-                intervention = debater.intervention(update_personality=i != 0 and self.variable_personality,
-                                                    seed=self.seed)
-
+                intervention = debater.intervention(
+                    initial_intervention=i == 0,
+                    seed=self.seed,
+                )
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)
 
@@ -127,23 +139,23 @@ class DebateHandler:
                     continue
 
                 if self.metrics_handler:
-                    self.metrics_handler.inject_metrics(intervention)
+                    self.metrics_handler.inject_metrics(intervention, seed=self.seed)
 
                 ##############################################################
                 #                    MEDIATOR INTERVENTION                   #
                 ##############################################################
 
                 if not self.mediator_handler:
-                    self.summary_handler.regenerate_summary()
+                    self.summary_handler.regenerate_summary(seed=self.seed)
                     continue
 
-                intervention = self.mediator_handler.intervention()
+                intervention = self.mediator_handler.intervention(seed=self.seed)
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)
 
                 # Regenerate the summary for the next debater
                 # (either way, a debater or mediator has intervened here)
-                self.summary_handler.regenerate_summary()
+                self.summary_handler.regenerate_summary(seed=self.seed)
 
     ###############################################################################################
     #                                        SERIALIZATION                                        #
@@ -160,7 +172,7 @@ class DebateHandler:
             self.initial_debaters,
             self.interventions,
         )
-    
+
     def pickle(self, path: str) -> None:
         """Serialize the debate configuration and logs to a pickle file.
         This does not include the model configuration.
@@ -200,7 +212,11 @@ class DebateHandler:
 
         for intervention in interventions:
             self.summary_handler.add_new_message(intervention)
-        self.summary_handler.regenerate_summary()
+
+        if interventions:
+            self.summary_handler.regenerate_summary()
+        else:
+            self.summary_handler.summary = ""
 
         # Regenerate mediator handler
         self.mediator_handler = (
@@ -239,6 +255,17 @@ class DebateHandler:
 
 
 @dataclass
+class PrintableDebatePikle:
+    """Simpler/Printable debate data"""
+
+    config: DebateConfig
+    summary_config: PrintableSummaryConfig
+    mediator_config: MediatorConfig | None
+    debaters: list[PrintableDebaterConfig]
+    interventions: list[PrintableIntervention]
+
+
+@dataclass
 class DebatePickle:
     """Pickled debate data"""
 
@@ -247,3 +274,16 @@ class DebatePickle:
     mediator_config: MediatorConfig | None
     debaters: list[DebaterConfig]
     interventions: list[Intervention]
+
+    def to_printable(self) -> PrintableDebatePikle:
+        """Return a simpler version of the debate pickle for printing with pprint without overwhelming informations."""
+
+        return PrintableDebatePikle(
+            config=self.config,
+            summary_config=self.summary_config.to_printable(),
+            mediator_config=self.mediator_config,
+            debaters=[debater.to_printable() for debater in self.debaters],
+            interventions=[
+                intervention.to_printable() for intervention in self.interventions
+            ],
+        )

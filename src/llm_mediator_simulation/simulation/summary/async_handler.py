@@ -39,6 +39,7 @@ class AsyncSummaryHandler(AsyncPromptable):
         self._latest_messages_limit = config.latest_messages_limit
 
         self.debaters = config.debaters or []
+        self.ignore = config.ignore
         self.parallel_debates = parallel_debates
 
     @property
@@ -70,14 +71,16 @@ active or not. Empty messages are ignored.
                 -self._latest_messages_limit :
             ]
 
-    async def regenerate_summaries(self) -> None:
+    async def regenerate_summaries(self, seed: int | None = None) -> None:
         """Regenerate the debate summaries.
         All summaries are regenerated, even for the individual debates that may not have been updated.
         """
-
-        self.summaries = await summarize_conversation_with_last_messages_async(
-            self._model, self.summaries, self.message_strings
-        )
+        if self.ignore:
+            pass
+        else:
+            self.summaries = await summarize_conversation_with_last_messages_async(
+                self._model, self.summaries, self.message_strings, seed=seed
+            )
 
     @override
     async def to_prompts(self) -> list[str]:

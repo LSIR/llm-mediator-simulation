@@ -37,8 +37,9 @@ class AsyncMetricsHandler:
         self.model = model
         self.argument_qualities = argument_qualities
 
-    async def compute_metrics(self, texts: list[str]) -> list[Metrics]:
-
+    async def compute_metrics(
+        self, texts: list[str], seed: int | None = None
+    ) -> list[Metrics]:
         metrics: list[Metrics] = [Metrics() for _ in range(len(texts))]
 
         # Measure Perspective API toxicity
@@ -52,9 +53,8 @@ class AsyncMetricsHandler:
 
         # Measure custom LLM-based metrics
         if self.model is not None and self.argument_qualities is not None:
-
             qualities = await async_measure_argument_qualities(
-                self.model, texts, self.argument_qualities
+                self.model, texts, self.argument_qualities, seed
             )
             for index in range(len(metrics)):
                 metrics[index].argument_qualities = qualities[index]
@@ -62,7 +62,10 @@ class AsyncMetricsHandler:
         return metrics
 
     async def inject_metrics(
-        self, interventions: list[Intervention], valid_indexes: list[int]
+        self,
+        interventions: list[Intervention],
+        valid_indexes: list[int],
+        seed: int | None = None,
     ) -> list[int]:
         """Inject metrics in place into a given list of interventions.
 
@@ -77,7 +80,7 @@ class AsyncMetricsHandler:
         ]
         texts: list[str] = [interventions[i].text for i in valid_indexes]  # type: ignore
 
-        metrics = await self.compute_metrics(texts)
+        metrics = await self.compute_metrics(texts, seed)
 
         for index, metric in zip(valid_indexes, metrics):
             interventions[index].metrics = metric

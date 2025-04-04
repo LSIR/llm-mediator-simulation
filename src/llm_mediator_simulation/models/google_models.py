@@ -35,7 +35,7 @@ class GoogleModel(LanguageModel):
             model_name: OpenAI model name.
             harm_block_threshold: Harm block threshold.
             temperature: the model temperature.
-            seed: Seeding sampling at generation time. Currently not avalaible through the GenerativeAI Python SDK. 
+            seed: Seeding sampling at generation time. Currently not avalaible through the GenerativeAI Python SDK.
         """
         genai.configure(api_key=api_key)
 
@@ -43,12 +43,13 @@ class GoogleModel(LanguageModel):
             "temperature": temperature,
         }
 
-        # https://github.com/google-gemini/generative-ai-python/issues/605 
+        # https://github.com/google-gemini/generative-ai-python/issues/605
         # Currently seeding Gemin not available through the GenerativeAI Python SDK
         if seed is not None:
-            raise NotImplementedError("Seed not available through the GenerativeAI Python SDK")
+            raise NotImplementedError(
+                "Seed not available through the GenerativeAI Python SDK"
+            )
         #    config["seed"] = seed
-        
 
         self.model = genai.GenerativeModel(model_name, generation_config=config)
 
@@ -72,11 +73,12 @@ class GoogleModel(LanguageModel):
         ]
 
     @override
-    def sample(self, prompt: str) -> str:
+    def sample(self, prompt: str, seed: int | None = None) -> str:
         """Generate text based on the given prompt."""
 
         response = self.model.generate_content(
-            prompt, safety_settings=self.safety_settings  # type: ignore
+            prompt,
+            safety_settings=self.safety_settings,  # type: ignore
         )
 
         return response.text
@@ -91,6 +93,7 @@ class AsyncGoogleModel(AsyncLanguageModel):
         api_key: str,
         model_name: Literal["gemini-1.0-pro", "gemini-1.5-flash", "gemini-1.5-pro"],
         harm_block_threshold: HarmBlockThreshold = HarmBlockThreshold.BLOCK_NONE,
+        seed: int | None = None,
     ):
         """Initialize a Google Vertex AI model.
 
@@ -98,8 +101,17 @@ class AsyncGoogleModel(AsyncLanguageModel):
             api_key: OpenAI API key.
             model_name: OpenAI model name.
             harm_block_threshold: Harm block threshold.
+            seed: Seeding sampling at generation time. Currently not avalaible through the GenerativeAI Python SDK.
         """
         genai.configure(api_key=api_key)
+
+        # https://github.com/google-gemini/generative-ai-python/issues/605
+        # Currently seeding Gemin not available through the GenerativeAI Python SDK
+        if seed is not None:
+            raise NotImplementedError(
+                "Seed not available through the GenerativeAI Python SDK"
+            )
+        #    config["seed"] = seed
 
         self.model = genai.GenerativeModel(model_name)
 
@@ -123,7 +135,7 @@ class AsyncGoogleModel(AsyncLanguageModel):
         ]
 
     @override
-    async def sample(self, prompts: list[str]) -> list[str]:
+    async def sample(self, prompts: list[str], seed: int | None = None) -> list[str]:
         """Generate text based on the given prompt."""
 
         results = await asyncio.gather(

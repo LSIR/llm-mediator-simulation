@@ -1,43 +1,128 @@
 """Plotting utilities"""
 
-from typing import Mapping, Sequence
+from enum import Enum
+from typing import Any, Mapping, Sequence, Type
 
+import numpy
 from matplotlib.axes import Axes
 
 from llm_mediator_simulation.metrics.criteria import ArgumentQuality
-from llm_mediator_simulation.simulation.debater.config import (
-    AxisPosition,
-    PersonalityAxis,
+from llm_mediator_simulation.personalities.facets import PersonalityFacet
+from llm_mediator_simulation.personalities.human_values import BasicHumanValues
+from llm_mediator_simulation.personalities.ideologies import (
+    Ideology,
+    Issues,
+    MonoAxisIdeology,
 )
+from llm_mediator_simulation.personalities.moral_foundations import MoralFoundation
+from llm_mediator_simulation.personalities.scales import (
+    KeyingDirection,
+    Likert3Level,
+    Likert5ImportanceLevel,
+    Likert5Level,
+    Likert7AgreementLevel,
+    Likert11LikelihoodLevel,
+    Scale,
+)
+from llm_mediator_simulation.personalities.traits import PersonalityTrait
 
 
 def plot_personalities(
-    axes: Axes,
-    personalities: Mapping[PersonalityAxis, Sequence[AxisPosition | float]],
+    col_axes: Axes,
+    personalities: Mapping[Any, Sequence[Scale]] | Mapping[Any, Sequence[float]],
     title: str,
+    first_column: bool = True,
+    average: bool = False,
 ):
     """Helper function to plot personalities on a given axis."""
+    assert type(col_axes) is numpy.ndarray
+    if average:
+        assert type(next(iter(personalities.values()))[0]) is float
+    col_axes[0].set_title(title)
+    col_axes[-1].set_xlabel("Interventions")
+    for i, (feature, values) in enumerate(personalities.items()):
 
-    n = len(next(iter(personalities.values())))
+        axes = col_axes[i]
 
-    axes.set_title(title)
-    axes.set_xlabel("Interventions")
-    axes.set_ylabel("Value (0 = left, 4 = right)")
-    axes.set_ylim(-0.5, 4.5)
-    axes.set_xticks(range(n))
-    axes.set_yticks(range(5))
+        if average:
+            if feature == "Ideology" or isinstance(feature, Issues):
+                likert_scale = MonoAxisIdeology
+            elif isinstance(feature, PersonalityTrait):
+                likert_scale = Likert3Level
+            elif isinstance(feature, PersonalityFacet):
+                likert_scale = KeyingDirection
+            elif isinstance(feature, MoralFoundation):
+                likert_scale = Likert5Level
+            elif isinstance(feature, BasicHumanValues):
+                likert_scale = Likert5ImportanceLevel
+            elif isinstance(feature, str):
+                split_on_underscore = feature.split("_")
+                assert split_on_underscore, "Feature name should be split on underscore"
+                if split_on_underscore[0] == "agreement":
+                    likert_scale = Likert7AgreementLevel
+                elif split_on_underscore[0] == "belief":
+                    likert_scale = Likert11LikelihoodLevel
+                else:
+                    raise ValueError(
+                        f"Feature name {feature} does not match any known scale"
+                    )
+                feature = split_on_underscore[1:]
 
-    for axis, positions in personalities.items():
-        values = [p if isinstance(p, (int, float)) else p.value for p in positions]
-        axes.plot(
-            range(len(positions)),
-            values,
-            label=f"{axis.value.name}: {axis.value.left} ↗ {axis.value.right}",
-        )
+        else:
+            likert_scale: Type[Enum] = type(values[0])
+        likert_size = len(likert_scale)
+
+        n = len(next(iter(personalities.values())))
+
+        # axes.set_ylabel("Value")
+        axes.set_ylim(-0.5, likert_size - 0.5)
+        axes.set_xticks(range(n))
+        axes.set_yticks(range(likert_size))
+        if first_column:
+            axes.set_yticklabels(
+                [str(value.value.capitalize()) for value in likert_scale]
+            )
+        else:
+            axes.set_yticklabels([])
+
+        if average:
+            numeric_values = values
+        else:
+            numeric_values = [list(likert_scale).index(value) for value in values]
+        if isinstance(feature, str):
+            label = feature
+        else:
+            label = feature.name.capitalize()
+        if (
+            likert_scale == Ideology
+        ):  # Break misleading continuity line between iodelology y-values 7 or 8 since beeing independent or libertarian is not reflected on the Liberal-Conservative axis
+            values = numpy.array(numeric_values)
+            mask = (values == 7) | (values == 8)
+
+            breaks = numpy.where(mask)[0]
+            segments = numpy.split(
+                numpy.column_stack((numpy.arange(len(values)), values)), breaks
+            )
+
+            for segment in segments:
+                axes.plot(
+                    segment[:, 0],
+                    segment[:, 1],
+                    "-x",
+                    color="C0",
+                    # label=label,
+                )
+            # Add a single legend entry for the entire plot
+            axes.plot([], [], "x", color="C0", label=label)
+        else:
+            axes.plot(range(len(values)), numeric_values, "-x", label=label)
         axes.legend()
 
-    # Plot a middle line at 2 (the middle value)
-    axes.axhline(y=2, color="k", linestyle="--")
+        # Plot a middle line at the middle value
+        if not average and likert_scale == Ideology:
+            axes.axhline(y=(likert_size - 3) / 2, color="k", linestyle="--")
+        else:
+            axes.axhline(y=(likert_size - 1) / 2, color="k", linestyle="--")
 
 
 def plot_metrics(

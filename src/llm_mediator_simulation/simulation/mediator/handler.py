@@ -44,7 +44,7 @@ class MediatorHandler:
             ProbabilityMapper(probability_config) if probability_config else None
         )
 
-    def intervention(self) -> Intervention:
+    def intervention(self, seed: int | None = None) -> Intervention:
         """Do a mediator intervention."""
 
         response, prompt, do_intervene = mediator_intervention(
@@ -53,6 +53,7 @@ class MediatorHandler:
             mediator=self.config,
             summary=self.summary_handler,
             probability_mapper=self.probability_mapper,
+            seed=seed,
         )
 
         return Intervention(

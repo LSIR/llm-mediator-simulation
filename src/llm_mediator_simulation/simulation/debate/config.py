@@ -17,8 +17,6 @@ class DebateConfig(Promptable):
 
     statement: str = ""
     context = "You are taking part in an online debate about the following topic:"
-    prompt_for = "You are arguing in favor of the statement."
-    prompt_against = "You are arguing against the statement."
 
     @override
     def to_prompt(self) -> str:

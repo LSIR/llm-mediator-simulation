@@ -8,7 +8,7 @@ from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debater.config import DebaterConfig
 from llm_mediator_simulation.simulation.prompt import (
     async_debater_interventions,
-    async_debater_personality_update,
+    async_debater_update,
 )
 from llm_mediator_simulation.simulation.summary.async_handler import AsyncSummaryHandler
 from llm_mediator_simulation.utils.types import Intervention
@@ -40,17 +40,30 @@ class AsyncDebaterHandler:
         self.debate_config = debate_config
         self.summary_handler = summary_handler
 
-    async def interventions(self, update_personality=False) -> list[Intervention]:
+    def variable_debater(self) -> bool:
+        """Check if the debater is variable."""
+
+        return self.configs[0].variable_topic_opinion or (
+            self.configs[0].personality.variable_personality()
+            if self.configs[0].personality is not None
+            else False
+        )  # To be safe, we should check these proporties for all debaters but let's assume they are the same for all debaters
+
+    async def interventions(
+        self, initial_intervention: bool = False, seed: int | None = None
+    ) -> list[Intervention]:
         """Do a debater intervention for all parallel debates, asynchronously
 
         Args:
-            update_personality: Whether to update the debater personality based on the last messages before intervention.
+            initial_intervention: If this is the first intervention from this debater.
+            seed: The seed to use for the random sampling at generation.
         """
 
         # Update the debater personalities
-        if update_personality:
-            await async_debater_personality_update(
+        if not (initial_intervention) and self.variable_debater():
+            await async_debater_update(
                 model=self.model,
+                debate_statement=self.debate_config.statement,
                 debaters=self.configs,
                 interventions=self.summary_handler.latest_messages,
             )
@@ -60,11 +73,14 @@ class AsyncDebaterHandler:
             config=self.debate_config,
             summary=self.summary_handler,
             debaters=self.configs,
+            seed=seed,
         )
 
         return [
             Intervention(
-                debater=deepcopy(config),  # Freeze the debater configuration
+                debater=deepcopy(
+                    config
+                ),  # Freeze the debater configuration because the personality can change
                 text=response["text"],
                 prompt=prompt,
                 justification=response["intervention_justification"],

@@ -33,6 +33,7 @@ class SummaryHandler(Promptable):
         self._latest_messages_limit = config.latest_messages_limit
 
         self.debaters = config.debaters or []
+        self.ignore = config.ignore
 
     @property
     def message_strings(self) -> list[str]:
@@ -51,21 +52,27 @@ class SummaryHandler(Promptable):
             -self._latest_messages_limit :
         ]
 
-    def regenerate_summary(self) -> str:
+    def regenerate_summary(self, seed: int | None = None) -> str:
         """Regenerate the summary with the latest messages."""
-
-        self.summary = summarize_conversation_with_last_messages(
-            self._model, self.summary, self.message_strings
-        )
+        if self.ignore:
+            pass
+        else:
+            self.summary = summarize_conversation_with_last_messages(
+                self._model, self.summary, self.message_strings, seed
+            )
 
         return self.summary
 
     @override
     def to_prompt(self) -> str:
         msg_sep = "\n\n"
-
-        return f"""Here is a summary of the last exchanges (if empty, the conversation just started):
-{self.summary}
+        if self.ignore:
+            return f"""Here are the last messages exchanged (you should focus your argumentation on them):
+{msg_sep.join(self.message_strings)}
+"""
+        else:
+            return f"""Here is a summary of the last exchanges (if empty, the conversation just started):
+# {self.summary}
 
 Here are the last messages exchanged (you should focus your argumentation on them):
 {msg_sep.join(self.message_strings)}

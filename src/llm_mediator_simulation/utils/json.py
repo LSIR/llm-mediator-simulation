@@ -1,6 +1,7 @@
 """Helper module for LLM JSON answer processing."""
 
 import json
+import re
 from typing import TypeVar
 
 
@@ -53,7 +54,12 @@ def extract_json(string: str) -> str:
     end = string.rfind("```")
 
     if start == -1 or end == -1 or start >= end:
-        raise ValueError("No JSON code block found.")
+        start = string.rfind("{\n")
+        end = re.search(r"\n\s*}", string).end()
+        if start == -1 or end == -1 or start >= end:
+            raise ValueError("No JSON code block found.")
+
+        return string[start:end]
 
     return string[start + len("```json") : end]
 

@@ -36,7 +36,10 @@ def summarize_conversation(model: LanguageModel, conversation: list[str]) -> str
 
 
 def summarize_conversation_with_last_messages(
-    model: LanguageModel, previous_summary: str, latest_messages: list[str], seed: int | None = None
+    model: LanguageModel,
+    previous_summary: str,
+    latest_messages: list[str],
+    seed: int | None = None,
 ) -> str:
     """Generate a summary of the given conversation, with an emphasis on the latest messages."""
 
@@ -49,13 +52,14 @@ def summarize_conversation_with_last_messages(
     Summarize the conversation above, with an emphasis on the latest messages.
     """
 
-    return model.sample(prompt)
+    return model.sample(prompt, seed)
 
 
 async def summarize_conversation_with_last_messages_async(
     model: AsyncLanguageModel,
     previous_summaries: list[str],
     latest_messages: list[list[str]],
+    seed: int | None = None,
 ) -> list[str]:
     """Generate summaries of the given conversations, with an emphasis on the latest messages, asynchronously."""
 
@@ -72,7 +76,7 @@ Summarize the conversation above, with an emphasis on the latest messages.
 """
         prompts.append(prompt)
 
-    return await model.sample(prompts)
+    return await model.sample(prompts, seed=seed)
 
 
 ###################################################################################################
@@ -106,7 +110,7 @@ def measure_statement(model: LanguageModel, text: str, statement: str) -> Agreem
 
     prompt = f"""{text}
 
-    On a scale from 0 to 4, {', '.join(scale_description())}, how much do you agree with the following statement about the text above?
+    On a scale from 0 to 4, {", ".join(scale_description())}, how much do you agree with the following statement about the text above?
     {statement}
     Answer with a single digit.
     """

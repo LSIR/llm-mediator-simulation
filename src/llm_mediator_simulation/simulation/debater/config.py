@@ -1,9 +1,13 @@
 """Debater configuration dataclasses"""
 
 from dataclasses import dataclass
-from enum import Enum
 from typing import override
 
+from llm_mediator_simulation.personalities.personality import (
+    Personality,
+    PrintablePersonality,
+)
+from llm_mediator_simulation.personalities.scales import Likert7AgreementLevel
 from llm_mediator_simulation.utils.interfaces import Promptable
 
 ###################################################################################################
@@ -11,67 +15,25 @@ from llm_mediator_simulation.utils.interfaces import Promptable
 ###################################################################################################
 
 
-class DebatePosition(Enum):
-    """Debate positions for the participants."""
+@dataclass
+class PrintableTopicOpinion:
+    """Simpler / printable version of the TopicOpinion dataclass."""
 
-    AGAINST = 0
-    FOR = 1
+    agreement: str
+    variable: bool
 
 
 @dataclass
-class PersonalityAxisValue:
-    """Typing for the values of a personality axis."""
+class TopicOpinion:
+    """Agent opinion on a topic."""
 
-    name: str
-    left: str
-    right: str
+    agreement: Likert7AgreementLevel
+    variable: bool = False
 
-
-class PersonalityAxis(Enum):
-    """Debater personality axis, judged on a likert scale."""
-
-    CIVILITY = PersonalityAxisValue("civility", "civil", "toxic")
-    POLITENESS = PersonalityAxisValue("politeness", "polite", "rude")
-    POLITICAL_ORIENTATION = PersonalityAxisValue(
-        "political orientation", "liberal", "conservative"
-    )
-    EMOTIONAL_STATE = PersonalityAxisValue("emotional state", "calm", "angry")
-
-    @staticmethod
-    def from_string(value: str) -> "PersonalityAxis":
-        """Convert a string to a PersonalityAxis enum value."""
-
-        for axis in PersonalityAxis:
-            if axis.value.name == value:
-                return axis
-
-        raise ValueError(f"Unknown personality axis: {value}")
-
-
-class AxisPosition(Enum):
-    """Position on a likert scale axis (FIRST, SECOND)."""
-
-    VERY_LEFT = 0
-    LEFT = 1
-    NEUTRAL = 2
-    RIGHT = 3
-    VERY_RIGHT = 4
-
-
-def axis_to_string(axis: PersonalityAxis, position: AxisPosition) -> str:
-    """Convert a debater position on a likert scale axis to a string for prompting."""
-
-    match position:
-        case AxisPosition.VERY_LEFT:
-            return f"very {axis.value.left}"
-        case AxisPosition.LEFT:
-            return f"moderately {axis.value.left}"
-        case AxisPosition.NEUTRAL:
-            return f"neutral {axis.value.name}"
-        case AxisPosition.RIGHT:
-            return f"moderately {axis.value.right}"
-        case AxisPosition.VERY_RIGHT:
-            return f"very {axis.value.right}"
+    def to_printable(self):
+        return PrintableTopicOpinion(
+            agreement=str(self.agreement), variable=self.variable
+        )
 
 
 ###################################################################################################
@@ -80,25 +42,53 @@ def axis_to_string(axis: PersonalityAxis, position: AxisPosition) -> str:
 
 
 @dataclass
+class PrintableDebaterConfig:
+    """Simpler / printable version of the DebaterConfig dataclass."""
+
+    name: str
+    personality: PrintablePersonality | None = None
+    topic_opinion: PrintableTopicOpinion | None = None
+    variable_topic_opinion: bool = False
+
+
+@dataclass
 class DebaterConfig(Promptable):
     """Debater metadata class
 
     Args:
-        position (DebatePosition): The position of the debater.
-        personality (str | None, optional): The personality of the debater (as a list of qualifiers). Defaults to None.
+        name (str): The name of the debater.
+        personality (Personality, optional): The debater's personality. Defaults to None.
+        topic_opinion (TopicOpinion, optional): The debater's opinion on the debate topic. Defaults to None.
+        variable_topic_opinion (bool, optional): If True, the debater's opinion on the topic will change during the debate. Defaults to False.
     """
 
     name: str
-    position: DebatePosition
-    personalities: dict[PersonalityAxis, AxisPosition] | None = None
+    personality: Personality | None = None
+    topic_opinion: TopicOpinion | None = None
+    variable_topic_opinion: bool = False
 
     @override
     def to_prompt(self) -> str:
+        return f"""You are roleplaying this real person: 
+name: {self.name}; 
+{self.personality.to_prompt() if self.personality is not None else ""}
+        
+You {self.topic_opinion.agreement.value if self.topic_opinion is not None else Likert7AgreementLevel.NEUTRAL.value} with the current debate statement.
+Remember that you are allowed to insult, diminish and curse the people you debate with."""  # TODO Remove the last sentence
 
-        personalities: list[str] = []
-        for personality, position in (self.personalities or {}).items():
-            personalities.append(axis_to_string(personality, position))
-
-        return f"""You are arguing {'in favor of' if self.position == DebatePosition.FOR else 'against'} the statement.
-{f"Write your text answer with a strong emphasis on the following characteristics: {', '.join(personalities)}." if len(personalities) > 0 else ""}
-Remember that you are allowed to insult, diminish and curse the people you debate with."""
+    def to_printable(self):
+        """Return a simpler version of the debate pickle for printing with pprint without overwhelming informations."""
+        return PrintableDebaterConfig(
+            name=self.name,
+            personality=(
+                self.personality.to_printable()
+                if self.personality is not None
+                else None
+            ),
+            topic_opinion=(
+                self.topic_opinion.to_printable()
+                if self.topic_opinion is not None
+                else None
+            ),
+            variable_topic_opinion=self.variable_topic_opinion,
+        )
