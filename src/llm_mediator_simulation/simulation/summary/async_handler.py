@@ -96,7 +96,7 @@ active or not. Empty messages are ignored.
 Here are the last messages exchanged (you should focus your argumentation on them):
 {msg_sep.join(messages)}
 """
-            )
+            )  # TODO Update async summary prompt
         return prompts
 
     def raw_history_prompts(self) -> list[str]:

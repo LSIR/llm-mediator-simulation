@@ -10,11 +10,6 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": [
-                "personalities",
-                "-d",
-                "debates_sandbox/"
-            ],
         }
     ]
 }

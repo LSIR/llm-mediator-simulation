@@ -11,7 +11,9 @@ from llm_mediator_simulation.utils.types import Intervention
 
 
 def load_reddit_csv_conv(
-    path: str, truncated_num: int | None = 2, force_truncated_order: bool = False
+    path: str,
+    truncated_num: int | None = 2,
+    force_truncated_order: bool = False,
 ) -> tuple[list[DebaterConfig], list[Intervention], list[str] | None]:
     """Extract a list of debater configs and interventions from a chat CSV file.
     Note that no personalities and debate positions can be inferred for debaters.
@@ -52,9 +54,7 @@ def load_reddit_csv_conv(
         if name in ["[deleted]" or ["removed"]]:
             name = ""  # We assume that all messages written by deleted or removed users are written by the same user, which might not be always true...
 
-        debaters[id] = DebaterConfig(
-            name,
-        )
+        debaters[id] = DebaterConfig(name, identifier="username")
 
     if truncated_num is not None:
         # Remove the last n rows of the dataframe

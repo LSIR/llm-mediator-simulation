@@ -76,15 +76,12 @@ def debater_intervention(
 ) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
 
-    prompt = f"""{config.to_prompt()}.\n{debater.to_prompt()}{summary.to_prompt()}
+    prompt = f"""{config.to_prompt()}\n{debater.to_prompt()}\n{summary.to_prompt()}
 
-Do you want to add a comment to the online debate right now?
-You should often add a comment when the previous context is empty or not in the favor of your \
-position. However, you should almost never add a comment when the previous context already \
-supports your position. Use short chat messages, no more than 3 sentences.
+Do you want to write and {config.add} a {summary.utterance} of less than 500 characters to the conversation right now?
 
 {json_prompt(LLM_RESPONSE_FORMAT)}
-"""  # TODO review these instructions
+"""
 
     response = model.sample(prompt, seed=seed)
     return parse_llm_json(response, LLMMessage), prompt
@@ -272,7 +269,7 @@ name: {debater.name};\n"""
             name = "Mediator"
         else:
             name = intervention.debater.name
-        prompt += f"""— {name}: {intervention.text}\n"""  # https://en.wikipedia.org/wiki/Quotation_mark#Quotation_dash
+        prompt += f"""— {name}: "{intervention.text}"\n"""  # https://en.wikipedia.org/wiki/Quotation_mark#Quotation_dash
     prompt += "\n"
 
     ################################################
@@ -888,7 +885,7 @@ async def async_debater_interventions(
 
     for debater, debate_summary in zip(debaters, summary_prompts):
         prompts.append(
-            f"""{config.to_prompt()}.\n{debater.to_prompt()}{debate_summary}
+            f"""{config.to_prompt()}\n{debater.to_prompt()}\n{debate_summary}
 
 Do you want to add a comment to the online debate right now?
 You should often add a comment when the previous context is empty or not in the favor of your \

@@ -34,12 +34,21 @@ class SummaryHandler(Promptable):
 
         self.debaters = config.debaters or []
         self.ignore = config.ignore
+        self.utterance = config.utterance
 
     @property
     def message_strings(self) -> list[str]:
         """Return the last message string contents"""
+        message_list = []
+        for message in self.latest_messages:
+            if message.text:
+                if message.debater:
+                    author_name = message.debater.name
+                else:
+                    author_name = "Mediator"
+                message_list.append(f"""- {author_name}: "{message.text}\"""")
 
-        return [message.text for message in self.latest_messages if message.text]
+        return message_list
 
     def add_new_message(self, message: Intervention) -> None:
         """Add a new message to the latest messages list.
@@ -66,17 +75,21 @@ class SummaryHandler(Promptable):
     @override
     def to_prompt(self) -> str:
         msg_sep = "\n\n"
-        if self.ignore:
-            return f"""Here are the last messages exchanged (you should focus your argumentation on them):
-{msg_sep.join(self.message_strings)}
-"""
-        else:
-            return f"""Here is a summary of the last exchanges (if empty, the conversation just started):
-# {self.summary}
 
-Here are the last messages exchanged (you should focus your argumentation on them):
+        if not self.message_strings:
+            return ""
+
+        prompt = ""
+
+        if not self.ignore:
+            prompt += f"""Here is a summary of the conversation so far:
+{self.summary}\n\n"""  # TODO Add personalized summary... "According to you, here is a summary..."
+
+        prompt += f"""Here are the last {self.utterance}s:
 {msg_sep.join(self.message_strings)}
 """
+
+        return prompt
 
     def raw_history_prompt(self) -> str:
         """Return the last messages "as is"."""

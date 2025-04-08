@@ -1,0 +1,5 @@
+defaults:
+  - defaults
+  - debate_config: DebateConfig1
+  - summary_config: SummaryConfig1
+  - _self_

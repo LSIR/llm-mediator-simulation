@@ -41,6 +41,7 @@ dependencies = [
   "ollama",
   "convokit",
   "BAScraper",
+  "hydra-core",
 ]
 
 [project.urls]

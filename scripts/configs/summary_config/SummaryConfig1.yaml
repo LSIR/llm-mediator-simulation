@@ -1,0 +1,4 @@
+_target_: llm_mediator_simulation.simulation.summary.config.SummaryConfig
+latest_messages_limit: 3
+ignore: True
+utterance: "comment"
