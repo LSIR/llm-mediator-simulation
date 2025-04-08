@@ -39,6 +39,8 @@ dependencies = [
   "transformers",
   "streamlit",
   "ollama",
+  "convokit",
+  "BAScraper",
 ]
 
 [project.urls]

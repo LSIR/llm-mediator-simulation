@@ -76,7 +76,7 @@ def debater_intervention(
 ) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
 
-    prompt = f"""{config.to_prompt()}. {debater.to_prompt()} {summary.to_prompt()}
+    prompt = f"""{config.to_prompt()}.\n{debater.to_prompt()}{summary.to_prompt()}
 
 Do you want to add a comment to the online debate right now?
 You should often add a comment when the previous context is empty or not in the favor of your \
@@ -888,7 +888,7 @@ async def async_debater_interventions(
 
     for debater, debate_summary in zip(debaters, summary_prompts):
         prompts.append(
-            f"""{config.to_prompt()}. {debater.to_prompt()} {debate_summary}
+            f"""{config.to_prompt()}.\n{debater.to_prompt()}{debate_summary}
 
 Do you want to add a comment to the online debate right now?
 You should often add a comment when the previous context is empty or not in the favor of your \

@@ -6,6 +6,7 @@ from typing import override
 from llm_mediator_simulation.utils.interfaces import Promptable
 
 
+# TODO Add Hydra configs for the prompts ?
 @dataclass
 class DebateConfig(Promptable):
     """Debate simulation context class.

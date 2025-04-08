@@ -1,5 +1,6 @@
 """Full debate simulation handler class"""
 
+import functools
 import pickle
 import random
 from dataclasses import dataclass
@@ -22,7 +23,10 @@ from llm_mediator_simulation.simulation.summary.config import (
 )
 from llm_mediator_simulation.simulation.summary.handler import SummaryHandler
 from llm_mediator_simulation.utils.debaters import remove_statement_from_personalities
-from llm_mediator_simulation.utils.load_csv import load_csv_chat
+from llm_mediator_simulation.utils.load_csv import (
+    load_deliberate_lab_csv_chat,
+    load_reddit_csv_conv,
+)
 from llm_mediator_simulation.utils.types import Intervention, PrintableIntervention
 
 
@@ -103,6 +107,8 @@ class DebateHandler:
 
         self.seed = seed  # setting the seed for sampling in generation
 
+        self.debater_order: list[str] | None = None
+
     def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
 
@@ -120,9 +126,26 @@ class DebateHandler:
                     self.seed + i
                 )  # shuffling the list of debaters consulted in each round
 
-            # Shuffle the debaters order
-            shuffled_debaters = random.sample(self.debaters, len(self.debaters))
-            for debater in shuffled_debaters:
+            if self.debater_order:
+                # Follow the forced order of debaters. The first round
+                debaters = []
+                for debater_name in self.debater_order:
+                    for debater in self.debaters:
+                        if debater.config.name == debater_name:
+                            debaters.append(debater)
+                            break
+                # If the debater is not found, raise an error
+                if len(debaters) != len(self.debater_order):
+                    raise ValueError(
+                        f"Debater {self.debater_order[len(debaters)]} not found in the list of debaters."
+                    )
+                # after the first round we remove the forced order and continue the debate as usual, queriyng the debaters in round-robin
+                self.debater_order = None
+            else:
+                # Shuffle the debaters order
+                debaters = random.sample(self.debaters, len(self.debaters))
+
+            for debater in debaters:
                 ##############################################################
                 #                    DEBATER INTERVENTION                    #
                 ##############################################################
@@ -247,10 +270,33 @@ class DebateHandler:
             debater.snapshot_personality() for debater in self.debaters
         ]
 
-    def preload_csv_chat(self, path: str):
+    def preload_csv_chat(
+        self,
+        path: str,
+        app: str = "deliberate-lab",
+        truncated_num: int | None = 2,
+        force_truncated_order: bool | None = None,
+    ):
         """Preload a debate chat from a CSV file."""
+        if force_truncated_order is None:
+            force_truncated_order = bool(truncated_num)
 
-        debaters, interventions = load_csv_chat(path)
+        if app == "deliberate-lab":
+            load_csv_chat = load_deliberate_lab_csv_chat
+        elif app == "reddit":
+            load_csv_chat = functools.partial(
+                load_reddit_csv_conv,
+                truncated_num=truncated_num,
+                force_truncated_order=force_truncated_order,
+            )
+        else:
+            raise ValueError(
+                f"Unknown app {app}. Supported apps are: 'deliberate-lab', 'reddit'."
+            )
+
+        debaters, interventions, debater_order = load_csv_chat(path)
+        self.debater_order = debater_order
+
         self.preload_chat(debaters, interventions)
 
 

@@ -69,12 +69,23 @@ class DebaterConfig(Promptable):
 
     @override
     def to_prompt(self) -> str:
-        return f"""You are roleplaying this real person: 
-name: {self.name}; 
-{self.personality.to_prompt() if self.personality is not None else ""}
-        
-You {self.topic_opinion.agreement.value if self.topic_opinion is not None else Likert7AgreementLevel.NEUTRAL.value} with the current debate statement.
-Remember that you are allowed to insult, diminish and curse the people you debate with."""  # TODO Remove the last sentence
+        prompt = "You are roleplaying this real person: "
+
+        if self.name:
+            prompt += f"""
+name: {self.name};"""
+
+        prompt += f"""
+{self.personality.to_prompt() if self.personality is not None else ""}"""
+
+        if self.topic_opinion is not None:
+            prompt += f"""
+You {self.topic_opinion.agreement.value} with the current debate statement."""
+
+        prompt += """
+Remember that you are allowed to insult, diminish and curse the people you debate with.\n"""  # TODO Remove the last sentence
+
+        return prompt
 
     def to_printable(self):
         """Return a simpler version of the debate pickle for printing with pprint without overwhelming informations."""

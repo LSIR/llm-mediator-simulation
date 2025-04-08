@@ -54,8 +54,12 @@ def extract_json(string: str) -> str:
     end = string.rfind("```")
 
     if start == -1 or end == -1 or start >= end:
-        start = string.rfind("{\n")
-        end = re.search(r"\n\s*}", string).end()
+        start_match = list(re.finditer(r"\{\n?", string))
+        start = start_match[-1].start() if start_match else -1
+        end_match = re.search(r"\n?\s*}", string)
+        if end_match is None:
+            raise ValueError("No JSON code block found.")
+        end = end_match.end()
         if start == -1 or end == -1 or start >= end:
             raise ValueError("No JSON code block found.")
 
@@ -80,7 +84,11 @@ If None, no validation is performed.
     sanitized_json = extract_json(llm_json)
 
     data = json.loads(sanitized_json)
-
+    # With OlMo2, sometimes the JSON key "intervention_justification" is spelled "intervention_justifyation"...
+    # So we handle it here
+    if "intervention_justifyation" in data:
+        data["intervention_justification"] = data.pop("intervention_justifyation")
+    # If the JSON is not valid, raise an error
     if typedDict and not validate_shallow_json(data, typedDict):
         raise ValueError(
             "JSON response does not match the expected TypedDict instance."
