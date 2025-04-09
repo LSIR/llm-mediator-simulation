@@ -3,6 +3,7 @@
 from typing import override
 
 from llm_mediator_simulation.models.language_model import LanguageModel
+from llm_mediator_simulation.simulation.prompt import summary_prompt
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 from llm_mediator_simulation.utils.interfaces import Promptable
 from llm_mediator_simulation.utils.model_utils import (
@@ -74,20 +75,13 @@ class SummaryHandler(Promptable):
 
     @override
     def to_prompt(self) -> str:
-        msg_sep = "\n\n"
 
-        if not self.message_strings:
-            return ""
-
-        prompt = ""
-
-        if not self.ignore:
-            prompt += f"""Here is a summary of the conversation so far:
-{self.summary}\n\n"""  # TODO Add personalized summary... "According to you, here is a summary..."
-
-        prompt += f"""Here are the last {self.utterance}s:
-{msg_sep.join(self.message_strings)}
-"""
+        prompt = summary_prompt(
+            self.message_strings,
+            self.summary,
+            utterance=self.utterance,
+            ignore=self.ignore,
+        )
 
         return prompt
 

@@ -21,6 +21,9 @@ def main(config):
     seed = config.seed
 
     # TODO HF server: olmo pretrained model and seed
+    # TODO Lina's improvements: personalized summary.
+    # TODO IDEA Generate personalities based on all previous messages of the Reddit user?
+    # TODO IDEA: Use the Wikipedia version of Conv gone awry focusing on Controversial Wiki Talk pages (Israel, feminism, etc.). Question, is OlMo2 pretrained on wiki talk pages?
 
     gpt_key = os.getenv("GPT_API_KEY") or ""
     mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")

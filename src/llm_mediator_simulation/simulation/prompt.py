@@ -820,6 +820,26 @@ def update_feature_list_randomly(
     return cast(Sequence[T_resonning_error], new_feature_list)
 
 
+def summary_prompt(
+    messages: list[str], summary: str, utterance: str = "messages", ignore: bool = False
+) -> str:
+    msg_sep = "\n\n"
+    if not messages:
+        return ""
+
+    prompt = ""
+
+    if not ignore:
+        prompt += f"""Here is a summary of the conversation so far:
+{summary}\n\n"""  # TODO Add personalized summary... "According to you, here is a summary..."
+
+    prompt += f"""Here are the last {utterance}s:
+{msg_sep.join(messages)}
+"""
+
+    return prompt
+
+
 @retry(attempts=5, verbose=True)
 def mediator_intervention(
     model: LanguageModel,
@@ -894,7 +914,7 @@ supports your position. Use short chat messages, no more than 3 sentences.
 
 {json_prompt(LLM_RESPONSE_FORMAT)}
 """
-        )  # TODO review these instructions
+        )  # TODO Use the sync prompt here as well
 
     responses = await model.sample(prompts, seed=seed)
     coerced, failed = parse_llm_jsons(responses, LLMMessage)

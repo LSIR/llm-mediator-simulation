@@ -3,6 +3,7 @@
 from typing import override
 
 from llm_mediator_simulation.models.language_model import AsyncLanguageModel
+from llm_mediator_simulation.simulation.prompt import summary_prompt
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 from llm_mediator_simulation.utils.interfaces import AsyncPromptable
 from llm_mediator_simulation.utils.model_utils import (
@@ -40,6 +41,7 @@ class AsyncSummaryHandler(AsyncPromptable):
 
         self.debaters = config.debaters or []
         self.ignore = config.ignore
+        self.utterance = config.utterance
         self.parallel_debates = parallel_debates
 
     @property
@@ -84,19 +86,12 @@ active or not. Empty messages are ignored.
 
     @override
     async def to_prompts(self) -> list[str]:
-        msg_sep = "\n\n"
-
         prompts: list[str] = []
 
         for messages, summary in zip(self.message_strings, self.summaries):
             prompts.append(
-                f"""Here is a summary of the last exchanges (if empty, the conversation just started):
-{summary}
-
-Here are the last messages exchanged (you should focus your argumentation on them):
-{msg_sep.join(messages)}
-"""
-            )  # TODO Update async summary prompt
+                summary_prompt(messages, summary, self.utterance, self.ignore)
+            )
         return prompts
 
     def raw_history_prompts(self) -> list[str]:
