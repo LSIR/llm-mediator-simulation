@@ -66,6 +66,22 @@ LLM_PROBA_RESPONSE_FORMAT: dict[str, str] = {
 }
 
 
+def debater_intervention_prompt(
+    debate_config_prompt: str,
+    debater_config_prompt: str,
+    summary_config_prompt: str,
+    add: str,
+    utterance: str,
+):
+    prompt = f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
+
+Do you want to write and {add} a {utterance} of less than 500 characters to the conversation right now?
+
+{json_prompt(LLM_RESPONSE_FORMAT)}
+"""
+    return prompt
+
+
 @retry(attempts=5, verbose=True)
 def debater_intervention(
     model: LanguageModel,
@@ -75,13 +91,13 @@ def debater_intervention(
     seed: int | None = None,
 ) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
-
-    prompt = f"""{config.to_prompt()}\n{debater.to_prompt()}\n{summary.to_prompt()}
-
-Do you want to write and {config.add} a {summary.utterance} of less than 500 characters to the conversation right now?
-
-{json_prompt(LLM_RESPONSE_FORMAT)}
-"""
+    prompt = debater_intervention_prompt(
+        config.to_prompt(),
+        debater.to_prompt(),
+        summary.to_prompt(),
+        config.add,
+        summary.utterance,
+    )
 
     response = model.sample(prompt, seed=seed)
     return parse_llm_json(response, LLMMessage), prompt
@@ -904,17 +920,14 @@ async def async_debater_interventions(
     summary_prompts = await summary.to_prompts()
 
     for debater, debate_summary in zip(debaters, summary_prompts):
-        prompts.append(
-            f"""{config.to_prompt()}\n{debater.to_prompt()}\n{debate_summary}
-
-Do you want to add a comment to the online debate right now?
-You should often add a comment when the previous context is empty or not in the favor of your \
-position. However, you should almost never add a comment when the previous context already \
-supports your position. Use short chat messages, no more than 3 sentences.
-
-{json_prompt(LLM_RESPONSE_FORMAT)}
-"""
-        )  # TODO Use the sync prompt here as well
+        prompt = debater_intervention_prompt(
+            config.to_prompt(),
+            debater.to_prompt(),
+            debate_summary,
+            config.add,
+            summary.utterance,
+        )
+        prompts.append(prompt)
 
     responses = await model.sample(prompts, seed=seed)
     coerced, failed = parse_llm_jsons(responses, LLMMessage)
