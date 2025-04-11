@@ -1,6 +1,15 @@
 """Script to download the DCLM Baseline dataset in streaming mode from Hugging Face and extract CMV Reddit URLs and users
-Important, login with Authenticate with Hugging Face to avoid huggingface_hub.errors.HfHubHTTPError: 429 Client Error: Too Many Requests
+
+Important:
+1) check that your HF Cache location does not create deadlock issues
+-> in .bashrc, `export HF_HOME="/mnt/datasets/dclm-baseline-2"`
+and don't forget to revert back.
+2) login with Authenticate with Hugging Face to avoid huggingface_hub.errors.HfHubHTTPError: 429 Client Error: Too Many Requests
+Run
 `huggingface-cli login`
+
+And then from the llm-mediator-simulation dir, run python scripts/dclm_dataset/download_dclm-baseline.py
+The two output json files will be saved in the llm-mediator-simulation dir
 """
 
 import json
@@ -84,7 +93,7 @@ def process_shard(shard_index):
 
 # Setup multiprocessing pool
 with multiprocessing.Pool(
-    processes=8  # 8
+    processes=8  # Try 16 or 32?
 ) as pool:  # ~30 sec for 128 shards with 8 workers and 11 CMV URLs and 0 user. -> ~2h full dataset and ~2400 CMV Reddit convs
     process_num = NUM_SHARDS
     results = pool.map(process_shard, range(process_num))
@@ -94,8 +103,10 @@ for local_cmv_reddit_urls, local_cmv_reddit_users_urls in results:
     global_cmv_reddit_users_urls.update(local_cmv_reddit_users_urls)
 
 
-print("Total number of CMV Reddit URLs: ", len(global_cmv_reddit_urls))
-print("Total number of CMV Reddit URLs for users: ", len(global_cmv_reddit_users_urls))
+print("Total number of CMV Reddit URLs: ", len(global_cmv_reddit_urls))  # -> 1770
+print(
+    "Total number of CMV Reddit URLs for users: ", len(global_cmv_reddit_users_urls)
+)  # -> 83
 
 with open("cmv_reddit_urls.json", "w") as f:
     json.dump(global_cmv_reddit_urls, f)
