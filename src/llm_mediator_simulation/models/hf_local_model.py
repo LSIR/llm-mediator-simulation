@@ -3,8 +3,7 @@
 from typing import Literal, override
 
 import torch
-from transformers import AutoTokenizer
-from transformers.models.auto.modeling_auto import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from llm_mediator_simulation.models.language_model import (
     AsyncLanguageModel,
@@ -39,14 +38,14 @@ Assistant:```json
 User:"""
 
 
-class MistralLocalModel(LanguageModel):
-    """Mistral local-running model wrapper"""
+class HFLocalModel(LanguageModel):
+    """HuggingFace's local-running model wrapper"""
 
     def __init__(
         self,
         *,
         model_name: str = "mistralai/Mistral-7B-Instruct-v0.2",
-        max_length: int = 100,
+        max_new_tokens: int = 100,
         num_return_sequences: int = 1,
         temperature: float = 0.7,
         top_p: float = 0.9,
@@ -55,11 +54,11 @@ class MistralLocalModel(LanguageModel):
         debug: bool = False,
         json: bool = False,
     ):
-        """Initialize a Mistral model.
+        """Initialize a HuggingFace model.
 
         Args:
             model_name: Mistral model name, or path to such a model.
-            max_length: Maximum token length of the generated text.
+            max_new_tokens: Maximum newly generated tokens
             num_return_sequences: Number of generated sentences.
             temperature: Sampling temperature.
             top_p: Top-p sampling ratio.
@@ -83,7 +82,7 @@ class MistralLocalModel(LanguageModel):
         )
 
         # Parameters
-        self.max_length = max_length
+        self.max_new_tokens = max_new_tokens
         self.num_return_sequences = num_return_sequences
         self.temperature = temperature
         self.top_p = top_p
@@ -96,7 +95,7 @@ class MistralLocalModel(LanguageModel):
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
 
-        prompt = f"{preprompt}{prompt}{postprompt}"
+        prompt = f"{preprompt}{prompt}{postprompt}"  # TODO Check this prompt
 
         if self.debug:
             print("Prompt:")
@@ -118,11 +117,13 @@ class MistralLocalModel(LanguageModel):
                 temperature=self.temperature,
                 top_p=self.top_p,
                 do_sample=self.do_sample,
-                pad_token_id=self.pad_token_id,
+                pad_token_id=self.pad_token_id,  # TODO Check
                 # Stop conditions
-                stop_strings=["```"] if self.json else ["User:"],
+                stop_strings=(
+                    ["```"] if self.json else ["User:"]
+                ),  # TODO Check Structured output with OlMo2
                 tokenizer=self.tokenizer,
-                max_new_tokens=self.max_length,
+                max_new_tokens=self.max_new_tokens,
             )
 
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -136,8 +137,11 @@ class MistralLocalModel(LanguageModel):
         return generated_text
 
 
-class BatchedMistralLocalModel(AsyncLanguageModel):
-    """Mistral local-running model wrapper, in a batched async-compatible version."""
+# TODO Check if async really needed here?
+# If no, then make a single model class to handle both cases
+# If Yes, make a superclass that both classes will inherit from
+class BatchedHFLocalModel(AsyncLanguageModel):
+    """HuggingFace's local-running model wrapper, in a batched async-compatible version."""
 
     def __init__(
         self,
@@ -150,7 +154,7 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         quantization: Literal["4_bits"] | None = None,
         json: bool = False,
     ):
-        """Initialize a Mistral model.
+        """Initialize a HuggingFace model.
 
         Args:
             model_name: Mistral model name.
@@ -229,7 +233,7 @@ config_4bits = BitsAndBytesConfig(
     bnb_4bit_quant_type="nf4",
     bnb_4bit_use_double_quant=True,
     bnb_4bit_compute_dtype=torch.bfloat16,
-)
+)  # TODO Check the impact of quantization.
 
 QUANTIZATION_CONFIG = {
     None: None,
