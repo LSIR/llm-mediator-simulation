@@ -34,9 +34,6 @@ def load_reddit_csv_conv(
     else:
         forced_debater_order = None
 
-    # Check for columns
-    # User ID is 0 for Reddit user replying to OP (disagrees with statement)
-    # User ID is 1 for OP (agrees with statement)
     expected_columns = ["User ID", "User Name", "Text", "Timestamp"]
 
     if not all(col in df.columns for col in expected_columns):
@@ -45,7 +42,11 @@ def load_reddit_csv_conv(
         )
 
     # Extract users
-    users = df.select("User ID", "User Name").unique(subset=["User ID"])
+    users = df.select("User ID", "User Name").unique(
+        subset=["User ID"], maintain_order=True
+    )
+    # maintain_order = True enforces reproducibility.
+    # Otherwise, the order of the users may vary hence the random order in the queries to debaters will not be correctly set by the random seed.
     users_id_map = dict(zip(users["User ID"], users["User Name"]))
 
     debaters: dict[int, DebaterConfig] = {}

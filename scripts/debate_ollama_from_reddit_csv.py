@@ -7,8 +7,6 @@ import hydra
 from dotenv import load_dotenv
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import instantiate
-from rich.console import Console
-from rich.pretty import pprint
 
 from llm_mediator_simulation.models.gpt_models import GPTModel
 from llm_mediator_simulation.models.mistral_local_server_model import (
@@ -24,18 +22,16 @@ def main(config):
 
     seed = config.seed
 
-    # TODO HF: olmo pretrained model and seed
-    ## 1. Implement general HF model (sync, no server) OK
-    #### 1.1 Test seed
-    ## 2. Implement HF server (sync, server) OK
-    #### 2.1 Test seed
+    # TODO pretrained Mistral
+    # TODO investigate why pretraiend Olmo2 always output the same low quality responses. (Try OlMo IT)
+
     # TODO Lina's improvements: personalized summary.
     # TODO IDEA Generate personalities based on all previous messages of the Reddit user?
     # TODO IDEA: Use the Wikipedia version of Conv gone awry focusing on Controversial Wiki Talk pages (Israel, feminism, etc.). Question, is OlMo2 pretrained on wiki talk pages?
     # TODO IDEA: Finetuning Olmo pre or post-trained on "Conversations going Awry-like" Reddit data?
     # TODO Add issue enhancement with app: token streaming: https://huggingface.co/docs/transformers/v4.51.1/en/generation_features
 
-    # TODO Olmo 2 released intermediate checkpoints
+    # TODO ? olmo 2 released intermediate checkpoints
     gpt_key = os.getenv("GPT_API_KEY") or ""
     mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 
@@ -99,16 +95,16 @@ def main(config):
     )
     debate.preload_csv_chat(truncated_chat_path, app="reddit", truncated_num=2)
 
-    debate.run(rounds=1)
+    debate.run(rounds=4)
 
     data = debate.to_debate_pickle()
     print(debate_transcript(data))
     debate_path = os.path.join(HydraConfig.get().runtime.output_dir, "debate")
     debate.pickle(debate_path)
 
-    printable_data = data.to_printable()
-    console = Console(force_terminal=True, record=True)
-    pprint(printable_data, console=console)
+    # printable_data = data.to_printable()
+    # console = Console(force_terminal=True, record=True)
+    # pprint(printable_data, console=console)
 
 
 if __name__ == "__main__":
