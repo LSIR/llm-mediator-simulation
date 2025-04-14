@@ -76,9 +76,14 @@ def debater_intervention_prompt(
     prompt = f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
 
 Do you want to write and {add} a {utterance} of less than 500 characters to the conversation right now?
+You should often add a {utterance} when the previous {utterance} opposes your previous {utterance}s, even if the conversation is going in a healthy direction.
 
 {json_prompt(LLM_RESPONSE_FORMAT)}
 """
+    # Do you want to add a comment to the online debate right now?
+    # You should often add a comment when the previous context is empty or not in the favor of your \
+    # position. However, you should almost never add a comment when the previous context already \
+    # supports your position. Use short chat messages, no more than 3 sentences.
     return prompt
 
 
@@ -834,26 +839,6 @@ def update_feature_list_randomly(
     )
 
     return cast(Sequence[T_resonning_error], new_feature_list)
-
-
-def summary_prompt(
-    messages: list[str], summary: str, utterance: str = "messages", ignore: bool = False
-) -> str:
-    msg_sep = "\n\n"
-    if not messages:
-        return ""
-
-    prompt = ""
-
-    if not ignore:
-        prompt += f"""Here is a summary of the conversation so far:
-{summary}\n\n"""  # TODO Add personalized summary... "According to you, here is a summary..."
-
-    prompt += f"""Here are the last {utterance}s:
-{msg_sep.join(messages)}
-"""
-
-    return prompt
 
 
 @retry(attempts=5, verbose=True)

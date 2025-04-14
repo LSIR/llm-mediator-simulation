@@ -3,12 +3,12 @@
 from typing import override
 
 from llm_mediator_simulation.models.language_model import AsyncLanguageModel
-from llm_mediator_simulation.simulation.prompt import summary_prompt
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
 from llm_mediator_simulation.utils.interfaces import AsyncPromptable
 from llm_mediator_simulation.utils.model_utils import (
     summarize_conversation_with_last_messages_async,
 )
+from llm_mediator_simulation.utils.summary_prompt import summary_prompt
 from llm_mediator_simulation.utils.types import Intervention
 
 

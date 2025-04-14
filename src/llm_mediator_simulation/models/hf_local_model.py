@@ -35,7 +35,7 @@ Assistant:```json
     "text": "You opinion is fucking trash. You are wasting my time and should fucking kill yourself, you are a waste of oxygen."
 }
 ```
-User:"""
+User:"""  # TODO remove??
 
 
 class HFLocalModel(LanguageModel):
@@ -70,11 +70,11 @@ class HFLocalModel(LanguageModel):
 
         self.model_name = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.pad_token_id = (
-            self.tokenizer.pad_token_id
-            if self.tokenizer.pad_token_id is not None
-            else self.tokenizer.eos_token_id
-        )
+        # self.pad_token_id = (
+        #     self.tokenizer.pad_token_id
+        #     if self.tokenizer.pad_token_id is not None
+        #     else self.tokenizer.eos_token_id
+        # )
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             device_map="auto",
@@ -92,10 +92,11 @@ class HFLocalModel(LanguageModel):
 
     @override
     def sample(self, prompt: str, seed: int | None = None) -> str:
-        preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
-        postprompt = "Assistant:```json" if self.json else "Assistant: "
+        # preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
+        # postprompt = "Assistant:```json" if self.json else "Assistant: "
 
-        prompt = f"{preprompt}{prompt}{postprompt}"  # TODO Check this prompt
+        # prompt = f"{preprompt}{prompt}{postprompt}"  # TODO Check this prompt
+        prompt = f"{prompt}```json"  #
 
         if self.debug:
             print("Prompt:")
@@ -117,7 +118,7 @@ class HFLocalModel(LanguageModel):
                 temperature=self.temperature,
                 top_p=self.top_p,
                 do_sample=self.do_sample,
-                pad_token_id=self.pad_token_id,  # TODO Check
+                # pad_token_id=self.pad_token_id,  # TODO Check
                 # Stop conditions
                 stop_strings=(
                     ["```"] if self.json else ["User:"]
@@ -125,6 +126,7 @@ class HFLocalModel(LanguageModel):
                 tokenizer=self.tokenizer,
                 max_new_tokens=self.max_new_tokens,
             )
+        # TODO check context size of prompt before calling a model on it
 
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 

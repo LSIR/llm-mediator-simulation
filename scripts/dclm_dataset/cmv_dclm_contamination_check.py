@@ -5,13 +5,6 @@ Important:
 and don't forget to revert back.
 """
 
-# TODO revert back the HF_HOME location
-# TODO 1. Retrieve the texts of the documents from the URLs in data/reddit/cmv/dclm_contamination/cmv_reddit_users_urls.json
-# 2. check if individual messages (found in data/reddit/cmv) from a user are in the documents retrieved from that user.
-#
-#  texts from documents from URLS of from that individual users from the data/reddit/cmv/dclm_contamination/cmv_reddit_users_urls.json
-# are in the data/reddit/cmv/user_ids.json
-
 import functools
 import json
 import multiprocessing
