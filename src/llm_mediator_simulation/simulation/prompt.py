@@ -53,33 +53,39 @@ from llm_mediator_simulation.utils.types import (
 T_scale = TypeVar("T_scale", bound=Scale)
 T_resonning_error = TypeVar("T_resonning_error", bound=ReasoningError)
 
-LLM_RESPONSE_FORMAT: dict[str, str] = {
-    "do_intervene": "bool",
-    "intervention_justification": "a string justification of why you want to intervene or not, which will not be visible by others.",
-    "text": "the text message for your intervention, visible by others. Leave empty if you decide not to intervene",
-}
+
+def response_format(utterance: str = "message"):
+    llm_response_format: dict[str, str] = {
+        "do_write": "bool",
+        "justification": f"a string justification of why you decide to write a {utterance} or not.",
+        f"{utterance}": f"the text of your {utterance}. Leave empty if you decide to not write.",
+    }  # order matters for the LLM, to investigate?
+
+    return llm_response_format
+
 
 LLM_PROBA_RESPONSE_FORMAT: dict[str, str] = {
-    "do_intervene": "a float probability of intervention",
-    "intervention_justification": "a string justification of why you want to intervene or not, which will not be visible by others.",
+    "do_write": "a float probability of intervention",
+    "justification": "a string justification of why you want to intervene or not, which will not be visible by others.",
     "text": "the text message for your intervention, visible by others. Leave empty if you decide not to intervene",
-}
+}  # TODO Update
 
 
 def debater_intervention_prompt(
     debate_config_prompt: str,
     debater_config_prompt: str,
     summary_config_prompt: str,
-    add: str,
-    utterance: str,
+    add: str,  # "send" or "post"
+    utterance: str,  # "message" or "comment"
 ):
     prompt = f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
 
-Do you want to write and {add} a {utterance} of less than 500 characters to the conversation right now?
-You should often add a {utterance} when the previous {utterance} opposes your previous {utterance}s, even if the conversation is going in a healthy direction.
+Decide whether to reply, only based on other participant's opinions relatively to yours, as expressed in the conversation so far. 
+Should you decide to do so, then {add} a {utterance} of less than 500 characters.
 
-{json_prompt(LLM_RESPONSE_FORMAT)}
+{json_prompt(response_format(utterance))}
 """
+
     # Do you want to add a comment to the online debate right now?
     # You should often add a comment when the previous context is empty or not in the favor of your \
     # position. However, you should almost never add a comment when the previous context already \
@@ -973,7 +979,7 @@ async def async_mediator_interventions(
 
             {mediator.to_prompt()}
 
-            {json_prompt(LLM_RESPONSE_FORMAT)}
+            {json_prompt(LLM_RESPONSE_FORMAT)} # TODO
             """
         )
 

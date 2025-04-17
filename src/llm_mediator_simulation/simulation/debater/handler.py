@@ -77,9 +77,9 @@ class DebaterHandler:
             debater=deepcopy(
                 self.config
             ),  # Freeze the debater configuration because the personality can change
-            text=response["text"],
+            text=response[self.summary_handler.utterance],
             prompt=prompt,
-            justification=response["intervention_justification"],
+            justification=response["justification"],
             timestamp=datetime.now(),
         )
 

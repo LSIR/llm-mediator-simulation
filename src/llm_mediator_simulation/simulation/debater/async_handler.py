@@ -83,7 +83,7 @@ class AsyncDebaterHandler:
                 ),  # Freeze the debater configuration because the personality can change
                 text=response["text"],
                 prompt=prompt,
-                justification=response["intervention_justification"],
+                justification=response["intervention_justification"],  # TODO Update
                 timestamp=datetime.now(),
             )
             for response, prompt, config in zip(responses, prompts, self.configs)

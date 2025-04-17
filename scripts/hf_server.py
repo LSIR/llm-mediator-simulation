@@ -157,8 +157,9 @@ def server(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2"
 
     model = HFLocalModel(
         model_name=model_name,
-        max_new_tokens=500,
+        max_new_tokens=200,
         json=True,
+        # torch_dtype=torch.float16,  # For large models (like Olmo2 32B)
     )
     from flask import Flask, request
 
@@ -175,6 +176,11 @@ def server(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2"
         seed = data.get("seed")
 
         return model.sample(text, seed=seed)
+
+    @app.route("/model_name", methods=["GET"])
+    def model_name() -> str:  # type: ignore
+        """Return the model name"""
+        return model.model_name
 
     @app.route("/stop")
     def stop():  # type: ignore

@@ -6,8 +6,8 @@ import time
 from dotenv import load_dotenv
 
 from llm_mediator_simulation.models.gpt_models import GPTModel
-from llm_mediator_simulation.models.mistral_local_server_model import (
-    MistralLocalServerModel,
+from llm_mediator_simulation.models.hf_local_server_model import (
+    HFLocalServerModel,
 )
 from llm_mediator_simulation.simulation.debate.config import DebateConfig
 from llm_mediator_simulation.simulation.debate.handler import DebateHandler
@@ -28,7 +28,7 @@ SEED = 42
 gpt_key = os.getenv("GPT_API_KEY") or ""
 mediator_model = GPTModel(api_key=gpt_key, model_name="gpt-4o")
 
-debater_model = MistralLocalServerModel(port=8000)
+debater_model = HFLocalServerModel(port=8000)
 
 # The conversation summary handler (keep track of the general history and of the n latest messages)
 summary_config = SummaryConfig(latest_messages_limit=3, debaters=debaters)

@@ -84,12 +84,6 @@ If None, no validation is performed.
     sanitized_json = extract_json(llm_json)
 
     data = json.loads(sanitized_json)
-    # With OlMo2, sometimes the JSON key "intervention_justification" is spelled "intervention_justifyation"...
-    # So we traet any key containing "intervention" as "intervention_justification"
-    keys = list(data.keys())
-    for key in keys:
-        if "intervention" in key and key != "intervention_justification":
-            data["intervention_justification"] = data.pop(key)
 
     # If the JSON is not valid, raise an error
     if typedDict and not validate_shallow_json(data, typedDict):

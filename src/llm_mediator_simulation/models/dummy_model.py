@@ -80,8 +80,8 @@ class DummyModel(LanguageModel):
         else:
             return f"""```json
                         {{
-                            "do_intervene": true,
-                            "intervention_justification": "Dummy justification",
+                            "do_write": true,
+                            "justification": "Dummy justification",
                             "text": "Dummy text: {str(hash(prompt))}"
                         }}
                         ```
