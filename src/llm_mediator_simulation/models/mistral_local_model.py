@@ -1,6 +1,6 @@
 """Mistral local-running model wrapper"""
 
-from typing import Literal, override
+from typing import Any, Literal, override
 
 import torch
 from transformers import AutoTokenizer
@@ -92,7 +92,7 @@ class MistralLocalModel(LanguageModel):
         self.json = json
 
     @override
-    def sample(self, prompt: str, seed: int | None = None) -> str:
+    def sample(self, prompt: str, seed: int | None = None, **kwargs: Any) -> str:
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
 
@@ -184,7 +184,9 @@ class BatchedMistralLocalModel(AsyncLanguageModel):
         self.json = json
 
     @override
-    async def sample(self, prompts: list[str], seed: int | None = None) -> list[str]:
+    async def sample(
+        self, prompts: list[str], seed: int | None = None, **kwargs: Any
+    ) -> list[str]:
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
 

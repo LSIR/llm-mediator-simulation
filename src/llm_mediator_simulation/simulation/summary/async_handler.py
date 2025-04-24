@@ -1,6 +1,6 @@
 """Async handler class for debate summaries in parallel"""
 
-from typing import override
+from typing import Literal, override
 
 from llm_mediator_simulation.models.language_model import AsyncLanguageModel
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
@@ -41,7 +41,7 @@ class AsyncSummaryHandler(AsyncPromptable):
 
         self.debaters = config.debaters or []
         self.ignore = config.ignore
-        self.utterance = config.utterance
+        self.utterance: Literal["message", "comment"] = config.utterance
         self.parallel_debates = parallel_debates
 
     @property

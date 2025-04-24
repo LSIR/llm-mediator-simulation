@@ -5,7 +5,7 @@ likely due to KV Caching https://github.com/huggingface/transformers/issues/2542
 """
 
 import asyncio
-from typing import override
+from typing import Any, override
 
 import ollama
 
@@ -28,7 +28,7 @@ class OllamaLocalModel(LanguageModel):
         self.model_name = model_name
 
     @override
-    def sample(self, prompt: str, seed: int | None = None) -> str:
+    def sample(self, prompt: str, seed: int | None = None, **kwargs: Any) -> str:
         """Generate text based on the given prompt."""
 
         response = ollama.generate(
@@ -53,7 +53,9 @@ class AsyncOllamaLocalModel(AsyncLanguageModel):
         self.client = ollama.AsyncClient()
 
     @override
-    async def sample(self, prompts: list[str], seed: int | None = None) -> list[str]:
+    async def sample(
+        self, prompts: list[str], seed: int | None = None, **kwargs: Any
+    ) -> list[str]:
         """Generate text based on the given prompt."""
 
         # Await all completions asynchronously

@@ -70,7 +70,7 @@ class LLMMessage(TypedDict):
 
     do_write: bool
     justification: str
-    comment: str  # TODO dynamically load the value of this field
+    text: str
 
 
 class LLMProbaMessage(TypedDict):

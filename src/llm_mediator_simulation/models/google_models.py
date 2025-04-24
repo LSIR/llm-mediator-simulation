@@ -1,7 +1,7 @@
 """Google Vertex AI model wrapper."""
 
 import asyncio
-from typing import Literal, override
+from typing import Any, Literal, override
 
 import google.generativeai as genai
 from google.generativeai.types import (
@@ -73,7 +73,7 @@ class GoogleModel(LanguageModel):
         ]
 
     @override
-    def sample(self, prompt: str, seed: int | None = None) -> str:
+    def sample(self, prompt: str, seed: int | None = None, **kwargs: Any) -> str:
         """Generate text based on the given prompt."""
 
         response = self.model.generate_content(
@@ -135,7 +135,9 @@ class AsyncGoogleModel(AsyncLanguageModel):
         ]
 
     @override
-    async def sample(self, prompts: list[str], seed: int | None = None) -> list[str]:
+    async def sample(
+        self, prompts: list[str], seed: int | None = None, **kwargs: Any
+    ) -> list[str]:
         """Generate text based on the given prompt."""
 
         results = await asyncio.gather(

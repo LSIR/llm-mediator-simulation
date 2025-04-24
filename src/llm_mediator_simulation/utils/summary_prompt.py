@@ -1,5 +1,11 @@
+from typing import Literal
+
+
 def summary_prompt(
-    messages: list[str], summary: str, utterance: str = "messages", ignore: bool = False
+    messages: list[str],
+    summary: str,
+    utterance: Literal["message", "comment"] = "message",
+    ignore: bool = False,
 ) -> str:
     msg_sep = "\n\n"
     if not messages:

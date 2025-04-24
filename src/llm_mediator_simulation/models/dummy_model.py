@@ -1,7 +1,7 @@
 """Dummy model for testing purposes."""
 
 import re
-from typing import override
+from typing import Any, override
 
 from llm_mediator_simulation.models.language_model import LanguageModel
 from llm_mediator_simulation.utils.json import parse_llm_json
@@ -12,7 +12,7 @@ class DummyModel(LanguageModel):
         self.model_name = model_name
 
     @override
-    def sample(self, prompt: str, seed: int | None = None) -> str:
+    def sample(self, prompt: str, seed: int | None = None, **kwargs: Any) -> str:
         if (
             "You have the opportunity to make your personality evolve" in prompt
         ):  # For testing personality update

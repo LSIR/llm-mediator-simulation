@@ -1,7 +1,7 @@
 """Configuration for debate simulations"""
 
 from dataclasses import dataclass
-from typing import override
+from typing import Literal, override
 
 from llm_mediator_simulation.utils.interfaces import Promptable
 
@@ -18,7 +18,7 @@ class DebateConfig(Promptable):
 
     statement: str = ""
     context: str = "You are taking part in an online debate about the following topic:"
-    add: str = "send"
+    add: Literal["send", "post"] = "send"
 
     @override
     def to_prompt(self) -> str:

@@ -32,8 +32,11 @@ def main(config):
     # olmo 2 13B post-trained and olmo 2 32B post-trained quantized float 16 intervene but is too polite
     # Mistral 7B pretrained does not intervene and returns empty justification
     # Mistral 7B post-trained intervenes
+    # Note For conv submission_id: "3mhgci" ; comment_id: "cveysuq" -> The last two authors are new to the conv... model users from their past comments?
+    # TODO 0
+    # Create a train-dev-test-splitted dataset with convs with < 6 messages to create A) Few shot examples and B) a fine-tuning dataset.
     # TODO 1 Prompt engineering
-    # -> Remove json format. Note, if we keep the json format, olmo2 pretrained very often refuses to intervene.
+    # OK Remove json format. Note, if we keep the json format, olmo2 pretrained very often refuses to intervene.
     # -> Few shot examples from CMV convs with < 6 messages.
     # OK for now (Try Mistral, LlaMa, Olmo1 Pretrained to whether Olmo2 pretraining is flawed. If yes, then no other choice than fine-tuning.)
     # 2 Model exploration
@@ -73,7 +76,13 @@ def main(config):
     #     json=True,
     # )
 
-    debater_model = HFLocalServerModel(port=PORT, max_new_tokens=config.max_new_tokens)
+    debater_model = HFLocalServerModel(
+        port=PORT,
+        max_new_tokens=config.max_new_tokens,
+        debug=True,
+        repetition_penalty=1.3,
+        stop_strings=["\n"],  # ["\n-", "\n -"],
+    )
 
     # debater_model = OllamaLocalModel(model_name="mistral-nemo")
     # debater_model = OllamaLocalModel(model_name="olmo2:13b")
@@ -94,6 +103,10 @@ def main(config):
     if statement.endswith("."):
         statement = statement[:-1].strip()
 
+    # Remove starting "CMV:" from the statement
+    if statement.startswith("CMV:"):
+        statement = statement[4:].strip()
+
     # The debate configuration (which topic to discuss, and customisable instructions)
     debate_config = instantiate(config.debate_config, statement=statement)
 
@@ -111,6 +124,7 @@ def main(config):
         metrics_handler=metrics,
         mediator_config=mediator_config,
         seed=seed,
+        json_debater_reponse=config.json_debater_reponse,
     )
 
     truncated_chat_path = (
@@ -136,4 +150,13 @@ if __name__ == "__main__":
         timeout=40,
     ).text
     sys.argv.append(f"+debater_model_name={model_name}")
+
+    quantization = httpx.get(
+        f"http://localhost:{PORT}/model_quantization",
+        timeout=40,
+    ).text
+
+    if quantization:
+        sys.argv.append(f"+debater_quantization={quantization}")
+
     main()

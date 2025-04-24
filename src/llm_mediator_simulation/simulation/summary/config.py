@@ -1,6 +1,7 @@
 """Summary configuration dataclass"""
 
 from dataclasses import dataclass
+from typing import Literal
 
 from llm_mediator_simulation.simulation.debater.config import DebaterConfig
 
@@ -21,13 +22,13 @@ class SummaryConfig:
         latest_messages_limit (int, optional): The number of latest messages to keep track of. Defaults to 3.
         debaters (list[DebaterConfig], optional): The list of debaters in the conversation. Only their names are used, as a mean of identification.
         ignore (bool, optional): If True, the summary will be ignored. Defaults to False.
-        utterance (str, optional): The word used to refer to the messages. Defaults to "messages".
+        utterance (Literal["message", "comment"], optional): The word used to refer to the messages. Defaults to "messages".
     """
 
     latest_messages_limit: int = 3
     debaters: list[DebaterConfig] | None = None
     ignore: bool = False
-    utterance: str = "message"
+    utterance: Literal["message", "comment"] = "message"
 
     def to_printable(self):
         """Convert the SummaryConfig to a simpler PrintableSummaryConfig version for printing with pprint without overwheling informations."""

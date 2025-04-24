@@ -44,6 +44,8 @@ python examples/example_server.py call -f prompt.txt
 ```
 """
 
+from typing import Literal
+
 import click
 import httpx
 
@@ -149,7 +151,16 @@ def main():
     default="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2",
     help="The model name to load.",
 )
-def server(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2"):
+@click.option(
+    "--quantization",
+    "-q",
+    default=None,
+    help="The quantization to use.",
+)
+def server(
+    model_name: str = "/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2",
+    quantization: Literal["4_bits"] | None = None,
+):
     """Start a Flask server to keep the LLM loaded"""
     from llm_mediator_simulation.models.hf_local_model import HFLocalModel
 
@@ -159,7 +170,8 @@ def server(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2"
         model_name=model_name,
         max_new_tokens=200,
         json=True,
-        # torch_dtype=torch.float16,  # For large models (like Olmo2 32B)
+        quantization=quantization,
+        # torch_dtype=torch.float16,  # Potentially for large models (like Olmo2 32B)
     )
     from flask import Flask, request
 
@@ -172,15 +184,21 @@ def server(model_name="/mnt/datastore/models/mistralai/Mistral-7B-Instruct-v0.2"
     @app.route("/call", methods=["POST"])
     def call():  # type: ignore
         data = request.get_json()
-        text = data.get("text")
-        seed = data.get("seed")
+        text = data.pop("text")
+        seed = data.pop("seed")
 
-        return model.sample(text, seed=seed)
+        return model.sample(text, seed=seed, **data)
 
     @app.route("/model_name", methods=["GET"])
     def model_name() -> str:  # type: ignore
         """Return the model name"""
         return model.model_name
+
+    @app.route("/model_quantization", methods=["GET"])
+    def model_quantization() -> str:  # type: ignore
+        """Return the model config"""
+        quantization = model.quantization
+        return quantization
 
     @app.route("/stop")
     def stop():  # type: ignore

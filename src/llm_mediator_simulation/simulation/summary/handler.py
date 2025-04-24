@@ -1,6 +1,6 @@
 """Handler class for summaries"""
 
-from typing import override
+from typing import Literal, override
 
 from llm_mediator_simulation.models.language_model import LanguageModel
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
@@ -35,7 +35,7 @@ class SummaryHandler(Promptable):
 
         self.debaters = config.debaters or []
         self.ignore = config.ignore
-        self.utterance = config.utterance
+        self.utterance: Literal["message", "comment"] = config.utterance
 
     @property
     def message_strings(self) -> list[str]:
@@ -47,7 +47,7 @@ class SummaryHandler(Promptable):
                     author_name = message.debater.name
                 else:
                     author_name = "Mediator"
-                message_list.append(f"""- {author_name}: "{message.text}\"""")
+                message_list.append(f"""- {author_name}: {message.text}""")
 
         return message_list
 

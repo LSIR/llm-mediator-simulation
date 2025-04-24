@@ -1,6 +1,6 @@
 """Mistral local-running model wrapper"""
 
-from typing import Literal, override
+from typing import Any, Literal, override
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -68,17 +68,38 @@ class HFLocalModel(LanguageModel):
         self.debug = debug
         self.json = json
 
-    @override
-    def sample(
-        self, prompt: str, seed: int | None = None, max_new_tokens: int | None = None
-    ) -> str:
-        if max_new_tokens is None:
-            max_new_tokens = self.max_new_tokens
+        if quantization is None:
+            self.quantization = "no quantization"
+        else:
+            self.quantization = quantization
 
-        if self.json:
+    @override
+    def sample(self, prompt: str, seed: int | None = None, **kwargs: Any) -> str:
+        for parameter in [
+            "max_new_tokens",
+            "num_return_sequences",
+            "temperature",
+            "top_k",
+            "top_p",
+            "do_sample",
+        ]:
+            if parameter not in kwargs:
+                kwargs[parameter] = getattr(self, parameter)
+
+        json = kwargs.pop("json", self.json)
+
+        stop_strings = kwargs.pop("stop_strings", None)
+        assert not (json and stop_strings), (
+            "stop_strings and json cannot be used together. "
+            "Please use one or the other."
+        )
+
+        debug = kwargs.pop("debug", self.debug)
+
+        if json:
             prompt = f"{prompt}```json"  #
 
-        if self.debug:
+        if debug:
             print("Prompt:")
             print("----------------------")
             print(prompt)
@@ -91,7 +112,7 @@ class HFLocalModel(LanguageModel):
             set_transformers_seed(seed)  # sampling tokens generation time
 
         assert (
-            inputs.input_ids.shape[1] + max_new_tokens
+            inputs.input_ids.shape[1] + kwargs["max_new_tokens"]
         ) < self.tokenizer.model_max_length, (
             "Prompt too long for the model. Please reduce the number of tokens."
         )
@@ -100,20 +121,19 @@ class HFLocalModel(LanguageModel):
             outputs = self.model.generate(
                 inputs.input_ids.to("cuda"),
                 attention_mask=inputs.attention_mask,
-                num_return_sequences=self.num_return_sequences,
-                temperature=self.temperature,
-                top_k=self.top_k,
-                top_p=self.top_p,
-                do_sample=self.do_sample,
-                stop_strings=(["```"] if self.json else None),
+                # num_return_sequences=self.num_return_sequences,
+                # temperature=self.temperature,
+                # top_k=self.top_k,
+                # top_p=self.top_p,
+                # do_sample=self.do_sample,
+                stop_strings=(["```"] if json else stop_strings),
                 tokenizer=self.tokenizer,
-                max_new_tokens=max_new_tokens,
+                **kwargs,
             )
-        # Address Olmo2's Warnings
 
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        if self.debug:
+        if debug:
             print("Response:")
             print("---------------------")
             print(generated_text[len(prompt) :])
@@ -169,7 +189,9 @@ class BatchedHFLocalModel(AsyncLanguageModel):
         self.json = json
 
     @override
-    async def sample(self, prompts: list[str], seed: int | None = None) -> list[str]:
+    async def sample(
+        self, prompts: list[str], seed: int | None = None, **kwargs: Any
+    ) -> list[str]:
         preprompt = JSON_FEW_SHOT_PREPROMPT if self.json else FEW_SHOT_PREPROMPT
         postprompt = "Assistant:```json" if self.json else "Assistant: "
 
@@ -213,7 +235,7 @@ config_4bits = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type="nf4",
     bnb_4bit_use_double_quant=True,
-    bnb_4bit_compute_dtype=torch.bfloat16,  # bfloat16 Not supported in RTX 8000
+    bnb_4bit_compute_dtype=torch.float16,  # bfloat16 Not supported in RTX 8000
 )
 
 # https://huggingface.co/blog/4bit-transformers-bitsandbytes

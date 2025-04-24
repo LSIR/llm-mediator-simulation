@@ -54,11 +54,11 @@ T_scale = TypeVar("T_scale", bound=Scale)
 T_resonning_error = TypeVar("T_resonning_error", bound=ReasoningError)
 
 
-def response_format(utterance: str = "message"):
+def response_format(utterance: Literal["message", "comment"] = "message"):
     llm_response_format: dict[str, str] = {
         "do_write": "bool",
         "justification": f"a string justification of why you decide to write a {utterance} or not.",
-        f"{utterance}": f"the text of your {utterance}. Leave empty if you decide to not write.",
+        "text": f"the text of your {utterance}. Leave empty if you decide to not write.",
     }  # order matters for the LLM, to investigate?
 
     return llm_response_format
@@ -75,21 +75,36 @@ def debater_intervention_prompt(
     debate_config_prompt: str,
     debater_config_prompt: str,
     summary_config_prompt: str,
-    add: str,  # "send" or "post"
-    utterance: str,  # "message" or "comment"
+    add: Literal["send", "post"],
+    utterance: Literal["message", "comment"],
+    json: bool = True,
+    author_name: str | None = None,
 ):
-    prompt = f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
+    if json:
+        prompt = f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
 
-Decide whether to reply, only based on other participant's opinions relatively to yours, as expressed in the conversation so far. 
+Decide whether to reply, only based on other participant's opinions relatively to yours, as expressed in the conversation so far.
 Should you decide to do so, then {add} a {utterance} of less than 500 characters.
 
 {json_prompt(response_format(utterance))}
 """
-
     # Do you want to add a comment to the online debate right now?
     # You should often add a comment when the previous context is empty or not in the favor of your \
     # position. However, you should almost never add a comment when the previous context already \
     # supports your position. Use short chat messages, no more than 3 sentences.
+
+    else:
+        assert (
+            author_name is not None
+        ), "Author name must be provided when json is False."
+        prompt = f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
+    
+Based on the other participant's opinions relatively to yours, as expressed in the conversation so far, {add} a new {utterance} maximum 4 sentences.
+Do not repeat yourself, and do not quote other participants.
+
+Your new {utterance}:
+- {author_name}: """
+
     return prompt
 
 
@@ -100,18 +115,36 @@ def debater_intervention(
     summary: SummaryHandler,
     debater: DebaterConfig,
     seed: int | None = None,
+    json: bool = True,
 ) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
+    author_name = debater.name
     prompt = debater_intervention_prompt(
         config.to_prompt(),
         debater.to_prompt(),
         summary.to_prompt(),
         config.add,
         summary.utterance,
+        json=json,
+        author_name=author_name,
     )
 
-    response = model.sample(prompt, seed=seed)
-    return parse_llm_json(response, LLMMessage), prompt
+    response = model.sample(prompt, seed=seed, json=json)
+    if json:
+        parsed_response = parse_llm_json(response, LLMMessage)
+    else:
+        text = response.split(f"{author_name}: ")[-1].strip()
+        # Remove trailing quotes
+        if text.endswith('"') and text.startswith('"'):
+            text = text[1:-1]
+
+        parsed_response: LLMMessage = {
+            "do_write": True,
+            "justification": "",
+            "text": text,
+        }
+
+    return parsed_response, prompt
 
 
 def prompt_for_update(

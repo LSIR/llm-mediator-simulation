@@ -1,5 +1,6 @@
 """Helper to load data from a CSV file"""
 
+import re
 from datetime import datetime
 
 import polars as pd
@@ -72,7 +73,9 @@ def load_reddit_csv_conv(
                 if app_interventions["User ID"][i] != ""
                 else None
             ),
-            text=app_interventions["Text"][i],
+            text=re.sub(
+                r">\s*(.*?)\n", r"You said: '\1'\n", app_interventions["Text"][i]
+            ),  # An LLM might not understand that the > symbol is used to quote a message. See sub 4lq5n0 for a good example
             prompt="",
             justification="",
             timestamp=datetime.strptime(
