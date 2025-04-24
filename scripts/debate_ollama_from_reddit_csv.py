@@ -33,11 +33,10 @@ def main(config):
     # Mistral 7B pretrained does not intervene and returns empty justification
     # Mistral 7B post-trained intervenes
     # Note For conv submission_id: "3mhgci" ; comment_id: "cveysuq" -> The last two authors are new to the conv... model users from their past comments?
-    # TODO 0
-    # Create a train-dev-test-splitted dataset with convs with < 6 messages to create A) Few shot examples and B) a fine-tuning dataset.
+    # OK Create a train-dev-test-splitted dataset with convs with < 6 messages to create A) Few shot examples and B) a fine-tuning dataset.
     # TODO 1 Prompt engineering
     # OK Remove json format. Note, if we keep the json format, olmo2 pretrained very often refuses to intervene.
-    # -> Few shot examples from CMV convs with < 6 messages.
+    # -> Few shot examples from CMV convs not in the simulation dataset
     # OK for now (Try Mistral, LlaMa, Olmo1 Pretrained to whether Olmo2 pretraining is flawed. If yes, then no other choice than fine-tuning.)
     # 2 Model exploration
     # OK investigate why pretrained Olmo2 always output the same low quality responses.
