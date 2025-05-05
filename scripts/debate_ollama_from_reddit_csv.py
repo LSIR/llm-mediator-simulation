@@ -34,11 +34,11 @@ def main(config):
     # Mistral 7B post-trained intervenes
     # Note For conv submission_id: "3mhgci" ; comment_id: "cveysuq" -> The last two authors are new to the conv... model users from their past comments?
     # OK Create a train-dev-test-splitted dataset with convs with < 6 messages to create A) Few shot examples and B) a fine-tuning dataset.
-    # TODO 1 Prompt engineering
+    # Done 1 Prompt engineering
     # OK Remove json format. Note, if we keep the json format, olmo2 pretrained very often refuses to intervene.
-    # -> Few shot examples from CMV convs not in the simulation dataset
+    # OK Few shot examples from CMV convs not in the simulation dataset
     # OK for now (Try Mistral, LlaMa, Olmo1 Pretrained to whether Olmo2 pretraining is flawed. If yes, then no other choice than fine-tuning.)
-    # 2 Model exploration
+    # Done 2 Model exploration
     # OK investigate why pretrained Olmo2 always output the same low quality responses.
     # OK look for the most toxic-like LLMs (Mistral and others ?)
     # What is in omlo 2 post training exactly? OK
@@ -57,7 +57,7 @@ def main(config):
     # TODO IDEA: Use the Wikipedia version of Conv gone awry focusing on Controversial Wiki Talk pages (Israel, feminism, etc.). Question, is OlMo2 pretrained on wiki talk pages?
 
     # TODO Compare
-    # 1. Few shot
+    # 1. Few shot (RAG Few-shot?)
     # 2. Generated personality
     # 3. Personalized summary
     # + Combined
@@ -79,7 +79,7 @@ def main(config):
         port=PORT,
         max_new_tokens=config.max_new_tokens,
         debug=True,
-        repetition_penalty=1.3,
+        repetition_penalty=1.5,
         stop_strings=["\n"],  # ["\n-", "\n -"],
     )
 
@@ -113,6 +113,10 @@ def main(config):
 
     metrics = None
 
+    with open("data/reddit/cmv/few_shot_samples.jsonl", "r") as f:
+        lines = f.readlines()
+        few_shot_samples = [json.loads(line) for line in lines]
+
     # The debate runner
     debate = DebateHandler(
         debater_model=debater_model,
@@ -124,6 +128,7 @@ def main(config):
         mediator_config=mediator_config,
         seed=seed,
         json_debater_reponse=config.json_debater_reponse,
+        few_shot_samples=few_shot_samples,
     )
 
     truncated_chat_path = (

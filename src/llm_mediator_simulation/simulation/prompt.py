@@ -79,9 +79,30 @@ def debater_intervention_prompt(
     utterance: Literal["message", "comment"],
     json: bool = True,
     author_name: str | None = None,
+    few_shot_samples: list[dict] | None = None,
 ):
+
+    if few_shot_samples:
+        prompt = """You simulate real Reddit users engaging in conversations."""
+        for example in few_shot_samples:
+            statement = example["statement"].strip()
+            penultimate_utterance = example["penultimate_utterance"]
+            last_utterance = example["last_utterance"]
+
+            prompt += f"""\n\nEXAMPLE:
+If you were role-playing a real person with username {last_utterance["userid"]}, engaged in a conversation about the following statement: {statement}, and replying to this {utterance}: 
+- {penultimate_utterance["userid"]}: {penultimate_utterance["text"].replace("\n", " ").strip()}, 
+
+Then you could {add} the following {utterance}: 
+
+- {last_utterance["userid"]}: {last_utterance["text"].replace("\n", " ").strip()}\n"""
+        prompt += "\n\nNow, "
+
+    else:
+        prompt = ""
+
     if json:
-        prompt = f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
+        prompt += f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
 
 Decide whether to reply, only based on other participant's opinions relatively to yours, as expressed in the conversation so far.
 Should you decide to do so, then {add} a {utterance} of less than 500 characters.
@@ -97,7 +118,7 @@ Should you decide to do so, then {add} a {utterance} of less than 500 characters
         assert (
             author_name is not None
         ), "Author name must be provided when json is False."
-        prompt = f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
+        prompt += f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
     
 Based on the other participant's opinions relatively to yours, as expressed in the conversation so far, {add} a new {utterance} maximum 4 sentences.
 Do not repeat yourself, and do not quote other participants.
@@ -116,6 +137,7 @@ def debater_intervention(
     debater: DebaterConfig,
     seed: int | None = None,
     json: bool = True,
+    few_shot_samples: list[dict] | None = None,
 ) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
     author_name = debater.name
@@ -127,6 +149,7 @@ def debater_intervention(
         summary.utterance,
         json=json,
         author_name=author_name,
+        few_shot_samples=few_shot_samples,
     )
 
     response = model.sample(prompt, seed=seed, json=json)

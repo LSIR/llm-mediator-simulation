@@ -51,6 +51,7 @@ class DebaterHandler:
         initial_intervention: bool = False,
         seed: int | None = None,
         json: bool = True,
+        few_shot_samples: list[dict] | None = None,
     ) -> Intervention:
         """Do a debater intervention.
 
@@ -58,6 +59,7 @@ class DebaterHandler:
             initial_intervention: If this is the first intervention from this debater.
             seed: The seed to use for the random sampling at generation.
             json: Whether to enforce JSON generation.
+            few_shot_samples: The few shot samples to use for the debater intervention.
         """
 
         # Update the debater personality
@@ -76,6 +78,7 @@ class DebaterHandler:
             debater=self.config,
             seed=seed,
             json=json,
+            few_shot_samples=few_shot_samples,
         )
 
         return Intervention(

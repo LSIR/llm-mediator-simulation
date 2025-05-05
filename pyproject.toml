@@ -42,6 +42,7 @@ dependencies = [
   "convokit",
   "BAScraper",
   "hydra-core",
+  "tiktoken",
 ]
 
 [project.urls]

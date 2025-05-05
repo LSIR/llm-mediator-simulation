@@ -45,6 +45,7 @@ class DebateHandler:
         metrics_handler: MetricsHandler | None = None,
         seed: int | None = None,
         json_debater_reponse: bool = True,
+        few_shot_samples: list[dict] | None = None,
     ) -> None:
         """Instanciate a debate simulation handler.
 
@@ -58,6 +59,7 @@ class DebateHandler:
             metrics_handler: The metrics handler to use. Defaults to None.
             seed: The seed to use for the random sampling at generation. Defaults to None.
             json_debater_reponse: Whether to enforce JSON generation for debater responses. Defaults to True.
+            few_shot_samples: The few-shot samples to use for the debater. Defaults to None.
         """
 
         # Configuration
@@ -114,6 +116,9 @@ class DebateHandler:
         # JSON generation
         self.json_debater_reponse = json_debater_reponse
 
+        # Few-shot samples
+        self.few_shot_samples = few_shot_samples
+
     def run(self, rounds: int = 3) -> None:
         """Run the debate simulation for the given amount of rounds.
 
@@ -159,6 +164,7 @@ class DebateHandler:
                     initial_intervention=i == 0,
                     seed=self.seed,
                     json=self.json_debater_reponse,
+                    few_shot_samples=self.few_shot_samples,
                 )
                 self.interventions.append(intervention)
                 self.summary_handler.add_new_message(intervention)

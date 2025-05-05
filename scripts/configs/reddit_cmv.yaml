@@ -26,5 +26,14 @@ defaults:
 max_new_tokens: 100
 json_debater_reponse: False
 
+# submission_id: "3ko9vd" OK
+# comment_id: "cuz35v2"
+
+# submission_id: "3lqidx" KO
+# comment_id: "cv8gsnh" 
+
+# submission_id: "3mhgci" OK
+# comment_id: "cveysuq"
+
 submission_id: "3oz6yk"
 comment_id: "cw1r1b3"

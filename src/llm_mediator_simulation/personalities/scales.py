@@ -15,7 +15,8 @@ class Scale(Enum):
 
 class Likert5ImportanceLevel(Scale):
     """Level on a 5-point likert scale axis.
-    From (Schwartz, 1992) (III. Empirical Studies A. THE THEORY-BASED VALUE SURVEY)"""
+    Based on "Universals in the Content and Structure of Values: Theoretical Advances and Empirical Tests in 20 Countries"
+    """  # (III. Empirical Studies A. THE THEORY-BASED VALUE SURVEY)
 
     OPPOSED_TO_MY_VALUES = "opposed to my values"
     NOT_IMPORTANT = "not important"
@@ -36,7 +37,7 @@ class Likert5LevelValue:
 
 
 class Likert5Level(Scale):
-    """Level on a 5-point likert scale axis. From MFQ2 in yourmorals.org."""
+    """Level on a 5-point likert scale axis. Based on the Moral Foundation Questionnaire-2 in yourmorals.org."""
 
     NOT_AT_ALL = Likert5LevelValue("not at all")
     SLIGHTLY = Likert5LevelValue("slightly")
@@ -47,8 +48,7 @@ class Likert5Level(Scale):
 
 class KeyingDirection(Scale):
     """Binary value.
-    Based on:
-            - 10.1016/j.jrp.2014.05.003
+    Based on "Measuring thirty facets of the Five Factor Model with a 120-item public domain inventory: Development of the IPIP-NEO-120"
     """
 
     NEGATIVE = "no"
