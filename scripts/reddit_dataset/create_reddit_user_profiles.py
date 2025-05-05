@@ -185,14 +185,11 @@ async def main():
         # get all submissions from user_id
         user_submissions = await asa.fetch(
             mode="submissions_search", author=user_id, limit=101
-        )  # limit max 100
+        )  # limit max 100 https://github.com/maxjo020418/BAScraper/blob/cd5c2ef24f45f66e7f0fb26570c2c1529706a93f/README.md?plain=1#L239
 
         user_flairs_aggregation = await asa.fetch(
             mode="user_flairs_aggregation", author=user_id
-        )  # limit max ??
-        # TODO seems to limit to max 25 submissions
-        # Raise max limit without too many
-        # check flairs limit
+        )  # no max limit https://github.com/maxjo020418/BAScraper/blob/cd5c2ef24f45f66e7f0fb26570c2c1529706a93f/README.md?plain=1#L342
 
         submissions_txt = []
         for submission in user_submissions.values():
@@ -305,7 +302,7 @@ async def main():
         user_counter += 1
         print(f"Processed {user_counter} users")
         pprint(profile)
-        os._exit(0)
+        # os._exit(0)
 
 
 if __name__ == "__main__":
@@ -336,12 +333,11 @@ if __name__ == "__main__":
     # Remove duplicates but keep the order
     # userid_to_statement = list(dict.fromkeys(userid_to_statement))
     print(f"Found {len(USERID_TO_STATEMENTS)} unique user ids")
-    asa = ArcticShiftAsync(log_stream_level="DEBUG", task_num=1, pace_mode="auto-soft")
+    asa = ArcticShiftAsync(log_stream_level="DEBUG", task_num=16, pace_mode="auto-soft")
     asyncio.run(main())
 
     # Save the profiles to a json file at datapath
     with open(os.path.join(DATAPATH, "reddit_user_profiles.json"), "w") as f:
         json.dump(profiles, f, indent=4)
-    # main()
 
     # TODO Anonimize, Shuffle, and keep the mapping secret

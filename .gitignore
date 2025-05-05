@@ -20,3 +20,4 @@ outputs/
 .vscode/restore-terminals.json
 
 data/reddit/cmv/reddit_user_profiles_deprecated.json
+data/reddit/cmv/reddit_user_profiles.json
