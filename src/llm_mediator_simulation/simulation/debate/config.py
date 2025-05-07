@@ -22,4 +22,4 @@ class DebateConfig(Promptable):
 
     @override
     def to_prompt(self) -> str:
-        return f"{self.context} {self.statement}."
+        return f"""{self.context} "{self.statement}\""""

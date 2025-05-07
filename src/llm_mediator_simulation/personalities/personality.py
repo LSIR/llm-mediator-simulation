@@ -313,7 +313,7 @@ class Personality(Promptable):
         # Not shuffled
         if self.vote_last_presidential_election:
             # self.vote_last_presidential_election can be "voted for the Democratic candidate", "voted with an invalid ballot", "were an eligible voter but did not vote", "were disenfranchised".
-            prompt += f"In the last presidential election, you {self.vote_last_presidential_election}.\n\n"
+            prompt += f"In the last presidential election, your vote was: {self.vote_last_presidential_election}.\n\n"
 
         # Shuffled iif ideologies per issue
         if self.ideologies:

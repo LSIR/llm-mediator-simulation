@@ -39,8 +39,8 @@ json_debater_reponse: False
 # submission_id: "3mhgci" # OK
 # comment_id: "cveysuq"
 
-# submission_id: "3oz6yk"
-# comment_id: "cw1r1b3"
+submission_id: "3oz6yk"
+comment_id: "cw1r1b3"
 
-submission_id: "3q2zo7"
-comment_id: "cwbmwc2"
+# submission_id: "3q2zo7"
+# comment_id: "cwbmwc2"

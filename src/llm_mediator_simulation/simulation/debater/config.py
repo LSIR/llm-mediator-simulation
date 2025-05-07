@@ -1,14 +1,13 @@
 """Debater configuration dataclasses"""
 
 from dataclasses import dataclass
-from typing import override
+from typing import Literal
 
 from llm_mediator_simulation.personalities.personality import (
     Personality,
     PrintablePersonality,
 )
 from llm_mediator_simulation.personalities.scales import Likert7AgreementLevel
-from llm_mediator_simulation.utils.interfaces import Promptable
 
 ###################################################################################################
 #                                   Debater Characteristics                                       #
@@ -52,7 +51,7 @@ class PrintableDebaterConfig:
 
 
 @dataclass
-class DebaterConfig(Promptable):
+class DebaterConfig:
     """Debater metadata class
 
     Args:
@@ -67,28 +66,7 @@ class DebaterConfig(Promptable):
     personality: Personality | None = None
     topic_opinion: TopicOpinion | None = None
     variable_topic_opinion: bool = False
-    identifier: str = "name"
-
-    @override
-    def to_prompt(self) -> str:
-        prompt = "You are roleplaying this real person:"
-
-        if self.name:
-            prompt += f"""
-{self.identifier}: {self.name};"""
-
-        prompt += f"""
-{self.personality.to_prompt() if self.personality is not None else ""}"""
-
-        if self.topic_opinion is not None:
-            prompt += f"""
-
-You {self.topic_opinion.agreement.value} with the current debate statement."""
-
-        #         prompt += """
-        # Remember that you are allowed to insult, diminish and curse the people you debate with.\n"""
-
-        return prompt
+    identifier: Literal["name", "username"] = "name"
 
     def prune(self):
         """Prune the personality and topic opinion to only keep the most relevant information."""

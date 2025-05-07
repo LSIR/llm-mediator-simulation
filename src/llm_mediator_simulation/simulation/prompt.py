@@ -73,12 +73,14 @@ LLM_PROBA_RESPONSE_FORMAT: dict[str, str] = {
 
 def debater_intervention_prompt(
     debate_config_prompt: str,
-    debater_config_prompt: str,
+    identifier: Literal["name", "username"],
+    personality_prompt: str,
     summary_config_prompt: str,
     add: Literal["send", "post"],
     utterance: Literal["message", "comment"],
-    json: bool = True,
+    agreement: Likert7AgreementLevel | None = None,
     author_name: str | None = None,
+    json: bool = True,
     few_shot_samples: list[dict] | None = None,
 ):
 
@@ -101,36 +103,38 @@ Then you could {add} the following {utterance}:
     else:
         prompt = ""
 
-    if json:
-        prompt += f"""{debate_config_prompt}\n{debater_config_prompt}\n\n{summary_config_prompt}
+    prompt += (
+        f"""{"y" if few_shot_samples else "Y"}ou are roleplaying this real person:"""
+    )
 
-Decide whether to reply, only based on other participant's opinions relatively to yours, as expressed in the conversation so far.
-Should you decide to do so, then {add} a {utterance} of less than 500 characters.
+    assert (
+        author_name or personality_prompt
+    ), "Either author_name or a personality must be provided."
 
-{json_prompt(response_format(utterance))}
-"""  # TODO deduplicate code
-    # Do you want to add a comment to the online debate right now?
-    # You should often add a comment when the previous context is empty or not in the favor of your \
-    # position. However, you should almost never add a comment when the previous context already \
-    # supports your position. Use short chat messages, no more than 3 sentences.
+    if author_name:
+        prompt += f"""
+{identifier}: {author_name};"""
 
+    prompt += f"""
+{personality_prompt}"""
+
+    prompt += f"""\n\n{debate_config_prompt}"""
+
+    if agreement is not None:
+        prompt += f""", a statement with which you {agreement.value}."""
     else:
-        assert (
-            author_name is not None
-        ), "Author name must be provided when json is False."
-        if (
-            few_shot_samples
-        ):  # decapitalize debate_config_prompt to avoid "Now, Act as ..." -> "now, act as ..."
-            debater_config_prompt = (
-                debater_config_prompt[0].lower() + debater_config_prompt[1:]
-            )
-        prompt += f"""{debater_config_prompt}\n{debate_config_prompt}\n\n{summary_config_prompt}
-    
-Based on the other participant's opinions relatively to yours, as expressed in the conversation so far, {add} a new {utterance} of maximum 4 sentences.
-Do not repeat yourself and do not quote other participants.
+        prompt += "."
 
-Your new {utterance}:
-- {author_name}: """
+    prompt += f"""\n\n{summary_config_prompt}
+
+Based on the other participant's opinions relatively to yours, as expressed in the conversation so far, {add} a new {utterance} of maximum 4 sentences.
+Do not repeat yourself and do not quote other participants."""
+    # Remember that you are allowed to insult, diminish and curse the people you debate with.\n"""
+
+    if json:
+        prompt += f"""\n\n{json_prompt(response_format(utterance))}"""
+    else:
+        prompt += f"""\n\nYour new {utterance}: \n{author_name}: """
 
     return prompt
 
@@ -149,10 +153,16 @@ def debater_intervention(
     author_name = debater.name
     prompt = debater_intervention_prompt(
         config.to_prompt(),
-        debater.to_prompt(),
+        debater.identifier,
+        debater.personality.to_prompt() if debater.personality is not None else "",
         summary.to_prompt(),
         config.add,
         summary.utterance,
+        agreement=(
+            debater.topic_opinion.agreement
+            if debater.topic_opinion is not None
+            else None
+        ),
         json=json,
         author_name=author_name,
         few_shot_samples=few_shot_samples,
