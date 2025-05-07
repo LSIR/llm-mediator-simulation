@@ -102,13 +102,13 @@ Then you could {add} the following {utterance}:
         prompt = ""
 
     if json:
-        prompt += f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
+        prompt += f"""{debate_config_prompt}\n{debater_config_prompt}\n\n{summary_config_prompt}
 
 Decide whether to reply, only based on other participant's opinions relatively to yours, as expressed in the conversation so far.
 Should you decide to do so, then {add} a {utterance} of less than 500 characters.
 
 {json_prompt(response_format(utterance))}
-"""
+"""  # TODO deduplicate code
     # Do you want to add a comment to the online debate right now?
     # You should often add a comment when the previous context is empty or not in the favor of your \
     # position. However, you should almost never add a comment when the previous context already \
@@ -118,10 +118,16 @@ Should you decide to do so, then {add} a {utterance} of less than 500 characters
         assert (
             author_name is not None
         ), "Author name must be provided when json is False."
-        prompt += f"""{debate_config_prompt}\n{debater_config_prompt}\n{summary_config_prompt}
+        if (
+            few_shot_samples
+        ):  # decapitalize debate_config_prompt to avoid "Now, Act as ..." -> "now, act as ..."
+            debater_config_prompt = (
+                debater_config_prompt[0].lower() + debater_config_prompt[1:]
+            )
+        prompt += f"""{debater_config_prompt}\n{debate_config_prompt}\n\n{summary_config_prompt}
     
-Based on the other participant's opinions relatively to yours, as expressed in the conversation so far, {add} a new {utterance} maximum 4 sentences.
-Do not repeat yourself, and do not quote other participants.
+Based on the other participant's opinions relatively to yours, as expressed in the conversation so far, {add} a new {utterance} of maximum 4 sentences.
+Do not repeat yourself and do not quote other participants.
 
 Your new {utterance}:
 - {author_name}: """

@@ -26,14 +26,21 @@ defaults:
 max_new_tokens: 100
 json_debater_reponse: False
 
-# submission_id: "3ko9vd" OK
+# submission_id: "3jyxn7" 
+# comment_id: "cuteyi2"
+
+
+# submission_id: "3ko9vd" # OK
 # comment_id: "cuz35v2"
 
-# submission_id: "3lqidx" KO
+# submission_id: "3lqidx" # KO
 # comment_id: "cv8gsnh" 
 
-# submission_id: "3mhgci" OK
+# submission_id: "3mhgci" # OK
 # comment_id: "cveysuq"
 
-submission_id: "3oz6yk"
-comment_id: "cw1r1b3"
+# submission_id: "3oz6yk"
+# comment_id: "cw1r1b3"
+
+submission_id: "3q2zo7"
+comment_id: "cwbmwc2"

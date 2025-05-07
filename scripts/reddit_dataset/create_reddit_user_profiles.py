@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import re
 import textwrap
 from collections import defaultdict
 from enum import Enum
@@ -55,7 +56,12 @@ def _build_model(
     for member in it:
         if isinstance(it, list):  # Statements
             assert isinstance(member, str), "Statements must be a list of strings"
-            m = member
+            # 0. replace spaces with underscores
+            m = member.replace(" ", "_")
+            # 1. remove any special characters from the string parenthesis, brackets, single/double quotes, punctuation, etc.
+            m = re.sub("[^A-Za-z0-9_]+", "", m)
+            # 2. lowercase the string
+            m = m.lower()
             s = scale
             f = Field(title=member)
         elif model_name == "Demographics":
@@ -70,33 +76,6 @@ def _build_model(
             f = Field(title=member.name.replace("_", " ").title())
 
         fields[m] = (s, f)
-
-    # if isinstance(it, list):
-    #     assert model_name == "Statements", "Only Statements can be a list"
-    #     fields = {
-    #         member: (  # field name
-    #             scale,  # type
-    #             Field(title=member.title()),
-    #         )  # Field(...)
-    #         for member in it
-    #     }
-    # else:
-    #     if model_name == "Demographics":
-    #         fields = {
-    #             member.value.replace(" ", "_"): (  # field name
-    #                 str,  # type
-    #                 Field(title=member.name.replace("_", " ").title()),
-    #             )  # Field(...)
-    #             for member in it
-    #         }
-    #     else:
-    #         fields = {
-    #             member.value.name.replace(" ", "_"): (  # field name
-    #                 scale,  # type
-    #                 Field(title=member.name.replace("_", " ").title()),
-    #             )  # Field(...)
-    #             for member in it
-    #         }
 
     # Same as writing: class Demographics(BaseModel): age: Optional[str] = None ...
     return create_model(model_name, **fields)  # <- subclass of BaseModel
@@ -184,7 +163,7 @@ async def main():
         #     os._exit(0)
         # get all submissions from user_id
         user_submissions = await asa.fetch(
-            mode="submissions_search", author=user_id, limit=101
+            mode="submissions_search", author=user_id, limit=100
         )  # limit max 100 https://github.com/maxjo020418/BAScraper/blob/cd5c2ef24f45f66e7f0fb26570c2c1529706a93f/README.md?plain=1#L239
 
         user_flairs_aggregation = await asa.fetch(
@@ -293,6 +272,7 @@ async def main():
             confidence: Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
         # schema = Profile.model_json_schema(by_alias=True)
+        # pprint(schema)
 
         json_response = call_openai(messages, Profile)
         profile = json.loads(json_response)
@@ -301,6 +281,7 @@ async def main():
         profiles[user_id] = profile
         user_counter += 1
         print(f"Processed {user_counter} users")
+        print(f"User {user_id} profile:")
         pprint(profile)
         # os._exit(0)
 

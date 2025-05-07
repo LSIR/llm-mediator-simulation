@@ -288,6 +288,9 @@ class DebateHandler:
         app: str = "deliberate-lab",
         truncated_num: int | None = 2,
         force_truncated_order: bool | None = None,
+        load_debater_profiles: bool = False,
+        debater_profiles_path: str | None = None,
+        prune_debaters: bool = True,
     ):
         """Preload a debate chat from a CSV file."""
         if force_truncated_order is None:
@@ -300,6 +303,10 @@ class DebateHandler:
                 load_reddit_csv_conv,
                 truncated_num=truncated_num,
                 force_truncated_order=force_truncated_order,
+                load_debater_profiles=load_debater_profiles,
+                debater_profiles_path=debater_profiles_path,
+                statement=self.config.statement,
+                prune_debaters=prune_debaters,
             )
         else:
             raise ValueError(

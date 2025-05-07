@@ -134,7 +134,14 @@ def main(config):
     truncated_chat_path = (
         f"data/reddit/cmv/sub_{submission_id}-comment_{comment_id}.csv"
     )
-    debate.preload_csv_chat(truncated_chat_path, app="reddit", truncated_num=2)
+    debate.preload_csv_chat(
+        truncated_chat_path,
+        app="reddit",
+        truncated_num=2,
+        load_debater_profiles=True,
+        debater_profiles_path="data/reddit/cmv/reddit_user_profiles.json",
+        prune_debaters=True,
+    )
 
     debate.run(rounds=1)
 

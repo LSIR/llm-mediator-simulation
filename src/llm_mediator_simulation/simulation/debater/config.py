@@ -82,12 +82,24 @@ class DebaterConfig(Promptable):
 
         if self.topic_opinion is not None:
             prompt += f"""
+
 You {self.topic_opinion.agreement.value} with the current debate statement."""
 
         #         prompt += """
         # Remember that you are allowed to insult, diminish and curse the people you debate with.\n"""
 
         return prompt
+
+    def prune(self):
+        """Prune the personality and topic opinion to only keep the most relevant information."""
+        if self.personality is not None:
+            self.personality.prune()
+
+        if (
+            self.topic_opinion
+            and self.topic_opinion.agreement == Likert7AgreementLevel.NEUTRAL
+        ):
+            self.topic_opinion = None
 
     def to_printable(self):
         """Return a simpler version of the debate pickle for printing with pprint without overwhelming informations."""
