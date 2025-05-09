@@ -52,11 +52,12 @@ def main(config):
     # # Should we add few shot examples at training time or at inference time?
     # # SFT or RL ?
 
-    # TODO 3 Generate personalities based on all previous messages of the Reddit user?
+    # Done 3 Generate personalities based on all previous messages of the Reddit user?
     # TODO 4 Lina's improvements: personalized summary.
     # TODO IDEA: Use the Wikipedia version of Conv gone awry focusing on Controversial Wiki Talk pages (Israel, feminism, etc.). Question, is OlMo2 pretrained on wiki talk pages?
 
     # TODO Compare
+    # 0. Zero-shot
     # 1. Few shot (RAG Few-shot?)
     # 2. Generated personality
     # 3. Personalized summary
@@ -75,12 +76,14 @@ def main(config):
     #     json=True,
     # )
 
+    stop_strings = ["\n"]
+
     debater_model = HFLocalServerModel(
         port=PORT,
         max_new_tokens=config.max_new_tokens,
         debug=True,
         repetition_penalty=1.5,
-        stop_strings=["\n"],  # ["\n-", "\n -"],
+        stop_strings=stop_strings,  # ["\n-", "\n -"],
     )
 
     # debater_model = OllamaLocalModel(model_name="mistral-nemo")
@@ -116,6 +119,10 @@ def main(config):
     with open("data/reddit/cmv/few_shot_samples.jsonl", "r") as f:
         lines = f.readlines()
         few_shot_samples = [json.loads(line) for line in lines]
+
+    assert not (few_shot_samples and stop_strings), (
+        "stop_strings and json cannot be used together. " "Please use one or the other."
+    )
 
     # The debate runner
     debate = DebateHandler(

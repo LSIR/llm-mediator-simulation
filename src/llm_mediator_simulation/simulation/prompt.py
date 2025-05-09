@@ -92,10 +92,10 @@ def debater_intervention_prompt(
             last_utterance = example["last_utterance"]
 
             prompt += f"""\n\nEXAMPLE:
-If you were role-playing a real person with username {last_utterance["userid"]}, engaged in a conversation about the following statement: {statement}, and replying to this {utterance}: 
+If you were role-playing a real person with username {last_utterance["userid"]}, engaged in a conversation about the following statement: "{statement}", and replying to this {utterance}: 
 - {penultimate_utterance["userid"]}: {penultimate_utterance["text"].replace("\n", " ").strip()}, 
 
-Then you could {add} the following {utterance}: 
+Then you could {add} the following {utterance}:
 
 - {last_utterance["userid"]}: {last_utterance["text"].replace("\n", " ").strip()}\n"""
         prompt += "\n\nNow, "
@@ -134,7 +134,7 @@ Do not repeat yourself and do not quote other participants."""
     if json:
         prompt += f"""\n\n{json_prompt(response_format(utterance))}"""
     else:
-        prompt += f"""\n\nYour new {utterance}: \n{author_name}: """
+        prompt += f"""\n\nYour new {utterance}: \n{author_name}:"""
 
     return prompt
 
