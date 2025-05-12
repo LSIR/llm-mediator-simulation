@@ -114,6 +114,11 @@ def load_reddit_csv_conv(
             truncated_num
         ), "If force_truncated_order is True, truncated_num must be set to a value greater than 0."
         forced_debater_order = df[-truncated_num:]["User Name"].to_list()
+        # replace "[deleted]" and "[removed]" from the forced debater order with ""
+        forced_debater_order = [
+            name if name not in ["[deleted]", "[removed]"] else "Alex"
+            for name in forced_debater_order
+        ]
     else:
         forced_debater_order = None
 
@@ -144,7 +149,7 @@ def load_reddit_csv_conv(
     for id, name in users_id_map.items():
         # id == name
         if name in ["[deleted]" or ["removed"]]:
-            name = ""  # We assume that all messages written by deleted or removed users are written by the same user, which might not be always true...
+            name = "Alex"  # We assume that all messages written by deleted or removed users are written by the same user, which might not be always true...
         if load_debater_profiles and id in debater_profiles:
             assert (
                 debater_profiles is not None

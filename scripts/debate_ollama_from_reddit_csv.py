@@ -5,12 +5,15 @@ Safe-to_ignore warnings from Tensorflow: https://github.com/tensorflow/tensorflo
 import json
 import os
 import sys
+from datetime import datetime
 
 import httpx
 import hydra
 from dotenv import load_dotenv
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import instantiate
+from natsort import natsorted
+from omegaconf import OmegaConf
 
 from llm_mediator_simulation.models.gpt_models import GPTModel
 from llm_mediator_simulation.models.hf_local_server_model import (
@@ -56,6 +59,8 @@ def main(config):
     # TODO 4 Lina's improvements: personalized summary.
     # TODO IDEA: Use the Wikipedia version of Conv gone awry focusing on Controversial Wiki Talk pages (Israel, feminism, etc.). Question, is OlMo2 pretrained on wiki talk pages?
 
+    # TODO check phi
+
     # TODO Compare
     # 0. Zero-shot
     # 1. Few shot (RAG Few-shot?)
@@ -70,96 +75,113 @@ def main(config):
 
     # OlMo2 post-trained (SFT, DPO, and Instruct) were fine-tuned with safety filters so let's stay with the pretrained model
 
-    # debater_model = HFLocalModel(
-    #     model_name="allenai/OLMo-2-1124-13B",
-    #     max_new_tokens=config.max_new_tokens,
-    #     json=True,
-    # )
-
-    stop_strings = ["\n"]
+    if not config.json_debater_reponse:
+        stop_strings = ["\n"]
+    else:
+        stop_strings = None
 
     debater_model = HFLocalServerModel(
         port=PORT,
         max_new_tokens=config.max_new_tokens,
         debug=True,
-        repetition_penalty=1.5,
+        repetition_penalty=config.repetition_penalty,
         stop_strings=stop_strings,  # ["\n-", "\n -"],
     )
-
-    # debater_model = OllamaLocalModel(model_name="mistral-nemo")
-    # debater_model = OllamaLocalModel(model_name="olmo2:13b")
 
     debaters = []
 
     # The conversation summary handler (keep track of the general history and of the n latest messages)
     summary_config = instantiate(config.summary_config)
 
-    submission_id = config.submission_id
-    comment_id = config.comment_id
+    conversations_path = "data/reddit/cmv/dev/"
 
     with open("data/reddit/cmv/statements.json", "r", encoding="utf-8") as f:
         statements = json.load(f)
+
+    if config.few_shot_samples:
+        with open("data/reddit/cmv/few_shot_samples.jsonl", "r") as f:
+            lines = f.readlines()
+            few_shot_samples = [json.loads(line) for line in lines]
+    else:
+        few_shot_samples = None
+
+    for truncated_chat_path in natsorted(os.listdir(conversations_path)):
+        assert truncated_chat_path.endswith(".csv")
+        submission_id = truncated_chat_path.split("-")[0].split("_")[1]
+        comment_id = truncated_chat_path.split("-")[1].split(".")[0].split("_")[1]
         statement = statements[submission_id]
 
-    # Remove trailing dot from the statement
-    if statement.endswith("."):
-        statement = statement[:-1].strip()
+        # Remove trailing dot from the statement
+        if statement.endswith("."):
+            statement = statement[:-1].strip()
 
-    # Remove starting "CMV:" from the statement
-    if statement.startswith("CMV:"):
-        statement = statement[4:].strip()
+        # Remove starting "CMV:" from the statement
+        if statement.startswith("CMV:"):
+            statement = statement[4:].strip()
 
-    # The debate configuration (which topic to discuss, and customisable instructions)
-    debate_config = instantiate(config.debate_config, statement=statement)
+        # The debate configuration (which topic to discuss, and customisable instructions)
+        debate_config = instantiate(config.debate_config, statement=statement)
 
-    mediator_config = None  # MediatorConfig()
+        mediator_config = None  # MediatorConfig()
 
-    metrics = None
+        metrics = None
 
-    with open("data/reddit/cmv/few_shot_samples.jsonl", "r") as f:
-        lines = f.readlines()
-        few_shot_samples = [json.loads(line) for line in lines]
+        # The debate runner
+        debate = DebateHandler(
+            debater_model=debater_model,
+            mediator_model=mediator_model,
+            debaters=debaters,
+            config=debate_config,
+            summary_config=summary_config,
+            metrics_handler=metrics,
+            mediator_config=mediator_config,
+            seed=seed,
+            json_debater_reponse=config.json_debater_reponse,
+            few_shot_samples=few_shot_samples,
+        )
 
-    assert not (few_shot_samples and stop_strings), (
-        "stop_strings and json cannot be used together. " "Please use one or the other."
-    )
+        debate.preload_csv_chat(
+            f"data/reddit/cmv/dev/{truncated_chat_path}",
+            app="reddit",
+            truncated_num=2,
+            load_debater_profiles=config.load_debater_profiles,
+            debater_profiles_path="data/reddit/cmv/reddit_user_profiles.json",
+            prune_debaters=config.prune_debaters,
+        )
 
-    # The debate runner
-    debate = DebateHandler(
-        debater_model=debater_model,
-        mediator_model=mediator_model,
-        debaters=debaters,
-        config=debate_config,
-        summary_config=summary_config,
-        metrics_handler=metrics,
-        mediator_config=mediator_config,
-        seed=seed,
-        json_debater_reponse=config.json_debater_reponse,
-        few_shot_samples=few_shot_samples,
-    )
+        debate.run(rounds=1)
 
-    truncated_chat_path = (
-        f"data/reddit/cmv/sub_{submission_id}-comment_{comment_id}.csv"
-    )
-    debate.preload_csv_chat(
-        truncated_chat_path,
-        app="reddit",
-        truncated_num=2,
-        load_debater_profiles=True,
-        debater_profiles_path="data/reddit/cmv/reddit_user_profiles.json",
-        prune_debaters=True,
-    )
+        data = debate.to_debate_pickle()
+        transcript = debate_transcript(data)
+        print(transcript)
 
-    debate.run(rounds=1)
+        output_path = HydraConfig.get().runtime.output_dir
 
-    data = debate.to_debate_pickle()
-    print(debate_transcript(data))
-    debate_path = os.path.join(HydraConfig.get().runtime.output_dir, "debate")
-    debate.pickle(debate_path)
+        # save the debate to a file
+        debate_path = os.path.join(output_path, "debates")
 
-    # printable_data = data.to_printable()
-    # console = Console(force_terminal=True, record=True)
-    # pprint(printable_data, console=console)
+        if not os.path.exists(debate_path):
+            os.makedirs(debate_path)
+
+        debate_file = os.path.join(
+            debate_path,
+            f"sub_{submission_id}-comment_{comment_id}",
+        )
+
+        debate.pickle(debate_file)
+
+        # save the transcript to a file
+        transcript_path = os.path.join(output_path, "transcripts")
+        if not os.path.exists(transcript_path):
+            os.makedirs(transcript_path)
+
+        transcript_file = os.path.join(
+            transcript_path,
+            f"sub_{submission_id}-comment_{comment_id}.txt",
+        )
+
+        with open(transcript_file, "w", encoding="utf-8") as f:
+            f.write(transcript)
 
 
 if __name__ == "__main__":
@@ -176,5 +198,33 @@ if __name__ == "__main__":
 
     if quantization:
         sys.argv.append(f"+debater_quantization={quantization}")
+
+    output_dir_name = []
+
+    # Save results in outputs/dev/json_fs_profiles/{timestamp}
+
+    # loag hydra config from scripts/configs/reddit_cmv.yaml without hydra, just as a simple yaml file
+    config = OmegaConf.load("scripts/configs/reddit_cmv.yaml")
+
+    if config.json_debater_reponse:
+        output_dir_name.append("json")
+    else:
+        output_dir_name.append("nojson")
+
+    if config.few_shot_samples:
+        output_dir_name.append("fs")
+    else:
+        output_dir_name.append("nofs")
+
+    if config.load_debater_profiles:
+        output_dir_name.append("profiles")
+    else:
+        output_dir_name.append("noprofiles")
+
+    output_dir = "_".join(output_dir_name)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    sys.argv.append(f"hydra.run.dir=outputs/dev/{output_dir}/{timestamp}")
 
     main()

@@ -56,10 +56,10 @@ def extract_json(string: str) -> str:
     if start == -1 or end == -1 or start >= end:
         start_match = list(re.finditer(r"\{\n?", string))
         start = start_match[-1].start() if start_match else -1
-        end_match = re.search(r"\n?\s*}", string)
-        if end_match is None:
-            raise ValueError("No JSON code block found.")
-        end = end_match.end()
+        end = string.rfind(r"}") + 1
+        # if end_match == -1 or end_match < start:
+        #     raise ValueError("No JSON code block found.")
+        # end = end_match.end()
         if start == -1 or end == -1 or start >= end:
             raise ValueError("No JSON code block found.")
 

@@ -88,6 +88,8 @@ def debater_intervention_prompt(
         prompt = """You simulate real Reddit users engaging in conversations."""
         for example in few_shot_samples:
             statement = example["statement"].strip()
+            if statement.endswith("."):
+                statement = statement[:-1].strip()
             penultimate_utterance = example["penultimate_utterance"]
             last_utterance = example["last_utterance"]
 

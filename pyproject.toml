@@ -43,6 +43,7 @@ dependencies = [
   "BAScraper",
   "hydra-core",
   "tiktoken",
+  "natsort",
 ]
 
 [project.urls]

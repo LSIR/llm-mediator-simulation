@@ -23,8 +23,11 @@ defaults:
 # As 1 token ~= 4 chars in English https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
 # We calculate: max_new_tokens = 500/4 + 100/4 + 27 = 177 rounded to 200
 
-max_new_tokens: 100
-json_debater_reponse: True
+max_new_tokens: 200
+repetition_penalty: 1.5
+debug: False
+prune_debaters: True
 
-submission_id: "3ko9vd"
-comment_id: "cuz35v2"
+json_debater_reponse: False
+few_shot_samples: True
+load_debater_profiles: True
