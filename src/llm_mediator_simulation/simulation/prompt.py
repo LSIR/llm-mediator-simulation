@@ -136,7 +136,7 @@ Do not repeat yourself and do not quote other participants."""
     if json:
         prompt += f"""\n\n{json_prompt(response_format(utterance))}"""
     else:
-        prompt += f"""\n\nYour new {utterance}: \n{author_name}:"""
+        prompt += f"""\n\nYour new {utterance}:\n- {author_name}:"""
 
     return prompt
 

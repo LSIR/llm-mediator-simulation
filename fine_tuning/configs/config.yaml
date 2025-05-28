@@ -1,0 +1,34 @@
+defaults:
+  - lora: default
+  - _self_
+
+# Random seed for reproducibility
+seed: 42
+
+# Model configuration
+model:
+  path: allenai/OLMo-2-1124-7B # "allenai/OLMo-2-0425-1B" # "allenai/OLMo-2-0325-32B" # allenai/OLMo-2-1124-7B
+  trust_remote_code: true
+  load_in_4bit: false
+
+# Training configuration
+training:
+  output_path: "/mnt/datastore/laugier/olmo2-cga-cmv/sft"
+  num_train_epochs: 5
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 2
+  learning_rate: 5e-5
+  logging_steps: 10
+  eval_steps: 10
+  save_steps: 1000 # if you want to save intermediate checkpoints, then set to less than 130
+  optim: "adamw_8bit"
+  warmup_steps: 10
+  report_to: "wandb"
+  eval_strategy: "steps"
+  weight_decay: 0.01
+  lr_scheduler_type: "cosine"
+
+# Data configuration
+data:
+  path: "../data/reddit/cmv/cga_cmv_pairs_before_derailment.jsonl" 

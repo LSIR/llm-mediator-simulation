@@ -4,6 +4,7 @@ __pycache__/
 
 # API keys
 .env
+fine_tuning/.env
 
 # Pickled data
 *.pkl
@@ -21,3 +22,6 @@ outputs/
 
 data/reddit/cmv/reddit_user_profiles_deprecated.json
 data/reddit/cmv/reddit_user_profiles.json
+
+fine_tuning/.venv/
+fine_tuning/wandb/

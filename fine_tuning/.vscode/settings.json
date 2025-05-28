@@ -1,0 +1,11 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/.venv/lib/python3.12/site-packages"
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true,
+    "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "python.terminal.activateEnvironment": true
+}
