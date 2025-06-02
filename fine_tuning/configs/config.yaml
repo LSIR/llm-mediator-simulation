@@ -31,4 +31,4 @@ training:
 
 # Data configuration
 data:
-  path: "../data/reddit/cmv/cga_cmv_pairs_before_derailment.jsonl" 
+  path: data/cga_cmv_pairs_before_derailment.jsonl # copied from as "../data/reddit/cmv/cga_cmv_pairs_before_derailment.jsonl" 

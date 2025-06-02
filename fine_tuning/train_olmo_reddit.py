@@ -28,6 +28,7 @@ from accelerate import Accelerator
 # Don't include few-shot at training time.
 
 # TODO run.AI and fine-tune 13B -> 32B 
+# Test docker image local
 
 def set_seed(seed: int):
     """Set random seed for reproducibility."""

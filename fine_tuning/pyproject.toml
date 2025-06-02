@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "olmo_reddit_finetuning"
-version = "0.1.0"
+version = "0.0.1"
 description = "Fine-tuning OLMo-2 on Reddit ChangeMyView data"
 requires-python = ">=3.12"
 license = "MIT"
@@ -27,6 +27,71 @@ dependencies = [
 type = "virtual"
 path = ".venv"
 python = "3.12"
+
+
+[tool.hatch.envs.default.scripts]
+sft-lora = "accelerate launch train_olmo_reddit.py {args}"
+
+[tool.hatch.envs.runai]
+extra-dependencies = ["pip-tools"]
+description = """
+Utilities to run a ML project on RunAI
+"""
+
+[tool.hatch.envs.runai.scripts]
+docker-image-name = "echo {env:DOCKER_IMAGE_NAME}"
+build-local = [
+    """
+    docker build -t {env:DOCKER_IMAGE_NAME}:$(hatch version) \
+    --target local .
+    """,
+]
+train-local = """
+    OUTPUT_PATH=/fine-tuning/output && \
+    docker run --gpus all \
+    -v /mnt/nlp4sd/hugging_face_cache/laugier/hub:/root/.cache/huggingface/hub \
+    -v /mnt/datastore/laugier/olmo2-cga-cmv/sft:$OUTPUT_PATH \
+    -v $(pwd)/.env:/fine-tuning/.env \
+    {env:DOCKER_IMAGE_NAME}:$(hatch version) accelerate launch {env:TRAINING_SCRIPT} training.output_path=$OUTPUT_PATH {args}
+"""
+build = [
+    """
+    docker build -t {env:DOCKER_IMAGE_NAME}:$(hatch version) \
+    --target runai \
+    --build-arg LDAP_GROUPNAME=lsir \
+    --build-arg LDAP_GID=11255 \
+    --build-arg LDAP_USERNAME=laugier \
+    --build-arg LDAP_UID=269408 .""",
+]
+push = "docker push {env:DOCKER_IMAGE_NAME}:$(hatch version)"
+read-env = "python -c \"from dotenv import load_dotenv; import os; load_dotenv(); print(os.getenv('WANDB_API_KEY'))\""
+submit = """
+    runai submit {env:RUNAI_JOB_NAME} \
+    --image {env:DOCKER_IMAGE_NAME}:$(hatch version) \
+    --existing-pvc claimname=lsir-scratch,path=/scratch \
+    --existing-pvc claimname=home,path=/home/laugier \
+    --gpu {env:N_GPUS} \
+    --environment WANDB_API_KEY=$(hatch run runai:read-env) \
+    """
+train = "submit --large-shm --command -- 'accelerate launch {env:TRAINING_SCRIPT} training.output_path=/home/laugier/olmo2-cga-cmv/sft {args}'"
+interactive = "submit --interactive -- sleep infinity"
+bash = "runai bash {args}"
+describe = "runai describe job {args}"
+delete = "runai delete job {args}"
+logs = "runai logs {args}"
+jobs = "runai list jobs"
+last-job-name = "runai list jobs | tail -n 1 | cut -d ' ' -f1"
+describe-last-job = "runai describe job $(runai list jobs | tail -n 1 | cut -d ' ' -f1)"
+bash-last-job = "runai bash $(runai list jobs | tail -n 1 | cut -d ' ' -f1)"
+delete-last-job = "runai delete job $(runai list jobs | tail -n 1 | cut -d ' ' -f1)"
+logs-last-job = "runai logs $(runai list jobs | tail -n 1 | cut -d ' ' -f1)"
+
+[tool.hatch.envs.runai.env-vars]
+DOCKER_IMAGE_NAME = "registry.rcp.epfl.ch/lsir/laugier/olmo-reddit-sft"
+TRAINING_SCRIPT = "train_olmo_reddit.py"
+RUNAI_JOB_NAME = "laugier-olmo-reddit-sft-$(date +\"%d%m%y-%H%M%S\")"
+N_GPUS = "1"
+
 
 [tool.hatch.build.targets.wheel]
 packages = ["."] 
