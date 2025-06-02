@@ -276,8 +276,12 @@ def main(cfg: DictConfig):
             dist.destroy_process_group()
 
 if __name__ == "__main__":
-    config = OmegaConf.load("configs/config.yaml")
+    config = OmegaConf.load(os.getenv("CONFIG_PATH", "configs") + "/config.yaml")
     output_path = config.training.output_path
+
+    # if output_path does not exist, change it to /home/laugier/olmo2-cga-cmv/sft (for runai, saving on PVC)
+    if not os.path.exists(output_path):
+        output_path = "/home/laugier/olmo2-cga-cmv/sft"
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 

@@ -48,10 +48,10 @@ RUN useradd -m -s /bin/bash -g ${LDAP_GROUPNAME} -u ${LDAP_UID} ${LDAP_USERNAME}
 RUN mkdir -p /home/${LDAP_USERNAME}
 # Copy project files
 COPY pyproject.toml /home/${LDAP_USERNAME}/
-COPY train_olmo_reddit.py /home/${LDAP_USERNAME}/
+#COPY train_olmo_reddit.py /home/${LDAP_USERNAME}/
 COPY configs/ /home/${LDAP_USERNAME}/configs/
-RUN mkdir -p /home/${LDAP_USERNAME}/data
-COPY data/ /home/${LDAP_USERNAME}/data/
+#RUN mkdir -p /home/${LDAP_USERNAME}/data
+# COPY data/ /home/${LDAP_USERNAME}/data/
 
 # Set your user as owner of the new copied files
 RUN chown -R ${LDAP_USERNAME}:${LDAP_GROUPNAME} /home/${LDAP_USERNAME}

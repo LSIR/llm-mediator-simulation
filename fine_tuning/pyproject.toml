@@ -72,8 +72,13 @@ submit = """
     --existing-pvc claimname=home,path=/home/laugier \
     --gpu {env:N_GPUS} \
     --environment WANDB_API_KEY=$(hatch run runai:read-env) \
+    --environment CONFIG_PATH=/home/laugier/llm-mediator-simulation/fine_tuning/configs \
     """
-train = "submit --large-shm --command -- accelerate launch /home/laugier/{env:TRAINING_SCRIPT} training.output_path=/home/laugier/olmo2-cga-cmv/sft {args}"
+train = """submit --large-shm --command -- accelerate launch \
+/home/laugier/llm-mediator-simulation/fine_tuning/{env:TRAINING_SCRIPT} \
+training.output_path=/home/laugier/olmo2-cga-cmv/sft \
+data.path=/home/laugier/llm-mediator-simulation/data/reddit/cmv/cga_cmv_pairs_before_derailment.jsonl \
+{args}"""
 interactive = "submit --interactive -- sleep infinity"
 bash = "runai bash {args}"
 describe = "runai describe job {args}"
