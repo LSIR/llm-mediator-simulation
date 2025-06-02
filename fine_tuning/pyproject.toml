@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "olmo_reddit_finetuning"
-version = "0.0.1"
+version = "0.0.2"
 description = "Fine-tuning OLMo-2 on Reddit ChangeMyView data"
 requires-python = ">=3.12"
 license = "MIT"
@@ -73,7 +73,7 @@ submit = """
     --gpu {env:N_GPUS} \
     --environment WANDB_API_KEY=$(hatch run runai:read-env) \
     """
-train = "submit --large-shm --command -- 'accelerate launch {env:TRAINING_SCRIPT} training.output_path=/home/laugier/olmo2-cga-cmv/sft {args}'"
+train = "submit --large-shm --command -- accelerate launch /home/laugier/{env:TRAINING_SCRIPT} training.output_path=/home/laugier/olmo2-cga-cmv/sft {args}"
 interactive = "submit --interactive -- sleep infinity"
 bash = "runai bash {args}"
 describe = "runai describe job {args}"

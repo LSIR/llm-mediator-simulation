@@ -48,16 +48,16 @@ RUN useradd -m -s /bin/bash -g ${LDAP_GROUPNAME} -u ${LDAP_UID} ${LDAP_USERNAME}
 RUN mkdir -p /home/${LDAP_USERNAME}
 # Copy project files
 COPY pyproject.toml /home/${LDAP_USERNAME}/
-# COPY train_olmo_reddit.py /home/${LDAP_USERNAME}/
-# COPY configs/ /home/${LDAP_USERNAME}/configs/
-# RUN mkdir -p /home/${LDAP_USERNAME}/data
-# COPY data/ /home/${LDAP_USERNAME}/data/
+COPY train_olmo_reddit.py /home/${LDAP_USERNAME}/
+COPY configs/ /home/${LDAP_USERNAME}/configs/
+RUN mkdir -p /home/${LDAP_USERNAME}/data
+COPY data/ /home/${LDAP_USERNAME}/data/
 
 # Set your user as owner of the new copied files
 RUN chown -R ${LDAP_USERNAME}:${LDAP_GROUPNAME} /home/${LDAP_USERNAME}
 
 # Set working directory
-# WORKDIR /home/${LDAP_USERNAME}
+WORKDIR /home/${LDAP_USERNAME}
 
 # Install the project and its dependencies as root
 RUN pip install --no-cache-dir -e .
@@ -66,7 +66,7 @@ RUN pip install --no-cache-dir -e .
 USER ${LDAP_USERNAME}
 
 # Set the entrypoint
-CMD ["accelerate", "launch", "train_olmo_reddit.py", "--cfg.training.output_path=/home/laugier/olmo2-cga-cmv/sft"]
+CMD ["accelerate", "launch", "/home/${LDAP_USERNAME}/train_olmo_reddit.py", "--cfg.training.output_path=/home/${LDAP_USERNAME}/olmo2-cga-cmv/sft"]
 
 # Stage for local development (lsirpc36)
 FROM base as local
