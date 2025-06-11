@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "olmo_reddit_finetuning"
-version = "0.0.2"
+version = "0.0.4"
 description = "Fine-tuning OLMo-2 on Reddit ChangeMyView data"
 requires-python = ">=3.12"
 license = "MIT"
@@ -75,6 +75,10 @@ submit = """
     --environment CONFIG_PATH=/home/laugier/llm-mediator-simulation/fine_tuning/configs \
     """
 train = """submit --large-shm --command -- accelerate launch \
+--mixed_precision=bf16 \
+--num_processes=1 \
+--num_machines=1 \
+--dynamo_backend=inductor \
 /home/laugier/llm-mediator-simulation/fine_tuning/{env:TRAINING_SCRIPT} \
 training.output_path=/home/laugier/olmo2-cga-cmv/sft \
 data.path=/home/laugier/llm-mediator-simulation/data/reddit/cmv/cga_cmv_pairs_before_derailment.jsonl \
