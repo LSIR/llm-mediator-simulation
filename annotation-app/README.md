@@ -54,3 +54,5 @@ streamlit run app.py
 # TODO swap 1st and 2nd comment could be after same source comment or not
 # load generated comments
 # Google Cloud Bucket
+# 45adoi ill rendered
+# confidence slider

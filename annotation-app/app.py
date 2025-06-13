@@ -421,14 +421,33 @@ def save_annotation(file_path, selection):
     # Save locally first
     annotations_dir = Path(__file__).parent / 'annotations'
     os.makedirs(annotations_dir, exist_ok=True)
+    
+    # Remove previous annotation files for this conversation and annotator
+    if st.session_state.annotator_email in st.session_state.annotated_files:
+        for existing_file in st.session_state.annotated_files[st.session_state.annotator_email]:
+            if existing_file == str(file_path):
+                # Find and remove the corresponding annotation file
+                for old_file in annotations_dir.glob('annotation_*.txt'):
+                    try:
+                        with open(old_file, 'r') as f:
+                            old_annotation = eval(f.read())  # Safely evaluate the string as a dict
+                            if (old_annotation.get('file') == str(file_path) and 
+                                old_annotation.get('annotator') == st.session_state.annotator_email):
+                                old_file.unlink()  # Delete the file
+                                break
+                    except Exception as e:
+                        st.warning(f"Could not process old annotation file {old_file}: {str(e)}")
+    
+    # Save new annotation
     annotation_file = annotations_dir / f'annotation_{timestamp}.txt'
     with open(annotation_file, 'w') as f:
         f.write(str(annotation))
     
-    # Add to annotated files for this user
+    # Add to annotated files for this user if not already there
     if st.session_state.annotator_email not in st.session_state.annotated_files:
         st.session_state.annotated_files[st.session_state.annotator_email] = []
-    st.session_state.annotated_files[st.session_state.annotator_email].append(str(file_path))
+    if str(file_path) not in st.session_state.annotated_files[st.session_state.annotator_email]:
+        st.session_state.annotated_files[st.session_state.annotator_email].append(str(file_path))
     save_annotated_files()
     
     # Upload to GCS
