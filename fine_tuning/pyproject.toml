@@ -71,12 +71,13 @@ submit = """
     --existing-pvc claimname=lsir-scratch,path=/scratch \
     --existing-pvc claimname=home,path=/home/laugier \
     --gpu {env:N_GPUS} \
+    --node-pools {env:NODE_POOL} \
     --environment WANDB_API_KEY=$(hatch run runai:read-env) \
     --environment CONFIG_PATH=/home/laugier/llm-mediator-simulation/fine_tuning/configs \
     """
 train = """submit --large-shm --command -- accelerate launch \
 --mixed_precision=bf16 \
---num_processes=1 \
+--num_processes={env:N_GPUS} \
 --num_machines=1 \
 --dynamo_backend=inductor \
 /home/laugier/llm-mediator-simulation/fine_tuning/{env:TRAINING_SCRIPT} \
@@ -99,7 +100,8 @@ logs-last-job = "runai logs $(runai list jobs | tail -n 1 | cut -d ' ' -f1)"
 DOCKER_IMAGE_NAME = "registry.rcp.epfl.ch/lsir/laugier/olmo-reddit-sft"
 TRAINING_SCRIPT = "train_olmo_reddit.py"
 RUNAI_JOB_NAME = "laugier-olmo-reddit-sft-$(date +\"%d%m%y-%H%M%S\")"
-N_GPUS = "1"
+N_GPUS = "4"
+NODE_POOL = "default"
 
 
 [tool.hatch.build.targets.wheel]

@@ -22,13 +22,13 @@ import random
 import numpy as np
 import torch.distributed as dist
 from accelerate import Accelerator
+import re
 
 # TODO Should we add the full context, i.e., more previous comments?
 # TODO Should we include personalities at training time?
 # Don't include few-shot at training time.
 
-# TODO run.AI and fine-tune 13B -> 32B 
-# Test docker image local
+# TODO run.AI and fine-tune 32B 
 
 def set_seed(seed: int):
     """Set random seed for reproducibility."""
@@ -55,6 +55,10 @@ class RedditComment:
     userid: str
     text: str
     timestamp: int
+
+    def __post_init__(self):
+        # Process the text field with regex substitution
+        self.text = re.sub(r">\s*(.*?)\n", r"You said: '\1'\n", self.text)
 
 @dataclass
 class RedditPair:

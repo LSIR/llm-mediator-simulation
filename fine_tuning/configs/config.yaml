@@ -7,7 +7,8 @@ seed: 42
 
 # Model configuration
 model:
-  path: allenai/OLMo-2-1124-7B # "allenai/OLMo-2-0425-1B" # "allenai/OLMo-2-0325-32B" # allenai/OLMo-2-1124-7B
+  # https://wiki.rcp.epfl.ch/en/home/CaaS/cluster-changelog#:~:text=each%20user%20has%20a%20quota%20of%20100GB. in /home/ each user has max 100 GiB qquota but Olmo2 32B is 241 GiB... 
+  path: allenai/OLMo-2-1124-13B # "allenai/OLMo-2-0425-1B" # "allenai/OLMo-2-0325-32B" # allenai/OLMo-2-1124-7B # allenai/OLMo-2-1124-13B
   trust_remote_code: true
   load_in_4bit: false
 
