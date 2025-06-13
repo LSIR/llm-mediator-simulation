@@ -24,11 +24,12 @@ import torch.distributed as dist
 from accelerate import Accelerator
 import re
 
-# TODO Should we add the full context, i.e., more previous comments?
+# Should we add the full context, i.e., more previous comments?
+# -> Not necessarly since we may face comments with deleted or removed text.
 # TODO Should we include personalities at training time?
 # Don't include few-shot at training time.
 
-# TODO run.AI and fine-tune 32B 
+# TODO fine-tune 32B 
 
 def set_seed(seed: int):
     """Set random seed for reproducibility."""
@@ -136,14 +137,23 @@ class GenerationCallback(TrainerCallback):
             prompt = example["prompt"]
             completion = example["completion"]
             
-            # Generate text
-            inputs = self.tokenizer(prompt, return_tensors="pt").to(model.device)
+            # Generate text with proper padding and truncation
+            inputs = self.tokenizer(
+                prompt,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=model.config.max_position_embeddings,
+                return_attention_mask=True
+            ).to(model.device)
+            
             outputs = model.generate(
                 **inputs,
                 max_new_tokens=100,
                 do_sample=True,
                 temperature=0.7,
-                pad_token_id=self.tokenizer.pad_token_id
+                pad_token_id=self.tokenizer.pad_token_id,
+                attention_mask=inputs["attention_mask"]
             )
             generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             
