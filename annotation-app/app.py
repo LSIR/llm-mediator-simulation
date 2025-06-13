@@ -325,113 +325,128 @@ def show_conversation_list():
                     break
 
 def show_annotation_interface():
-    """Display the annotation interface for a conversation."""
-    # Get the current conversation file
+    """Display the main annotation interface."""
+    st.title("Reddit Conversation Annotation Tool")
+    
+    # Display annotator info and progress
+    st.sidebar.write(f"Annotator: {st.session_state.annotator_email}")
     conversation_files = get_conversation_files()
+    annotated_count = len(st.session_state.annotated_files.get(st.session_state.annotator_email, []))
+    total_count = len(conversation_files)
+    st.sidebar.write(f"Progress: {annotated_count}/{total_count} conversations annotated")
+    
+    # Add navigation buttons in sidebar
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Navigation")
+    if st.sidebar.button("View All Conversations"):
+        st.session_state.view = "list"
+        st.experimental_rerun()
+    
+    if st.sidebar.button("Change Email"):
+        st.session_state.annotator_email = None
+        st.experimental_rerun()
+    
     if not conversation_files:
         st.error("No conversation files found!")
         return
     
+    # Load current conversation
     current_file = conversation_files[st.session_state.current_file_index]
     
-    # Get conversation ID and thread ID from filename
-    # File format: submission_<conversation_id>-thread_<thread_id>.csv
+    # Extract submission ID and thread ID from filename
     file_parts = current_file.stem.split('-')
     conversation_id = file_parts[0].split('_')[1]
     thread_id = file_parts[1].split('_')[1]
-    
-    # Display conversation title
     title = st.session_state.statements.get(conversation_id, "Title not found")
+    
+    # Remove "CMV:" prefix if it exists
     if title.startswith("CMV:"):
         title = title[4:].strip()
-    st.markdown(f"""
-    <div style="background-color: #1a1a1b; padding: 16px; border-radius: 4px; margin-bottom: 16px;">
-        <h2 style="color: #d7dadc; margin: 0;">CMV: {title}</h2>
-    </div>
-    """, unsafe_allow_html=True)
     
-    # Display conversation ID and thread ID
-    st.markdown(f"**Submission ID:** {conversation_id}  \n**Thread ID:** {thread_id}")
+    # Display the title and IDs
+    st.markdown(f'<div class="reddit-title">CMV: {title}</div>', unsafe_allow_html=True)
+    st.markdown(f'**Submission ID:** {conversation_id} | **Thread ID:** {thread_id}')
     
-    # Load the conversation
-    conversation = load_conversation(current_file)
-    if not conversation:
-        st.error("Error loading conversation!")
-        return
+    df = load_conversation(current_file)
     
-    # Display the conversation
-    for comment in conversation:
+    # Display conversation history (excluding last 2 comments)
+    st.subheader("Conversation History")
+    for _, comment in df[:-2].iterrows():
         display_comment(comment)
     
-    # Add navigation buttons
-    col1, col2, col3 = st.columns([1, 1, 1])
+    # Create two columns for the last two comments and placeholders
+    col1, col2 = st.columns(2)
     
-    if col1.button("Previous"):
-        st.session_state.current_file_index = (st.session_state.current_file_index - 1) % len(conversation_files)
-        st.experimental_rerun()
+    with col1:
+        st.subheader("Actual Comments")
+        for _, comment in df[-2:].iterrows():
+            display_comment(comment)
     
-    if col2.button("All Conversations"):
-        st.session_state.view = "list"
-        st.experimental_rerun()
-    
-    if col3.button("Next"):
-        st.session_state.current_file_index = (st.session_state.current_file_index + 1) % len(conversation_files)
-        st.experimental_rerun()
-    
-    # Add annotation form
-    st.markdown("---")
-    st.subheader("Annotation")
-    
-    # Get existing annotation if any
-    existing_annotation = None
-    if st.session_state.annotator_email in st.session_state.annotated_files:
-        for file in st.session_state.annotated_files[st.session_state.annotator_email]:
-            if file == str(current_file):
-                existing_annotation = st.session_state.annotated_files[st.session_state.annotator_email][file]
-                break
-    
-    # Create annotation form
-    with st.form("annotation_form"):
-        # If there's an existing annotation, show it
-        if existing_annotation:
-            st.info("You have already annotated this conversation. Submitting a new annotation will replace the previous one.")
-        
-        # Add form fields
-        stance = st.selectbox(
-            "Stance",
-            ["Supporting", "Opposing", "Neutral"],
-            index=0 if not existing_annotation else ["Supporting", "Opposing", "Neutral"].index(existing_annotation["stance"])
-        )
-        
-        reasoning = st.text_area(
-            "Reasoning",
-            value="" if not existing_annotation else existing_annotation["reasoning"],
-            height=150
-        )
-        
-        submitted = st.form_submit_button("Submit Annotation")
-        
-        if submitted:
-            # Remove any existing annotation for this file
-            if st.session_state.annotator_email in st.session_state.annotated_files:
-                if str(current_file) in st.session_state.annotated_files[st.session_state.annotator_email]:
-                    del st.session_state.annotated_files[st.session_state.annotator_email][str(current_file)]
-            
-            # Save new annotation
-            if st.session_state.annotator_email not in st.session_state.annotated_files:
-                st.session_state.annotated_files[st.session_state.annotator_email] = {}
-            
-            st.session_state.annotated_files[st.session_state.annotator_email][str(current_file)] = {
-                "stance": stance,
-                "reasoning": reasoning,
-                "timestamp": datetime.now().isoformat()
+    with col2:
+        st.subheader("Placeholder Comments")
+        # Create placeholder comments with similar structure
+        for _ in range(2):
+            placeholder = {
+                'User Name': 'PlaceholderUser',
+                'Text': 'This is a placeholder comment.',
+                'Timestamp': datetime.now()
             }
-            
-            # Save to file
-            save_annotated_files()
-            
-            st.success("Annotation saved successfully!")
-            st.experimental_rerun()
+            display_comment(placeholder, is_placeholder=True)
+    
+    # Annotation interface
+    st.subheader("Annotation")
+    st.write("Select the pair of comments that were written by humans:")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Left Pair (Actual Comments)"):
+            save_annotation(current_file, "left")
+            next_conversation()
+    
+    with col2:
+        if st.button("Right Pair (Placeholder Comments)"):
+            save_annotation(current_file, "right")
+            next_conversation()
+
+def save_annotation(file_path, selection):
+    """Save the annotation to a file."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    annotation = {
+        'file': str(file_path),
+        'selection': selection,
+        'timestamp': timestamp,
+        'annotator': st.session_state.annotator_email
+    }
+    
+    # Save locally first
+    annotations_dir = Path(__file__).parent / 'annotations'
+    os.makedirs(annotations_dir, exist_ok=True)
+    annotation_file = annotations_dir / f'annotation_{timestamp}.txt'
+    with open(annotation_file, 'w') as f:
+        f.write(str(annotation))
+    
+    # Add to annotated files for this user
+    if st.session_state.annotator_email not in st.session_state.annotated_files:
+        st.session_state.annotated_files[st.session_state.annotator_email] = []
+    st.session_state.annotated_files[st.session_state.annotator_email].append(str(file_path))
+    save_annotated_files()
+    
+    # Upload to GCS
+    try:
+        upload_to_gcs(
+            bucket_name=os.getenv('GCS_BUCKET_NAME'),
+            source_file_name=str(annotation_file),
+            destination_blob_name=f'annotations/annotation_{timestamp}.txt'
+        )
+        st.success("Annotation saved successfully!")
+    except Exception as e:
+        st.error(f"Failed to upload to cloud storage: {str(e)}")
+
+def next_conversation():
+    """Move to the next conversation."""
+    conversation_files = get_conversation_files()
+    st.session_state.current_file_index = get_next_unannotated_file(conversation_files)
+    st.experimental_rerun()
 
 def main():
     # Initialize view state
