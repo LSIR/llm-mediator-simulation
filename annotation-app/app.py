@@ -461,13 +461,19 @@ def show_annotation_interface():
     if existing_annotation:
         st.info("You have already annotated this conversation. Submitting a new annotation will replace the previous one.")
     
+    # Reset slider to 0 for each new thread unless there is an existing annotation
+    if 'last_slider_file' not in st.session_state or st.session_state.last_slider_file != str(current_file):
+        st.session_state.confidence_slider_value = 0.0 if not existing_annotation else existing_annotation.get("confidence", 0.0)
+        st.session_state.last_slider_file = str(current_file)
+
     # Add confidence slider
     confidence = st.slider(
         "Confidence Score",
         min_value=-1.0,
         max_value=1.0,
-        value=0.0 if not existing_annotation else existing_annotation.get("confidence", 0.0),
+        value=st.session_state.confidence_slider_value,
         step=0.1,
+        key="confidence_slider_value",
         help="Move left for left comment, right for right comment. The further you move, the more confident you are."
     )
     

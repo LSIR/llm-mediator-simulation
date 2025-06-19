@@ -1,9 +1,9 @@
 {
   "a@hotmail.fr": {
     "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3jyxn7-comment_cuteyi2.csv": {
-      "confidence": 0.0,
+      "confidence": 0.2,
       "reasoning": "",
-      "timestamp": "2025-06-19T13:35:09.638435"
+      "timestamp": "2025-06-19T13:47:00.634087"
     },
     "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3ko9vd-comment_cuz35v2.csv": {
       "confidence": 0.3,
@@ -21,9 +21,44 @@
       "timestamp": "2025-06-19T13:34:04.605985"
     },
     "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3myz7j-comment_cvjc70m.csv": {
-      "confidence": 0.0,
+      "confidence": 0.3,
       "reasoning": "",
-      "timestamp": "2025-06-19T13:35:46.756841"
+      "timestamp": "2025-06-19T13:47:36.133453"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3nkn9v-comment_cvp1p2c.csv": {
+      "confidence": 0.3,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:47:41.049233"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3oz6yk-comment_cw1r1b3.csv": {
+      "confidence": 0.3,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:47:52.920579"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3q2zo7-comment_cwbmwc2.csv": {
+      "confidence": -0.7,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:48:07.091789"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3t8r5f-comment_cx42yke.csv": {
+      "confidence": 0.2,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:49:08.328843"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3qn3kr-comment_cwgnz8y.csv": {
+      "confidence": -0.5,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:49:10.855641"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3u3b2u-comment_cxbhr4x.csv": {
+      "confidence": -0.5,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:49:20.186206"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3u7nh1-comment_cxckrqk.csv": {
+      "confidence": 0.3,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:49:31.271749"
     }
   }
 }
