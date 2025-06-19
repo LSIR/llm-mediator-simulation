@@ -465,6 +465,9 @@ def show_annotation_interface():
     if 'last_slider_file' not in st.session_state or st.session_state.last_slider_file != str(current_file):
         st.session_state.confidence_slider_value = 0.0 if not existing_annotation else existing_annotation.get("confidence", 0.0)
         st.session_state.last_slider_file = str(current_file)
+    # Ensure confidence_slider_value is always initialized
+    if 'confidence_slider_value' not in st.session_state:
+        st.session_state.confidence_slider_value = 0.0
 
     # Add confidence slider
     confidence = st.slider(

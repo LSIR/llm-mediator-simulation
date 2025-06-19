@@ -59,6 +59,11 @@
       "confidence": 0.3,
       "reasoning": "",
       "timestamp": "2025-06-19T13:49:31.271749"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3xniq8-comment_cy66590.csv": {
+      "confidence": 0.4,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:51:50.240416"
     }
   }
 }
