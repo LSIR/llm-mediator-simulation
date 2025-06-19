@@ -48,7 +48,7 @@ def main(config):
     # Abliterated models: https://huggingface.co/collections/failspy/abliterated-v3-664a8ad0db255eefa7d0012b
     # https://huggingface.co/mlabonne/Daredevil-8B-abliterated
     # We don't know exactly what is in Mistral's post training
-    # TODO 2 Fine-tuning ++
+    # Done 2 Fine-tuning ++
     # -> Finetuning Olmo pre or post-trained on Custom "Conversations going Awry-like" Reddit data? -> CMV convs with < 6 messages. Those that have 4 messages
     # Questions. Ablation 3
     # # If we fine-tune, should we add instrucitons in the input?
@@ -59,11 +59,10 @@ def main(config):
     # TODO 4 Lina's improvements: personalized summary.
     # TODO IDEA: Use the Wikipedia version of Conv gone awry focusing on Controversial Wiki Talk pages (Israel, feminism, etc.). Question, is OlMo2 pretrained on wiki talk pages?
 
-    # TODO Compare
     # 0. Zero-shot
     # 1. Few shot (RAG Few-shot?)
     # 2. Generated personality
-    # 3. Personalized summary
+    # 3. Personalized summary (TODO)
     # + Combined
     # 4. Fine-tuning
     # + Combined
