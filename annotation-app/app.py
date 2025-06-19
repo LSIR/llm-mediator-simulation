@@ -219,7 +219,7 @@ def save_annotated_files():
 def get_next_unannotated_file(conversation_files):
     """Get the next file that hasn't been annotated by the current user."""
     if st.session_state.annotator_email not in st.session_state.annotated_files:
-        st.session_state.annotated_files[st.session_state.annotator_email] = []
+        st.session_state.annotated_files[st.session_state.annotator_email] = {}
     
     annotated_files = st.session_state.annotated_files[st.session_state.annotator_email]
     for i, file in enumerate(conversation_files):
@@ -252,7 +252,7 @@ def show_conversation_list():
     # Display annotator info and progress
     st.sidebar.write(f"Annotator: {st.session_state.annotator_email}")
     conversation_files = get_conversation_files()
-    annotated_count = len(st.session_state.annotated_files.get(st.session_state.annotator_email, []))
+    annotated_count = len(st.session_state.annotated_files.get(st.session_state.annotator_email, {}))
     total_count = len(conversation_files)
     st.sidebar.write(f"Progress: {annotated_count}/{total_count} conversations annotated")
     
@@ -262,11 +262,11 @@ def show_conversation_list():
     
     if st.sidebar.button("Back to Annotation"):
         st.session_state.view = "annotation"
-        st.experimental_rerun()
+        st.rerun()
     
     if st.sidebar.button("Change Email"):
         st.session_state.annotator_email = None
-        st.experimental_rerun()
+        st.rerun()
     
     # Get all conversations
     if not conversation_files:
@@ -277,7 +277,7 @@ def show_conversation_list():
     search_query = st.text_input("Search conversations", "")
     
     # Get annotated files for current user
-    annotated_files = st.session_state.annotated_files.get(st.session_state.annotator_email, [])
+    annotated_files = st.session_state.annotated_files.get(st.session_state.annotator_email, {})
     
     # Filter conversations based on search
     filtered_files = conversation_files
@@ -321,7 +321,7 @@ def show_conversation_list():
                 if f == file:
                     st.session_state.current_file_index = j
                     st.session_state.view = "annotation"
-                    st.experimental_rerun()
+                    st.rerun()
                     break
 
 def show_annotation_interface():
@@ -331,7 +331,7 @@ def show_annotation_interface():
     # Display annotator info and progress
     st.sidebar.write(f"Annotator: {st.session_state.annotator_email}")
     conversation_files = get_conversation_files()
-    annotated_count = len(st.session_state.annotated_files.get(st.session_state.annotator_email, []))
+    annotated_count = len(st.session_state.annotated_files.get(st.session_state.annotator_email, {}))
     total_count = len(conversation_files)
     st.sidebar.write(f"Progress: {annotated_count}/{total_count} conversations annotated")
     
@@ -340,11 +340,11 @@ def show_annotation_interface():
     st.sidebar.subheader("Navigation")
     if st.sidebar.button("View All Conversations"):
         st.session_state.view = "list"
-        st.experimental_rerun()
+        st.rerun()
     
     if st.sidebar.button("Change Email"):
         st.session_state.annotator_email = None
-        st.experimental_rerun()
+        st.rerun()
     
     if not conversation_files:
         st.error("No conversation files found!")
@@ -395,25 +395,61 @@ def show_annotation_interface():
     
     # Annotation interface
     st.subheader("Annotation")
-    st.write("Select the pair of comments that were written by humans:")
+    st.write("Rate your confidence in selecting the left comment (negative) or right comment (positive):")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Left Pair (Actual Comments)"):
-            save_annotation(current_file, "left")
-            next_conversation()
+    # Get existing annotation if any
+    existing_annotation = None
+    if st.session_state.annotator_email in st.session_state.annotated_files:
+        existing_annotation = st.session_state.annotated_files[st.session_state.annotator_email].get(str(current_file))
     
-    with col2:
-        if st.button("Right Pair (Placeholder Comments)"):
-            save_annotation(current_file, "right")
-            next_conversation()
+    # If there's an existing annotation, show it
+    if existing_annotation:
+        st.info("You have already annotated this conversation. Submitting a new annotation will replace the previous one.")
+    
+    # Add confidence slider
+    confidence = st.slider(
+        "Confidence Score",
+        min_value=-1.0,
+        max_value=1.0,
+        value=0.0 if not existing_annotation else existing_annotation.get("confidence", 0.0),
+        step=0.1,
+        help="Move left for left comment, right for right comment. The further you move, the more confident you are."
+    )
+    
+    # Add reasoning field
+    reasoning = st.text_area(
+        "Reasoning for your choice",
+        value="" if not existing_annotation else existing_annotation.get("reasoning", ""),
+        height=150,
+        help="Explain why you chose this comment and your confidence level"
+    )
+    
+    # Add save button
+    if st.button("Save Annotation"):
+        # Initialize user's annotation dictionary if it doesn't exist
+        if st.session_state.annotator_email not in st.session_state.annotated_files:
+            st.session_state.annotated_files[st.session_state.annotator_email] = {}
+        
+        # Save new annotation
+        st.session_state.annotated_files[st.session_state.annotator_email][str(current_file)] = {
+            "confidence": confidence,
+            "reasoning": reasoning,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # Save to file
+        save_annotations()
+        
+        st.success("Annotation saved successfully!")
+        st.rerun()
 
-def save_annotation(file_path, selection):
+def save_annotation(file_path, confidence, reasoning):
     """Save the annotation to a file."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     annotation = {
         'file': str(file_path),
-        'selection': selection,
+        'confidence': confidence,
+        'reasoning': reasoning,
         'timestamp': timestamp,
         'annotator': st.session_state.annotator_email
     }
@@ -445,7 +481,7 @@ def save_annotation(file_path, selection):
     
     # Add to annotated files for this user if not already there
     if st.session_state.annotator_email not in st.session_state.annotated_files:
-        st.session_state.annotated_files[st.session_state.annotator_email] = []
+        st.session_state.annotated_files[st.session_state.annotator_email] = {}
     if str(file_path) not in st.session_state.annotated_files[st.session_state.annotator_email]:
         st.session_state.annotated_files[st.session_state.annotator_email].append(str(file_path))
     save_annotated_files()
@@ -467,18 +503,64 @@ def next_conversation():
     st.session_state.current_file_index = get_next_unannotated_file(conversation_files)
     st.experimental_rerun()
 
+def load_statements():
+    """Load statements from JSON file."""
+    parent_dir = Path(__file__).parent.parent
+    statements_path = parent_dir / "data/reddit/cmv/statements.json"
+    with open(statements_path, 'r') as f:
+        return json.load(f)
+
+def load_annotations():
+    """Load annotations from annotations.json file."""
+    annotations_dir = Path(__file__).parent / 'annotations'
+    progress_file = annotations_dir / 'annotations.json'
+    try:
+        with open(progress_file, "r") as f:
+            st.session_state.annotated_files = json.load(f)
+    except FileNotFoundError:
+        # If file doesn't exist, initialize with empty dict
+        st.session_state.annotated_files = {}
+    except json.JSONDecodeError:
+        st.error("Error parsing annotations.json file!")
+        st.session_state.annotated_files = {}
+
+def save_annotations():
+    """Save annotations to annotations.json file."""
+    annotations_dir = Path(__file__).parent / 'annotations'
+    os.makedirs(annotations_dir, exist_ok=True)
+    progress_file = annotations_dir / 'annotations.json'
+    with open(progress_file, 'w') as f:
+        json.dump(st.session_state.annotated_files, f, indent=2)
+
 def main():
-    # Initialize view state
+    """Main function to run the Streamlit app."""
+    # Initialize session state variables
+    if 'annotator_email' not in st.session_state:
+        st.session_state.annotator_email = None
+    if 'annotated_files' not in st.session_state:
+        st.session_state.annotated_files = {}
+    if 'current_file_index' not in st.session_state:
+        st.session_state.current_file_index = 0
     if 'view' not in st.session_state:
-        st.session_state.view = "annotation"
+        st.session_state.view = "login"
+    if 'statements' not in st.session_state:
+        st.session_state.statements = load_statements()
     
+    # Load annotations
+    load_annotations()
+    
+    # Show login page if not logged in
     if st.session_state.annotator_email is None:
         show_login_page()
-    else:
-        if st.session_state.view == "list":
-            show_conversation_list()
-        else:
-            show_annotation_interface()
+        return
+    
+    # Show conversation list if in list view
+    if st.session_state.view == "list":
+        show_conversation_list()
+        return
+    
+    # Show annotation interface
+    show_annotation_interface()
 
 if __name__ == "__main__":
     main() 

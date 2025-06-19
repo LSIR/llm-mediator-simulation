@@ -1,0 +1,14 @@
+{
+  "a@hotmail.fr": {
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3ko9vd-comment_cuz35v2.csv": {
+      "confidence": -0.1,
+      "reasoning": "",
+      "timestamp": "2025-06-13T14:23:33.684123"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3jyxn7-comment_cuteyi2.csv": {
+      "confidence": 0.2,
+      "reasoning": "",
+      "timestamp": "2025-06-13T14:24:23.234465"
+    }
+  }
+}
