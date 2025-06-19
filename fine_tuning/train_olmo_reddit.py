@@ -23,6 +23,10 @@ import numpy as np
 import torch.distributed as dist
 from accelerate import Accelerator
 import re
+from transformers.utils import TRANSFORMERS_CACHE
+
+# Print Hugging Face cache location
+print(f"Hugging Face cache directory: {TRANSFORMERS_CACHE}")
 
 # Should we add the full context, i.e., more previous comments?
 # -> Not necessarly since we may face comments with deleted or removed text.
@@ -206,7 +210,7 @@ def main(cfg: DictConfig):
         # Load and prepare data
         pairs = load_reddit_pairs(cfg.data.path)
         train_dataset = prepare_data(pairs, "train")
-        val_dataset = prepare_data(pairs, "val")
+        eval_dataset = prepare_data(pairs, "val")
 
         if torch.cuda.is_bf16_supported():
             torch_dtype = torch.bfloat16 # bfloat16 Not supported in RTX 8000
@@ -262,13 +266,14 @@ def main(cfg: DictConfig):
             ddp_find_unused_parameters=False
         )
 
+
         # Create Trainer
         trainer = SFTTrainer(
             model=model,
             args=training_args,
             train_dataset=train_dataset,
-            eval_dataset=val_dataset,
-            callbacks=[GenerationCallback(tokenizer, val_dataset, accelerator=accelerator)],
+            eval_dataset=eval_dataset,
+            # callbacks=[GenerationCallback(tokenizer, eval_dataset, accelerator=accelerator)],
         )
 
         # # Prepare the trainer with accelerator

@@ -74,6 +74,7 @@ submit = """
     --node-pools {env:NODE_POOL} \
     --environment WANDB_API_KEY=$(hatch run runai:read-env) \
     --environment CONFIG_PATH=/home/laugier/llm-mediator-simulation/fine_tuning/configs \
+    --environment HF_HOME={env:HF_HOME} \
     """
 train = """submit --large-shm --command -- accelerate launch \
 --mixed_precision=bf16 \
@@ -102,6 +103,7 @@ TRAINING_SCRIPT = "train_olmo_reddit.py"
 RUNAI_JOB_NAME = "laugier-olmo-reddit-sft-$(date +\"%d%m%y-%H%M%S\")"
 N_GPUS = "4"
 NODE_POOL = "default"
+HF_HOME = "/scratch/laugier/hugging_face_cache"
 
 
 [tool.hatch.build.targets.wheel]
