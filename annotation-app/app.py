@@ -199,20 +199,29 @@ def display_comment(comment, is_placeholder=False):
     # Display the comment footer
     st.markdown(footer_html, unsafe_allow_html=True)
 
+# Helper to get user directory (sanitize email for filesystem safety)
+def get_user_dir(email):
+    safe_email = email.replace('@', '_at_').replace('.', '_dot_')
+    return Path(__file__).parent / 'annotations' / safe_email
+
 def load_annotated_files():
-    """Load the annotated files for all users."""
-    annotations_dir = Path(__file__).parent / 'annotations'
-    progress_file = annotations_dir / 'annotation_progress.json'
+    """Load the annotated files for the current user."""
+    if not st.session_state.annotator_email:
+        return {}
+    user_dir = get_user_dir(st.session_state.annotator_email)
+    progress_file = user_dir / 'annotation_progress.json'
     if progress_file.exists():
         with open(progress_file, 'r') as f:
             return json.load(f)
     return {}
 
 def save_annotated_files():
-    """Save the annotated files for all users."""
-    annotations_dir = Path(__file__).parent / 'annotations'
-    os.makedirs(annotations_dir, exist_ok=True)
-    progress_file = annotations_dir / 'annotation_progress.json'
+    """Save the annotated files for the current user."""
+    if not st.session_state.annotator_email:
+        return
+    user_dir = get_user_dir(st.session_state.annotator_email)
+    os.makedirs(user_dir, exist_ok=True)
+    progress_file = user_dir / 'annotation_progress.json'
     with open(progress_file, 'w') as f:
         json.dump(st.session_state.annotated_files, f)
 
@@ -331,13 +340,51 @@ def show_annotation_interface():
     # Display annotator info and progress
     st.sidebar.write(f"Annotator: {st.session_state.annotator_email}")
     conversation_files = get_conversation_files()
-    annotated_count = len(st.session_state.annotated_files.get(st.session_state.annotator_email, {}))
+    annotated_files_dict = st.session_state.annotated_files.get(st.session_state.annotator_email, {})
+    annotated_files = list(annotated_files_dict.keys())
+    annotated_count = len(annotated_files)
     total_count = len(conversation_files)
     st.sidebar.write(f"Progress: {annotated_count}/{total_count} conversations annotated")
     
     # Add navigation buttons in sidebar
     st.sidebar.markdown("---")
     st.sidebar.subheader("Navigation")
+
+    # --- Add Previous and Next Buttons to Sidebar ---
+    current_file = conversation_files[st.session_state.current_file_index]
+    annotated_files_sorted = [str(f) for f in conversation_files if str(f) in annotated_files]
+    current_annotated_idx = None
+    if str(current_file) in annotated_files_sorted:
+        current_annotated_idx = annotated_files_sorted.index(str(current_file))
+        prev_disabled = current_annotated_idx <= 0
+    else:
+        prev_disabled = len(annotated_files_sorted) == 0
+    # Next button is only disabled if on the last thread
+    next_disabled = st.session_state.current_file_index >= len(conversation_files) - 1
+    if st.sidebar.button("Previous", disabled=prev_disabled):
+        if current_annotated_idx is not None:
+            # Go to previous annotated file
+            if current_annotated_idx > 0:
+                prev_file = annotated_files_sorted[current_annotated_idx - 1]
+                for idx, f in enumerate(conversation_files):
+                    if str(f) == prev_file:
+                        st.session_state.current_file_index = idx
+                        st.experimental_rerun()
+                        break
+        else:
+            # If current file is not annotated, go to the last annotated file
+            if len(annotated_files_sorted) > 0:
+                prev_file = annotated_files_sorted[-1]
+                for idx, f in enumerate(conversation_files):
+                    if str(f) == prev_file:
+                        st.session_state.current_file_index = idx
+                        st.experimental_rerun()
+                        break
+    if st.sidebar.button("Next", disabled=next_disabled):
+        if st.session_state.current_file_index < len(conversation_files) - 1:
+            st.session_state.current_file_index += 1
+            st.experimental_rerun()
+
     if st.sidebar.button("View All Conversations"):
         st.session_state.view = "list"
         st.rerun()
@@ -440,8 +487,8 @@ def show_annotation_interface():
         # Save to file
         save_annotations()
         
-        st.success("Annotation saved successfully!")
-        st.rerun()
+        # Automatically load the next conversation
+        next_conversation()
 
 def save_annotation(file_path, confidence, reasoning):
     """Save the annotation to a file."""
@@ -511,25 +558,29 @@ def load_statements():
         return json.load(f)
 
 def load_annotations():
-    """Load annotations from annotations.json file."""
-    annotations_dir = Path(__file__).parent / 'annotations'
-    progress_file = annotations_dir / 'annotations.json'
+    """Load annotations from the user's annotations.json file."""
+    if not st.session_state.annotator_email:
+        st.session_state.annotated_files = {}
+        return
+    user_dir = get_user_dir(st.session_state.annotator_email)
+    annotations_file = user_dir / 'annotations.json'
     try:
-        with open(progress_file, "r") as f:
+        with open(annotations_file, "r") as f:
             st.session_state.annotated_files = json.load(f)
     except FileNotFoundError:
-        # If file doesn't exist, initialize with empty dict
         st.session_state.annotated_files = {}
     except json.JSONDecodeError:
         st.error("Error parsing annotations.json file!")
         st.session_state.annotated_files = {}
 
 def save_annotations():
-    """Save annotations to annotations.json file."""
-    annotations_dir = Path(__file__).parent / 'annotations'
-    os.makedirs(annotations_dir, exist_ok=True)
-    progress_file = annotations_dir / 'annotations.json'
-    with open(progress_file, 'w') as f:
+    """Save annotations to the user's annotations.json file."""
+    if not st.session_state.annotator_email:
+        return
+    user_dir = get_user_dir(st.session_state.annotator_email)
+    os.makedirs(user_dir, exist_ok=True)
+    annotations_file = user_dir / 'annotations.json'
+    with open(annotations_file, 'w') as f:
         json.dump(st.session_state.annotated_files, f, indent=2)
 
 def main():

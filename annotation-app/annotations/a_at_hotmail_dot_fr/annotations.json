@@ -1,0 +1,29 @@
+{
+  "a@hotmail.fr": {
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3jyxn7-comment_cuteyi2.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:35:09.638435"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3ko9vd-comment_cuz35v2.csv": {
+      "confidence": 0.3,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:33:21.620834"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3lqidx-comment_cv8gsnh.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:33:46.283922"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3mhgci-comment_cveysuq.csv": {
+      "confidence": -0.3,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:34:04.605985"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3myz7j-comment_cvjc70m.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-19T13:35:46.756841"
+    }
+  }
+}

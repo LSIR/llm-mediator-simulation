@@ -55,4 +55,3 @@ streamlit run app.py
 # load generated comments
 # Google Cloud Bucket
 # 45adoi ill rendered
-# confidence slider
