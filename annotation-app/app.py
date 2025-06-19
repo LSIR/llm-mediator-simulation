@@ -320,7 +320,8 @@ def show_conversation_list():
         col1.write("✅" if is_annotated else "⭕")
         
         # Conversation info
-        col2.markdown(f"**{title}**")
+        safe_title = title.replace('*', '\\*')
+        col2.markdown(f"**{safe_title}**")
         col2.markdown(f"*Submission ID:* {conversation_id}  \n*Thread ID:* {thread_id}")
         
         # View button
@@ -412,8 +413,15 @@ def show_annotation_interface():
     
     # Display the title and IDs
     st.markdown(f'<div class="reddit-title">CMV: {title}</div>', unsafe_allow_html=True)
-    st.markdown(f'**Submission ID:** {conversation_id} | **Thread ID:** {thread_id}')
-    
+    thread_number = st.session_state.current_file_index + 1
+    is_annotated = str(current_file) in annotated_files
+    status_emoji = '✅' if is_annotated else '⭕'
+    st.markdown(
+        f'**Submission ID:** {conversation_id} | **Thread ID:** {thread_id} | **Thread #{thread_number}/{total_count}** {status_emoji}',
+        unsafe_allow_html=True
+    )
+
+   
     df = load_conversation(current_file)
     
     # Display conversation history (excluding last 2 comments)
