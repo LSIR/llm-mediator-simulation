@@ -1,8 +1,10 @@
 """Mistral local-running model wrapper"""
 
+import os
 from typing import Any, Literal, override
 
 import torch
+from peft import PeftConfig, PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from llm_mediator_simulation.models.language_model import (
@@ -33,7 +35,7 @@ class HFLocalModel(LanguageModel):
         """Initialize a HuggingFace model.
 
         Args:
-            model_name: Mistral model name, or path to such a model.
+            model_name: Model name, or path to such a model.
             max_new_tokens: Maximum newly generated tokens
             num_return_sequences: Number of generated sentences.
             temperature: Sampling temperature.
@@ -47,10 +49,21 @@ class HFLocalModel(LanguageModel):
         Recommendations can be found in Google Prompt Engineering White Paper:
         https://drive.google.com/file/d/1AbaBYbEa_EbPelsT40-vj64L-2IwUJHy/view
         """
+        self.model_path = model_name
+        custom_model = False
+        # If lora fine-tuned
+        if os.path.exists(model_name) and "adapter_model.safetensors" in os.listdir(
+            model_name
+        ):
+            peft_config = PeftConfig.from_pretrained(model_name)
+            self.model_name = peft_config.base_model_name_or_path
+            custom_model = True
 
-        self.model_name = model_name
+        else:
+            self.model_name = model_name
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(
+        model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             device_map="auto",
             quantization_config=QUANTIZATION_CONFIG[quantization],
@@ -58,6 +71,12 @@ class HFLocalModel(LanguageModel):
             **kwargs,
         )
 
+        # If lora fine-tuned
+        if custom_model:
+            self.model = PeftModel.from_pretrained(model, model_name)
+
+        else:
+            self.model = model
         # Parameters
         self.max_new_tokens = max_new_tokens
         self.num_return_sequences = num_return_sequences

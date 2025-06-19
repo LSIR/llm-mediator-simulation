@@ -191,8 +191,8 @@ def server(
 
     @app.route("/model_name", methods=["GET"])
     def model_name() -> str:  # type: ignore
-        """Return the model name"""
-        return model.model_name
+        """Return the model name (actually, since we may use custom models, this is the model path for those cases)"""
+        return model.model_path
 
     @app.route("/model_quantization", methods=["GET"])
     def model_quantization() -> str:  # type: ignore

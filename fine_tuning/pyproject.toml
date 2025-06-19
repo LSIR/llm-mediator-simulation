@@ -40,12 +40,10 @@ Utilities to run a ML project on RunAI
 
 [tool.hatch.envs.runai.scripts]
 docker-image-name = "echo {env:DOCKER_IMAGE_NAME}"
-build-local = [
-    """
+build-local = ["""
     docker build -t {env:DOCKER_IMAGE_NAME}:$(hatch version) \
     --target local .
-    """,
-]
+    """]
 train-local = """
     OUTPUT_PATH=/fine-tuning/output && \
     docker run --gpus all \
@@ -54,15 +52,13 @@ train-local = """
     -v $(pwd)/.env:/fine-tuning/.env \
     {env:DOCKER_IMAGE_NAME}:$(hatch version) accelerate launch {env:TRAINING_SCRIPT} training.output_path=$OUTPUT_PATH {args}
 """
-build = [
-    """
+build = ["""
     docker build -t {env:DOCKER_IMAGE_NAME}:$(hatch version) \
     --target runai \
     --build-arg LDAP_GROUPNAME=lsir \
     --build-arg LDAP_GID=11255 \
     --build-arg LDAP_USERNAME=laugier \
-    --build-arg LDAP_UID=269408 .""",
-]
+    --build-arg LDAP_UID=269408 ."""]
 push = "docker push {env:DOCKER_IMAGE_NAME}:$(hatch version)"
 read-env = "python -c \"from dotenv import load_dotenv; import os; load_dotenv(); print(os.getenv('WANDB_API_KEY'))\""
 submit = """
@@ -82,7 +78,7 @@ train = """submit --large-shm --command -- accelerate launch \
 --num_machines=1 \
 --dynamo_backend=inductor \
 /home/laugier/llm-mediator-simulation/fine_tuning/{env:TRAINING_SCRIPT} \
-training.output_path=/home/laugier/olmo2-cga-cmv/sft \
+training.output_path=/mnt/lsir/nlp4sd/laugier_rcp/olmo2-cga-cmv/sft \
 data.path=/home/laugier/llm-mediator-simulation/data/reddit/cmv/cga_cmv_pairs_before_derailment.jsonl \
 {args}"""
 interactive = "submit --interactive -- sleep infinity"
@@ -107,4 +103,4 @@ HF_HOME = "/scratch/laugier/hugging_face_cache"
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["."] 
+packages = ["."]

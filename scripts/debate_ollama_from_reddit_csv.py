@@ -59,8 +59,6 @@ def main(config):
     # TODO 4 Lina's improvements: personalized summary.
     # TODO IDEA: Use the Wikipedia version of Conv gone awry focusing on Controversial Wiki Talk pages (Israel, feminism, etc.). Question, is OlMo2 pretrained on wiki talk pages?
 
-    # TODO check phi
-
     # TODO Compare
     # 0. Zero-shot
     # 1. Few shot (RAG Few-shot?)
