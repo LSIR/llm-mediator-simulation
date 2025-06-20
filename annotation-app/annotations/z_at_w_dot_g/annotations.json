@@ -1,0 +1,14 @@
+{
+  "z@w.g": {
+    "data/reddit/cmv/test/sub_3jyxn7-comment_cuteyi2.csv": {
+      "confidence": -0.2,
+      "reasoning": "",
+      "timestamp": "2025-06-20T15:24:21.949859"
+    },
+    "data/reddit/cmv/test/sub_3ko9vd-comment_cuz35v2.csv": {
+      "confidence": 0.2,
+      "reasoning": "",
+      "timestamp": "2025-06-20T15:24:28.702914"
+    }
+  }
+}

@@ -127,9 +127,9 @@
       "timestamp": "2025-06-20T14:17:23.886366"
     },
     "data/reddit/cmv/test/sub_3jyxn7-comment_cuteyi2.csv": {
-      "confidence": 0.0,
+      "confidence": 0.2,
       "reasoning": "",
-      "timestamp": "2025-06-20T15:05:01.293143"
+      "timestamp": "2025-06-20T15:23:14.280280"
     },
     "data/reddit/cmv/test/sub_3ko9vd-comment_cuz35v2.csv": {
       "confidence": 0.0,
@@ -140,6 +140,16 @@
       "confidence": 0.0,
       "reasoning": "",
       "timestamp": "2025-06-20T15:06:05.094180"
+    },
+    "data/reddit/cmv/test/sub_40h94q-comment_cyu412k.csv": {
+      "confidence": 0.4,
+      "reasoning": "",
+      "timestamp": "2025-06-20T15:18:58.592542"
+    },
+    "data/reddit/cmv/test/sub_3mhgci-comment_cveysuq.csv": {
+      "confidence": 0.2,
+      "reasoning": "",
+      "timestamp": "2025-06-20T15:23:30.092653"
     }
   }
 }

@@ -6,6 +6,7 @@ from datetime import datetime
 from google.cloud import storage
 from pathlib import Path
 from dotenv import load_dotenv
+import random
 load_dotenv()
 
 # Initialize session state
@@ -408,55 +409,71 @@ def show_annotation_interface():
     for _, comment in df[:-2].iterrows():
         display_comment(comment)
     
-    # Create two columns for the last two comments and placeholders
+    # Randomize left/right assignment for actual vs generated comments
+    if 'comment_side_order' not in st.session_state or st.session_state.get('last_slider_file', None) != str(current_file):
+        st.session_state.comment_side_order = random.choice(['actual_left', 'generated_left'])
+        st.session_state.last_slider_file = str(current_file)
+    side_order = st.session_state.comment_side_order
+
+    actual_comments = list(df[-2:].iterrows())
+    # Prepare generated comments (as before)
+    generated_comments = []
+    generated_transcript_dir = "generated_debates/test/nojson_nofs_profiles/2025-06-20_12-39-38/transcripts"
+    generated_filename = f"sub_{conversation_id}-comment_{thread_id}.txt"
+    generated_path = os.path.join(generated_transcript_dir, generated_filename)
+    if os.path.exists(generated_path):
+        with open(generated_path, "r") as f:
+            lines = f.readlines()
+        import re
+        msg_lines = [line.strip() for line in lines if re.match(r"^\d{2}:\d{2}:\d{2} - .+?:", line)]
+        last_two = msg_lines[-2:] if len(msg_lines) >= 2 else msg_lines
+        actual_timestamps = [comment[1]['Timestamp'] for comment in actual_comments]
+        for i, line in enumerate(last_two):
+            match = re.match(r"^(\d{2}:\d{2}:\d{2}) - ([^:]+): (.*)$", line)
+            if match:
+                _, user, text = match.groups()
+                text = text.rstrip().removesuffix('()').rstrip()
+                timestamp = actual_timestamps[i] if i < len(actual_timestamps) else datetime.now()
+                comment = {
+                    'User Name': user,
+                    'Text': text,
+                    'Timestamp': timestamp
+                }
+                generated_comments.append(comment)
+            else:
+                generated_comments.append({'User Name': 'Unknown', 'Text': line, 'Timestamp': datetime.now()})
+    # else: generated_comments stays empty
+
     col1, col2 = st.columns(2)
-    
+    if side_order == 'actual_left':
+        left_label, right_label = "Actual Comments", "Generated Comments"
+        left_comments, right_comments = actual_comments, generated_comments
+        left_is_actual = True
+    else:
+        left_label, right_label = "Generated Comments", "Actual Comments"
+        left_comments, right_comments = generated_comments, actual_comments
+        left_is_actual = False
+
     with col1:
-        st.subheader("Actual Comments")
-        actual_comments = list(df[-2:].iterrows())
-        for _, comment in actual_comments:
-            display_comment(comment)
-    
+        st.subheader(left_label)
+        for comment in left_comments:
+            # If actual_comments, comment is (idx, row); if generated, it's dict
+            if left_is_actual:
+                display_comment(comment[1])
+            else:
+                display_comment(comment, is_placeholder=True)
     with col2:
-        st.subheader("Generated Comments")
-        # Construct the path to the generated debate transcript file
-        generated_transcript_dir = "generated_debates/test/nojson_nofs_profiles/2025-06-20_12-39-38/transcripts"
-        generated_filename = f"sub_{conversation_id}-comment_{thread_id}.txt"
-        generated_path = os.path.join(generated_transcript_dir, generated_filename)
-        if os.path.exists(generated_path):
-            with open(generated_path, "r") as f:
-                lines = f.readlines()
-            # Find lines that match the pattern 'timestamp - username: message'
-            import re
-            msg_lines = [line.strip() for line in lines if re.match(r"^\d{2}:\d{2}:\d{2} - .+?:", line)]
-            last_two = msg_lines[-2:] if len(msg_lines) >= 2 else msg_lines
-            # Get timestamps from actual comments
-            actual_timestamps = [comment[1]['Timestamp'] for comment in actual_comments]
-            for i, line in enumerate(last_two):
-                match = re.match(r"^(\d{2}:\d{2}:\d{2}) - ([^:]+): (.*)$", line)
-                if match:
-                    _, user, text = match.groups()
-                    # Remove trailing '()' if present
-                    text = text.rstrip().removesuffix('()').rstrip()
-                    # Use the timestamp from the corresponding actual comment
-                    if i < len(actual_timestamps):
-                        timestamp = actual_timestamps[i]
-                    else:
-                        timestamp = datetime.now()
-                    comment = {
-                        'User Name': user,
-                        'Text': text,
-                        'Timestamp': timestamp
-                    }
-                    display_comment(comment, is_placeholder=True)
-                else:
-                    st.warning(f"Could not parse line: {line}")
-        else:
-            st.warning(f"Generated transcript file not found: {generated_path}")
-    
+        st.subheader(right_label)
+        for comment in right_comments:
+            if not left_is_actual:
+                display_comment(comment[1])
+            else:
+                display_comment(comment, is_placeholder=True)
+
     # Annotation interface
     st.subheader("Annotation")
-    st.write("Rate your confidence in selecting the left comment (negative) or right comment (positive):")
+    slider_help = f"Move left for {left_label.lower()}, right for {right_label.lower()}. The further you move, the more confident you are."
+    st.write(slider_help)
     
     # Get existing annotation if any
     existing_annotation = None
@@ -467,22 +484,17 @@ def show_annotation_interface():
     if existing_annotation:
         st.info("You have already annotated this conversation. Submitting a new annotation will replace the previous one.")
     
-    # Reset slider to 0 for each new thread unless there is an existing annotation
-    if 'last_slider_file' not in st.session_state or st.session_state.last_slider_file != str(current_file):
-        st.session_state.confidence_slider_value = 0.0 if not existing_annotation else existing_annotation.get("confidence", 0.0)
-        st.session_state.last_slider_file = str(current_file)
-    # Ensure confidence_slider_value is always initialized
-    if 'confidence_slider_value' not in st.session_state:
-        st.session_state.confidence_slider_value = 0.0
+    # Set slider value: 0.0 for new thread, or existing annotation value
+    slider_value = 0.0 if not existing_annotation else existing_annotation.get("confidence", 0.0)
 
     # Add confidence slider
     confidence = st.slider(
         "Confidence Score",
         min_value=-1.0,
         max_value=1.0,
-        value=st.session_state.confidence_slider_value,
+        value=slider_value,
         step=0.1,
-        key="confidence_slider_value",
+        key=f"confidence_slider_value_{str(current_file)}",
         help="Move left for left comment, right for right comment. The further you move, the more confident you are."
     )
     
