@@ -129,7 +129,17 @@
     "data/reddit/cmv/test/sub_3jyxn7-comment_cuteyi2.csv": {
       "confidence": 0.0,
       "reasoning": "",
-      "timestamp": "2025-06-20T14:44:52.361917"
+      "timestamp": "2025-06-20T15:05:01.293143"
+    },
+    "data/reddit/cmv/test/sub_3ko9vd-comment_cuz35v2.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T15:05:03.243244"
+    },
+    "data/reddit/cmv/test/sub_3lqidx-comment_cv8gsnh.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T15:06:05.094180"
     }
   }
 }

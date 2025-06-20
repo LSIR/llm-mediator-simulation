@@ -418,15 +418,41 @@ def show_annotation_interface():
             display_comment(comment)
     
     with col2:
-        st.subheader("Placeholder Comments")
-        # Create placeholder comments with the same timestamp as the actual comments
-        for i in range(2):
-            placeholder = {
-                'User Name': 'PlaceholderUser',
-                'Text': 'This is a placeholder comment.',
-                'Timestamp': actual_comments[i][1]['Timestamp']
-            }
-            display_comment(placeholder, is_placeholder=True)
+        st.subheader("Generated Comments")
+        # Construct the path to the generated debate transcript file
+        generated_transcript_dir = "generated_debates/test/nojson_nofs_profiles/2025-06-20_12-39-38/transcripts"
+        generated_filename = f"sub_{conversation_id}-comment_{thread_id}.txt"
+        generated_path = os.path.join(generated_transcript_dir, generated_filename)
+        if os.path.exists(generated_path):
+            with open(generated_path, "r") as f:
+                lines = f.readlines()
+            # Find lines that match the pattern 'timestamp - username: message'
+            import re
+            msg_lines = [line.strip() for line in lines if re.match(r"^\d{2}:\d{2}:\d{2} - .+?:", line)]
+            last_two = msg_lines[-2:] if len(msg_lines) >= 2 else msg_lines
+            # Get timestamps from actual comments
+            actual_timestamps = [comment[1]['Timestamp'] for comment in actual_comments]
+            for i, line in enumerate(last_two):
+                match = re.match(r"^(\d{2}:\d{2}:\d{2}) - ([^:]+): (.*)$", line)
+                if match:
+                    _, user, text = match.groups()
+                    # Remove trailing '()' if present
+                    text = text.rstrip().removesuffix('()').rstrip()
+                    # Use the timestamp from the corresponding actual comment
+                    if i < len(actual_timestamps):
+                        timestamp = actual_timestamps[i]
+                    else:
+                        timestamp = datetime.now()
+                    comment = {
+                        'User Name': user,
+                        'Text': text,
+                        'Timestamp': timestamp
+                    }
+                    display_comment(comment, is_placeholder=True)
+                else:
+                    st.warning(f"Could not parse line: {line}")
+        else:
+            st.warning(f"Generated transcript file not found: {generated_path}")
     
     # Annotation interface
     st.subheader("Annotation")
