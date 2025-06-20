@@ -27,4 +27,4 @@ fine_tuning/.venv/
 fine_tuning/wandb/
 fine_tuning/dist/
 annotation-app/vertex-ai-leo.json
-annotation-app/generated_debates/*
+annotation-app/generated_debates/
