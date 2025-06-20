@@ -241,6 +241,8 @@ def show_login_page():
     """Display the login page with email input."""
     st.title("Reddit Conversation Annotation Tool")
     st.write("Please enter your email address to begin annotation.")
+    st.write("There is no registration to the app. The email address is just an identifier for me to keep track of the annotators and for you to save your annotations and resume later.")
+    st.write("Therefore you can enter a fake address but please remember it 😇")
     
     email = st.text_input("Email Address")
     if st.button("Start Annotation"):
@@ -446,11 +448,11 @@ def show_annotation_interface():
 
     col1, col2 = st.columns(2)
     if side_order == 'actual_left':
-        left_label, right_label = "Actual Comments", "Generated Comments"
+        left_label, right_label = "Conversation follow-up A", "Conversation follow-up B"
         left_comments, right_comments = actual_comments, generated_comments
         left_is_actual = True
     else:
-        left_label, right_label = "Generated Comments", "Actual Comments"
+        left_label, right_label = "Conversation follow-up A", "Conversation follow-up B"
         left_comments, right_comments = generated_comments, actual_comments
         left_is_actual = False
 
@@ -472,7 +474,7 @@ def show_annotation_interface():
 
     # Annotation interface
     st.subheader("Annotation")
-    slider_help = f"Move left for {left_label.lower()}, right for {right_label.lower()}. The further you move, the more confident you are."
+    slider_help = f"Move left for Conversation follow-up A, right for Conversation follow-up B. The further you move, the more confident you are."
     st.write(slider_help)
     
     # Get existing annotation if any
@@ -495,7 +497,7 @@ def show_annotation_interface():
         value=slider_value,
         step=0.1,
         key=f"confidence_slider_value_{str(current_file)}",
-        help="Move left for left comment, right for right comment. The further you move, the more confident you are."
+        help="Move left for comments in Conversation follow-up A (on the left), right for right comments in Conversation follow-up B (on the right). The further you move, the more confident you are."
     )
     
     # Add reasoning field
