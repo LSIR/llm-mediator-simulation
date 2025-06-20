@@ -353,34 +353,13 @@ def show_annotation_interface():
 
     # --- Add Previous and Next Buttons to Sidebar ---
     current_file = conversation_files[st.session_state.current_file_index]
-    annotated_files_sorted = [str(f) for f in conversation_files if str(f) in annotated_files]
-    current_annotated_idx = None
-    if str(current_file) in annotated_files_sorted:
-        current_annotated_idx = annotated_files_sorted.index(str(current_file))
-        prev_disabled = current_annotated_idx <= 0
-    else:
-        prev_disabled = len(annotated_files_sorted) == 0
-    # Next button is only disabled if on the last thread
+    # Previous button: always go to previous thread, disabled for first thread
+    prev_disabled = st.session_state.current_file_index == 0
     next_disabled = st.session_state.current_file_index >= len(conversation_files) - 1
     if st.sidebar.button("Previous", disabled=prev_disabled):
-        if current_annotated_idx is not None:
-            # Go to previous annotated file
-            if current_annotated_idx > 0:
-                prev_file = annotated_files_sorted[current_annotated_idx - 1]
-                for idx, f in enumerate(conversation_files):
-                    if str(f) == prev_file:
-                        st.session_state.current_file_index = idx
-                        st.experimental_rerun()
-                        break
-        else:
-            # If current file is not annotated, go to the last annotated file
-            if len(annotated_files_sorted) > 0:
-                prev_file = annotated_files_sorted[-1]
-                for idx, f in enumerate(conversation_files):
-                    if str(f) == prev_file:
-                        st.session_state.current_file_index = idx
-                        st.experimental_rerun()
-                        break
+        if st.session_state.current_file_index > 0:
+            st.session_state.current_file_index -= 1
+            st.experimental_rerun()
     if st.sidebar.button("Next", disabled=next_disabled):
         if st.session_state.current_file_index < len(conversation_files) - 1:
             st.session_state.current_file_index += 1
@@ -621,7 +600,16 @@ def main():
     if st.session_state.annotator_email is None:
         show_login_page()
         return
-    
+
+    # Ensure current_file_index points to the next unannotated file after reconnect
+    conversation_files = get_conversation_files()
+    # Only reset if out of range or no conversations
+    if (
+        not conversation_files or
+        st.session_state.current_file_index >= len(conversation_files)
+    ):
+        st.session_state.current_file_index = get_next_unannotated_file(conversation_files)
+
     # Show conversation list if in list view
     if st.session_state.view == "list":
         show_conversation_list()
