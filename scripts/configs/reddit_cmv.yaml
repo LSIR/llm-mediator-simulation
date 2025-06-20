@@ -31,3 +31,5 @@ prune_debaters: True
 json_debater_reponse: False
 few_shot_samples: False
 load_debater_profiles: True
+
+split: "test"

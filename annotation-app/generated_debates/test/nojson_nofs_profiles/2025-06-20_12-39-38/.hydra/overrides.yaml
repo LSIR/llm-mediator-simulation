@@ -1,0 +1,2 @@
+- +debater_model_name=allenai/OLMo-2-0325-32B
+- +debater_quantization=no quantization

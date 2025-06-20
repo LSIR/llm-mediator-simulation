@@ -1,14 +1,14 @@
 {
   "a@hotmail.fr": {
     "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3jyxn7-comment_cuteyi2.csv": {
-      "confidence": 0.2,
-      "reasoning": "",
-      "timestamp": "2025-06-19T13:47:00.634087"
+      "confidence": 0.4,
+      "reasoning": "I dont know\n",
+      "timestamp": "2025-06-20T14:03:16.486843"
     },
     "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3ko9vd-comment_cuz35v2.csv": {
       "confidence": 0.3,
       "reasoning": "",
-      "timestamp": "2025-06-19T13:33:21.620834"
+      "timestamp": "2025-06-20T13:30:41.370795"
     },
     "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3lqidx-comment_cv8gsnh.csv": {
       "confidence": 0.0,
@@ -64,6 +64,72 @@
       "confidence": 0.4,
       "reasoning": "",
       "timestamp": "2025-06-19T13:51:50.240416"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_3xp8j6-comment_cy6pprk.csv": {
+      "confidence_1": 0.2,
+      "confidence_2": -0.4,
+      "reasoning": "",
+      "timestamp": "2025-06-20T12:09:18.011583"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_42p4sh-comment_czc25m2.csv": {
+      "confidence": 0.0,
+      "reasoning": "I dont know\n",
+      "timestamp": "2025-06-20T13:29:09.478877"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_40h94q-comment_cyu412k.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:02:06.027625"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_40hikl-comment_cyu5u8p.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:02:59.226330"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_40kj5x-comment_cyuz6qp.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:03:00.388796"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_41l4ad-comment_cz3c0zg.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:09:34.030105"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_434m3x-comment_czffhbs.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:10:53.391394"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_45adoi-comment_czwe3sk.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:13:59.214040"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_466efe-comment_d02tnnh.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:14:05.578639"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_46g4ec-comment_d04s995.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:15:29.015299"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_46hyi6-comment_d059d5o.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:16:19.349890"
+    },
+    "/home/laugier/llm-mediator-simulation/data/reddit/cmv/test/sub_474nq2-comment_d0a8pxx.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:17:23.886366"
+    },
+    "data/reddit/cmv/test/sub_3jyxn7-comment_cuteyi2.csv": {
+      "confidence": 0.0,
+      "reasoning": "",
+      "timestamp": "2025-06-20T14:44:52.361917"
     }
   }
 }

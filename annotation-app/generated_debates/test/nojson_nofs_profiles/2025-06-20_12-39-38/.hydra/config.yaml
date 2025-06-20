@@ -1,0 +1,20 @@
+seed: 42
+debate_config:
+  _target_: llm_mediator_simulation.simulation.debate.config.DebateConfig
+  context: 'Act as a Reddit user engaged in a conversation about the following statement:'
+  add: post
+summary_config:
+  _target_: llm_mediator_simulation.simulation.summary.config.SummaryConfig
+  latest_messages_limit: 14
+  ignore: true
+  utterance: comment
+max_new_tokens: 200
+repetition_penalty: 1.5
+debug: false
+prune_debaters: true
+json_debater_reponse: false
+few_shot_samples: false
+load_debater_profiles: true
+split: test
+debater_model_name: allenai/OLMo-2-0325-32B
+debater_quantization: no quantization

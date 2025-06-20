@@ -5,6 +5,8 @@ import json
 from datetime import datetime
 from google.cloud import storage
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 # Initialize session state
 if 'current_file_index' not in st.session_state:
@@ -15,8 +17,7 @@ if 'annotator_email' not in st.session_state:
     st.session_state.annotator_email = None
 if 'statements' not in st.session_state:
     # Load statements from JSON file
-    parent_dir = Path(__file__).parent.parent
-    statements_path = parent_dir / "data/reddit/cmv/statements.json"
+    statements_path = "data/reddit/cmv/statements.json"
     with open(statements_path, 'r') as f:
         st.session_state.statements = json.load(f)
 if 'annotated_files' not in st.session_state:
@@ -125,8 +126,7 @@ def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
 def get_conversation_files():
     """Get all conversation files from the data directory."""
     # Get the parent directory of annotation-app
-    parent_dir = Path(__file__).parent.parent
-    data_dir = parent_dir / "data/reddit/cmv/test"
+    data_dir = Path("data/reddit/cmv/test")
     return sorted(list(data_dir.glob("*.csv")))
 
 def load_conversation(file_path):
@@ -413,17 +413,18 @@ def show_annotation_interface():
     
     with col1:
         st.subheader("Actual Comments")
-        for _, comment in df[-2:].iterrows():
+        actual_comments = list(df[-2:].iterrows())
+        for _, comment in actual_comments:
             display_comment(comment)
     
     with col2:
         st.subheader("Placeholder Comments")
-        # Create placeholder comments with similar structure
-        for _ in range(2):
+        # Create placeholder comments with the same timestamp as the actual comments
+        for i in range(2):
             placeholder = {
                 'User Name': 'PlaceholderUser',
                 'Text': 'This is a placeholder comment.',
-                'Timestamp': datetime.now()
+                'Timestamp': actual_comments[i][1]['Timestamp']
             }
             display_comment(placeholder, is_placeholder=True)
     
@@ -461,7 +462,7 @@ def show_annotation_interface():
     
     # Add reasoning field
     reasoning = st.text_area(
-        "Reasoning for your choice",
+        "(Optional) Reasoning for your choice",
         value="" if not existing_annotation else existing_annotation.get("reasoning", ""),
         height=150,
         help="Explain why you chose this comment and your confidence level"
@@ -486,60 +487,6 @@ def show_annotation_interface():
         # Automatically load the next conversation
         next_conversation()
 
-def save_annotation(file_path, confidence, reasoning):
-    """Save the annotation to a file."""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    annotation = {
-        'file': str(file_path),
-        'confidence': confidence,
-        'reasoning': reasoning,
-        'timestamp': timestamp,
-        'annotator': st.session_state.annotator_email
-    }
-    
-    # Save locally first
-    annotations_dir = Path(__file__).parent / 'annotations'
-    os.makedirs(annotations_dir, exist_ok=True)
-    
-    # Remove previous annotation files for this conversation and annotator
-    if st.session_state.annotator_email in st.session_state.annotated_files:
-        for existing_file in st.session_state.annotated_files[st.session_state.annotator_email]:
-            if existing_file == str(file_path):
-                # Find and remove the corresponding annotation file
-                for old_file in annotations_dir.glob('annotation_*.txt'):
-                    try:
-                        with open(old_file, 'r') as f:
-                            old_annotation = eval(f.read())  # Safely evaluate the string as a dict
-                            if (old_annotation.get('file') == str(file_path) and 
-                                old_annotation.get('annotator') == st.session_state.annotator_email):
-                                old_file.unlink()  # Delete the file
-                                break
-                    except Exception as e:
-                        st.warning(f"Could not process old annotation file {old_file}: {str(e)}")
-    
-    # Save new annotation
-    annotation_file = annotations_dir / f'annotation_{timestamp}.txt'
-    with open(annotation_file, 'w') as f:
-        f.write(str(annotation))
-    
-    # Add to annotated files for this user if not already there
-    if st.session_state.annotator_email not in st.session_state.annotated_files:
-        st.session_state.annotated_files[st.session_state.annotator_email] = {}
-    if str(file_path) not in st.session_state.annotated_files[st.session_state.annotator_email]:
-        st.session_state.annotated_files[st.session_state.annotator_email].append(str(file_path))
-    save_annotated_files()
-    
-    # Upload to GCS
-    try:
-        upload_to_gcs(
-            bucket_name=os.getenv('GCS_BUCKET_NAME'),
-            source_file_name=str(annotation_file),
-            destination_blob_name=f'annotations/annotation_{timestamp}.txt'
-        )
-        st.success("Annotation saved successfully!")
-    except Exception as e:
-        st.error(f"Failed to upload to cloud storage: {str(e)}")
-
 def next_conversation():
     """Move to the next conversation."""
     conversation_files = get_conversation_files()
@@ -548,8 +495,7 @@ def next_conversation():
 
 def load_statements():
     """Load statements from JSON file."""
-    parent_dir = Path(__file__).parent.parent
-    statements_path = parent_dir / "data/reddit/cmv/statements.json"
+    statements_path = "data/reddit/cmv/statements.json"
     with open(statements_path, 'r') as f:
         return json.load(f)
 
@@ -578,6 +524,16 @@ def save_annotations():
     annotations_file = user_dir / 'annotations.json'
     with open(annotations_file, 'w') as f:
         json.dump(st.session_state.annotated_files, f, indent=2)
+
+    try:
+        upload_to_gcs(
+            bucket_name=os.getenv('GCS_BUCKET_NAME'),
+            source_file_name=annotations_file,
+            destination_blob_name=f'{st.session_state.annotator_email}_annotations.json'
+        )
+        st.success("Annotation saved successfully!")
+    except Exception as e:
+        st.error(f"Failed to upload to cloud storage: {str(e)}")
 
 def main():
     """Main function to run the Streamlit app."""

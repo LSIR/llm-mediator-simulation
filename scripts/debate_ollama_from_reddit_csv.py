@@ -90,7 +90,8 @@ def main(config):
     # The conversation summary handler (keep track of the general history and of the n latest messages)
     summary_config = instantiate(config.summary_config)
 
-    conversations_path = "data/reddit/cmv/dev/"
+    split = config.split
+    conversations_path = f"data/reddit/cmv/{split}/"
 
     with open("data/reddit/cmv/statements.json", "r", encoding="utf-8") as f:
         statements = json.load(f)
@@ -138,7 +139,7 @@ def main(config):
         )
 
         debate.preload_csv_chat(
-            f"data/reddit/cmv/dev/{truncated_chat_path}",
+            f"data/reddit/cmv/{split}/{truncated_chat_path}",
             app="reddit",
             truncated_num=2,
             load_debater_profiles=config.load_debater_profiles,
@@ -198,7 +199,7 @@ if __name__ == "__main__":
 
     output_dir_name = []
 
-    # Save results in outputs/dev/json_fs_profiles/{timestamp}
+    # Save results in outputs/{split}/json_fs_profiles/{timestamp}
 
     # loag hydra config from scripts/configs/reddit_cmv.yaml without hydra, just as a simple yaml file
     config = OmegaConf.load("scripts/configs/reddit_cmv.yaml")
@@ -222,6 +223,8 @@ if __name__ == "__main__":
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    sys.argv.append(f"hydra.run.dir=outputs/dev/{output_dir}/{timestamp}")
+    split = config.split
+
+    sys.argv.append(f"hydra.run.dir=outputs/{split}/{output_dir}/{timestamp}")
 
     main()

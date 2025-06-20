@@ -51,7 +51,6 @@ streamlit run app.py
 └── annotations/  (created automatically)
 ```
 
-# TODO swap 1st and 2nd comment could be after same source comment or not
+# TODO swap randomly
 # load generated comments
-# Google Cloud Bucket
-# Two annotations.
+# Deploy Kubernetes
