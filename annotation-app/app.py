@@ -248,9 +248,8 @@ def show_login_page():
             st.session_state.annotator_email = email
             # Load annotated files when user logs in
             st.session_state.annotated_files = load_annotated_files()
-            # Set current file index to next unannotated file
-            conversation_files = get_conversation_files()
-            st.session_state.current_file_index = get_next_unannotated_file(conversation_files)
+            # Set flag to force next unannotated file after login
+            st.session_state.force_next_unannotated = True
             st.experimental_rerun()
         else:
             st.error("Please enter a valid email address (e.g., user@example.com)")
@@ -411,6 +410,7 @@ def show_annotation_interface():
     
     # Randomize left/right assignment for actual vs generated comments
     if 'comment_side_order' not in st.session_state or st.session_state.get('last_slider_file', None) != str(current_file):
+        random.seed(f"{conversation_id}_{thread_id}")
         st.session_state.comment_side_order = random.choice(['actual_left', 'generated_left'])
         st.session_state.last_slider_file = str(current_file)
     side_order = st.session_state.comment_side_order
@@ -513,10 +513,18 @@ def show_annotation_interface():
             st.session_state.annotated_files[st.session_state.annotator_email] = {}
         
         # Save new annotation
+        if side_order == 'actual_left':
+            left_comment_type = 'actual'
+            right_comment_type = 'generated'
+        else:
+            left_comment_type = 'generated'
+            right_comment_type = 'actual'
         st.session_state.annotated_files[st.session_state.annotator_email][str(current_file)] = {
             "confidence": confidence,
             "reasoning": reasoning,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "left_comment_type": left_comment_type,
+            "right_comment_type": right_comment_type
         }
         
         # Save to file
@@ -595,14 +603,11 @@ def main():
         show_login_page()
         return
 
-    # Ensure current_file_index points to the next unannotated file after reconnect
-    conversation_files = get_conversation_files()
-    # Only reset if out of range or no conversations
-    if (
-        not conversation_files or
-        st.session_state.current_file_index >= len(conversation_files)
-    ):
+    # Only set current_file_index to next unannotated after login or explicit request
+    if st.session_state.view != "list" and st.session_state.get('force_next_unannotated', False):
+        conversation_files = get_conversation_files()
         st.session_state.current_file_index = get_next_unannotated_file(conversation_files)
+        st.session_state.force_next_unannotated = False
 
     # Show conversation list if in list view
     if st.session_state.view == "list":

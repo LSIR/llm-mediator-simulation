@@ -52,5 +52,4 @@ streamlit run app.py
 ```
 
 # TODO swap randomly
-# load generated comments
 # Deploy Kubernetes
