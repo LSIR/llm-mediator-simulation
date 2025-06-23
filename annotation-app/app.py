@@ -209,16 +209,24 @@ def display_comment(comment, is_placeholder=False):
     # Display the comment footer
    # st.markdown(footer_html, unsafe_allow_html=True)
 
-# Helper to get user directory (sanitize email for filesystem safety)
-def get_user_dir(email):
-    safe_email = email.replace('@', '_at_').replace('.', '_dot_')
-    return Path(__file__).parent / 'annotations' / safe_email
+# Helper to get annotation directory based on generated debates path and email
+
+def get_annotation_dir():
+    """Get the annotation directory for the current annotation set and simulation timestamp."""
+    generated_debates_path = f"{st.session_state.annotation_set}/nojson_nofs_profiles/{st.session_state.simulation_timestamp}"
+    return Path(__file__).parent / 'annotations' / generated_debates_path
+
+def get_sanitized_email():
+    email = st.session_state.annotator_email
+    return email.replace('@', '_at_').replace('.', '_dot_')
 
 def load_annotated_files():
-    """Load the annotated files for the current user."""
+    """Load the annotated files for the current user (progress only, not main annotation storage)."""
     if not st.session_state.annotator_email:
         return {}
-    user_dir = get_user_dir(st.session_state.annotator_email)
+    # Only used for progress tracking, keep per-email dir for progress file
+    safe_email = st.session_state.annotator_email.replace('@', '_at_').replace('.', '_dot_')
+    user_dir = Path(__file__).parent / 'annotations' / safe_email
     progress_file = user_dir / 'annotation_progress.json'
     if progress_file.exists():
         with open(progress_file, 'r') as f:
@@ -226,10 +234,11 @@ def load_annotated_files():
     return {}
 
 def save_annotated_files():
-    """Save the annotated files for the current user."""
+    """Save the annotated files for the current user (progress only, not main annotation storage)."""
     if not st.session_state.annotator_email:
         return
-    user_dir = get_user_dir(st.session_state.annotator_email)
+    safe_email = st.session_state.annotator_email.replace('@', '_at_').replace('.', '_dot_')
+    user_dir = Path(__file__).parent / 'annotations' / safe_email
     os.makedirs(user_dir, exist_ok=True)
     progress_file = user_dir / 'annotation_progress.json'
     with open(progress_file, 'w') as f:
@@ -566,12 +575,13 @@ def load_statements():
         return json.load(f)
 
 def load_annotations():
-    """Load annotations from the user's annotations.json file."""
+    """Load annotations from the user's annotations.json file in the generated debates path."""
     if not st.session_state.annotator_email:
         st.session_state.annotated_files = {}
         return
-    user_dir = get_user_dir(st.session_state.annotator_email)
-    annotations_file = user_dir / 'annotations.json'
+    annotation_dir = get_annotation_dir()
+    sanitized_email = get_sanitized_email()
+    annotations_file = annotation_dir / f'{sanitized_email}_annotations.json'
     try:
         with open(annotations_file, "r") as f:
             st.session_state.annotated_files = json.load(f)
@@ -582,20 +592,25 @@ def load_annotations():
         st.session_state.annotated_files = {}
 
 def save_annotations():
-    """Save annotations to the user's annotations.json file."""
+    """Save annotations to the user's annotations.json file in the generated debates path."""
     if not st.session_state.annotator_email:
         return
-    user_dir = get_user_dir(st.session_state.annotator_email)
-    os.makedirs(user_dir, exist_ok=True)
-    annotations_file = user_dir / 'annotations.json'
+    annotation_dir = get_annotation_dir()
+    os.makedirs(annotation_dir, exist_ok=True)
+    sanitized_email = get_sanitized_email()
+    annotations_file = annotation_dir / f'{sanitized_email}_annotations.json'
     with open(annotations_file, 'w') as f:
         json.dump(st.session_state.annotated_files, f, indent=2)
 
+    # Upload to GCS with the same relative path
     try:
+        bucket_name = os.getenv('GCS_BUCKET_NAME')
+        # Relative path from 'annotations/'
+        rel_path = annotations_file.relative_to(Path(__file__).parent / 'annotations')
         upload_to_gcs(
-            bucket_name=os.getenv('GCS_BUCKET_NAME'),
+            bucket_name=bucket_name,
             source_file_name=annotations_file,
-            destination_blob_name=f'{st.session_state.annotator_email}_annotations.json'
+            destination_blob_name=str(rel_path)
         )
         st.success("Annotation saved successfully!")
     except Exception as e:
