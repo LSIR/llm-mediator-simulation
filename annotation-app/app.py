@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 import random
 load_dotenv()
 
+DEV_SIMULATION_TIMESTAMP = "2025-06-19_12-34-24"
+TEST_SIMULATION_TIMESTAMP = "2025-06-20_12-39-38"
+
 # Initialize session state
 if 'current_file_index' not in st.session_state:
     st.session_state.current_file_index = 0
@@ -23,6 +26,10 @@ if 'statements' not in st.session_state:
         st.session_state.statements = json.load(f)
 if 'annotated_files' not in st.session_state:
     st.session_state.annotated_files = {}
+if 'annotation_set' not in st.session_state:
+    st.session_state.annotation_set = None
+if 'simulation_timestamp' not in st.session_state:
+    st.session_state.simulation_timestamp = None
 
 # Add custom CSS for Reddit-like styling
 st.markdown("""
@@ -126,8 +133,10 @@ def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
 
 def get_conversation_files():
     """Get all conversation files from the data directory."""
-    # Get the parent directory of annotation-app
-    data_dir = Path("data/reddit/cmv/test")
+    set_name = st.session_state.get('annotation_set', 'test')
+    if set_name not in ['dev', 'test']:
+        set_name = 'test'
+    data_dir = Path(f"data/reddit/cmv/{set_name}")
     return sorted(list(data_dir.glob("*.csv")))
 
 def load_conversation(file_path):
@@ -238,16 +247,23 @@ def get_next_unannotated_file(conversation_files):
     return 0  # If all files are annotated, start from the beginning
 
 def show_login_page():
-    """Display the login page with email input."""
+    """Display the login page with email input and set selection."""
     st.title("Reddit Conversation Annotation Tool")
     st.write("Please enter your email address to begin annotation.")
     st.write("There is no registration to the app. The email address is just an identifier for me to keep track of the annotators and for you to save your annotations and resume later.")
     st.write("Therefore you can enter a fake address but please remember it 😇")
     
     email = st.text_input("Email Address")
-    if st.button("Start Annotation"):
+    col1, col2 = st.columns(2)
+    with col1:
+        dev_clicked = st.button(f"Annotate Dev Set (run {DEV_SIMULATION_TIMESTAMP})")
+    with col2:
+        test_clicked = st.button(f"Annotate Test Set (run {TEST_SIMULATION_TIMESTAMP})", disabled=True)
+    if dev_clicked or test_clicked:
         if email and "@" in email and "." in email.split("@")[1]:  # Better email validation
             st.session_state.annotator_email = email
+            st.session_state.annotation_set = 'dev' if dev_clicked else 'test'
+            st.session_state.simulation_timestamp = DEV_SIMULATION_TIMESTAMP if dev_clicked else TEST_SIMULATION_TIMESTAMP
             # Load annotated files when user logs in
             st.session_state.annotated_files = load_annotated_files()
             # Set flag to force next unannotated file after login
@@ -420,9 +436,11 @@ def show_annotation_interface():
     actual_comments = list(df[-2:].iterrows())
     # Prepare generated comments (as before)
     generated_comments = []
-    generated_transcript_dir = "generated_debates/test/nojson_nofs_profiles/2025-06-20_12-39-38/transcripts"
+    simulation_timestamp = st.session_state.simulation_timestamp
+    generated_transcript_dir = f"generated_debates/{st.session_state.annotation_set}/nojson_nofs_profiles/{simulation_timestamp}/transcripts"
     generated_filename = f"sub_{conversation_id}-comment_{thread_id}.txt"
     generated_path = os.path.join(generated_transcript_dir, generated_filename)
+    print(generated_path)
     if os.path.exists(generated_path):
         with open(generated_path, "r") as f:
             lines = f.readlines()
