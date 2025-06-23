@@ -145,7 +145,7 @@ def load_conversation(file_path):
     df['Timestamp'] = pd.to_datetime(df['Timestamp'], unit='s')
     return df
 
-def display_comment(comment, is_placeholder=False):
+def display_comment(comment, is_placeholder=False, emoji=None):
     """Display a single comment in Reddit-like format."""
     # Format the timestamp
     time_ago = (datetime.now() - comment['Timestamp']).total_seconds()
@@ -174,11 +174,14 @@ def display_comment(comment, is_placeholder=False):
     # Replace any remaining ">" at the start of lines with a newline
     comment_text = comment_text.replace('\n>', '\n\n>')
 
+    # Add emoji if provided
+    emoji_html = f"<span style='font-size: 18px; margin-right: 4px;'>{emoji}</span>" if emoji else ""
+
     # Create the comment header HTML
     header_html = f"""
     <div class="reddit-comment {'reddit-placeholder' if is_placeholder else ''}">
         <div class="reddit-comment-header">
-            <span style="color: #1A1A1B; font-weight: 500;">u/{comment['User Name']}</span>
+            {emoji_html}<span style="color: #1A1A1B; font-weight: 500;">u/{comment['User Name']}</span>
             <span style="margin: 0 4px;">•</span>
             <span>{time_str}</span>
         </div>
@@ -274,10 +277,10 @@ def show_login_page():
 
     col1, col2 = st.columns(2)
     with col1:
-        selected_dev = st.selectbox("Select Dev Simulation Run", dev_runs, key="dev_run_select")
+        selected_dev = st.selectbox("Select **Dev** Simulation Run (This is only to demonstrate the annotation app, ground truth is revealed)", dev_runs, key="dev_run_select")
         dev_clicked = st.button("Annotate Dev Set", key="dev_btn")
     with col2:
-        selected_test = st.selectbox("Select Test Simulation Run", test_runs, key="test_run_select")
+        selected_test = st.selectbox("Select **Test** Simulation Run (Enabled only when the annotation phase is ready)", test_runs, key="test_run_select")
         test_clicked = st.button("Annotate Test Set", key="test_btn", disabled=True)
 
     if dev_clicked or test_clicked:
@@ -443,7 +446,6 @@ def show_annotation_interface():
         unsafe_allow_html=True
     )
 
-   
     df = load_conversation(current_file)
     
     # Display conversation history (excluding last 2 comments)
@@ -489,6 +491,16 @@ def show_annotation_interface():
                 generated_comments.append({'User Name': 'Unknown', 'Text': line, 'Timestamp': datetime.now()})
     # else: generated_comments stays empty
 
+    # --- Reveal Button for Dev Set ---
+    reveal_key = f"reveal_ground_truth_{str(current_file)}"
+    is_dev = st.session_state.annotation_set == 'dev'
+    if is_dev:
+        if reveal_key not in st.session_state:
+            st.session_state[reveal_key] = False
+        if st.button("Reveal Ground Truth", key=f"reveal_btn_{str(current_file)}"):
+            st.session_state[reveal_key] = True
+    reveal = st.session_state.get(reveal_key, False)
+
     col1, col2 = st.columns(2)
     if side_order == 'actual_left':
         left_label, right_label = "Conversation follow-up A", "Conversation follow-up B"
@@ -499,21 +511,37 @@ def show_annotation_interface():
         left_comments, right_comments = generated_comments, actual_comments
         left_is_actual = False
 
+    # Emoji assignment
+    human_emoji = "🧑"
+    bot_emoji = "🤖"
+
     with col1:
         st.subheader(left_label)
         for comment in left_comments:
             # If actual_comments, comment is (idx, row); if generated, it's dict
             if left_is_actual:
-                display_comment(comment[1])
+                if reveal:
+                    display_comment(comment[1], emoji=human_emoji)
+                else:
+                    display_comment(comment[1])
             else:
-                display_comment(comment, is_placeholder=True)
+                if reveal:
+                    display_comment(comment, is_placeholder=True, emoji=bot_emoji)
+                else:
+                    display_comment(comment, is_placeholder=True)
     with col2:
         st.subheader(right_label)
         for comment in right_comments:
             if not left_is_actual:
-                display_comment(comment[1])
+                if reveal:
+                    display_comment(comment[1], emoji=human_emoji)
+                else:
+                    display_comment(comment[1])
             else:
-                display_comment(comment, is_placeholder=True)
+                if reveal:
+                    display_comment(comment, is_placeholder=True, emoji=bot_emoji)
+                else:
+                    display_comment(comment, is_placeholder=True)
 
     # Annotation interface
     st.subheader("Annotation")
