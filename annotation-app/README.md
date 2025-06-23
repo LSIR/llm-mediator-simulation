@@ -50,5 +50,3 @@ streamlit run app.py
 ├── README.md
 └── annotations/  (created automatically)
 ```
-
-# TODO remove votes, reply, share etc. These are confusing

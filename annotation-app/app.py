@@ -207,7 +207,7 @@ def display_comment(comment, is_placeholder=False):
     st.markdown(f'<div class="reddit-comment-content">{comment_text}</div>', unsafe_allow_html=True)
     
     # Display the comment footer
-    st.markdown(footer_html, unsafe_allow_html=True)
+   # st.markdown(footer_html, unsafe_allow_html=True)
 
 # Helper to get user directory (sanitize email for filesystem safety)
 def get_user_dir(email):
