@@ -278,7 +278,7 @@ def show_login_page():
         dev_clicked = st.button("Annotate Dev Set", key="dev_btn")
     with col2:
         selected_test = st.selectbox("Select Test Simulation Run", test_runs, key="test_run_select")
-        test_clicked = st.button("Annotate Test Set", key="test_btn")
+        test_clicked = st.button("Annotate Test Set", key="test_btn", disabled=True)
 
     if dev_clicked or test_clicked:
         if email and "@" in email and "." in email.split("@")[1]:  # Better email validation
