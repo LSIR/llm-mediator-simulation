@@ -7,6 +7,7 @@ from google.cloud import storage
 from pathlib import Path
 from dotenv import load_dotenv
 import random
+import yaml
 load_dotenv()
 
 DEV_SIMULATION_TIMESTAMP = "2025-06-19_12-34-24"
@@ -315,6 +316,12 @@ def show_conversation_list():
     st.sidebar.markdown("---")
     st.sidebar.subheader("Navigation")
     
+    # Add Hydra Config button for dev set
+    if st.session_state.annotation_set == 'dev':
+        if st.sidebar.button("Show Hydra Config"):
+            st.session_state.view = "hydra_config"
+            st.experimental_rerun()
+    
     if st.sidebar.button("Back to Annotation"):
         st.session_state.view = "annotation"
         st.rerun()
@@ -380,6 +387,35 @@ def show_conversation_list():
                     st.rerun()
                     break
 
+def show_hydra_config_page():
+    """Display the Hydra config (config.yaml and overrides.yaml) for the current dev run."""
+    st.title("Hydra Config Used for Generation")
+    # Only allow for dev set
+    if st.session_state.annotation_set != 'dev':
+        st.warning("Hydra config is only available for the dev set.")
+        return
+    simulation_timestamp = st.session_state.simulation_timestamp
+    hydra_dir = Path(__file__).parent / "generated_debates" / "dev" / "nojson_nofs_profiles" / simulation_timestamp / ".hydra"
+    config_path = hydra_dir / "config.yaml"
+    overrides_path = hydra_dir / "overrides.yaml"
+    st.subheader("config.yaml")
+    if config_path.exists():
+        with open(config_path, 'r') as f:
+            config_data = yaml.safe_load(f)
+        st.code(yaml.dump(config_data, sort_keys=False), language="yaml")
+    else:
+        st.error(f"config.yaml not found at {config_path}")
+    st.subheader("overrides.yaml")
+    if overrides_path.exists():
+        with open(overrides_path, 'r') as f:
+            overrides_content = f.read()
+        st.code(overrides_content, language="yaml")
+    else:
+        st.error(f"overrides.yaml not found at {overrides_path}")
+    if st.button("Back to Annotation"):
+        st.session_state.view = "annotation"
+        st.experimental_rerun()
+
 def show_annotation_interface():
     """Display the main annotation interface."""
     st.title("Reddit Conversation Annotation Tool")
@@ -419,6 +455,12 @@ def show_annotation_interface():
         st.session_state.annotator_email = None
         st.rerun()
     
+    # Add Hydra Config button for dev set
+    if st.session_state.annotation_set == 'dev':
+        if st.sidebar.button("Show Hydra Config"):
+            st.session_state.view = "hydra_config"
+            st.experimental_rerun()
+
     if not conversation_files:
         st.error("No conversation files found!")
         return
@@ -691,6 +733,11 @@ def main():
     # Show conversation list if in list view
     if st.session_state.view == "list":
         show_conversation_list()
+        return
+    
+    # Show hydra config page if requested
+    if st.session_state.view == "hydra_config":
+        show_hydra_config_page()
         return
     
     # Show annotation interface
