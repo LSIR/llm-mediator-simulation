@@ -256,23 +256,39 @@ def get_next_unannotated_file(conversation_files):
     return 0  # If all files are annotated, start from the beginning
 
 def show_login_page():
-    """Display the login page with email input and set selection."""
+    """Display the login page with email input and set selection from available generated debates."""
     st.title("Reddit Conversation Annotation Tool")
     st.write("Please enter your email address to begin annotation.")
     st.write("There is no registration to the app. The email address is just an identifier for me to keep track of the annotators and for you to save your annotations and resume later.")
     st.write("Therefore you can enter a fake address but please remember it 😇")
-    
+
     email = st.text_input("Email Address")
+
+    # List available dev and test simulation timestamps
+    dev_base = Path(__file__).parent / "generated_debates" / "dev" / "nojson_nofs_profiles"
+    test_base = Path(__file__).parent / "generated_debates" / "test" / "nojson_nofs_profiles"
+    dev_runs = [d.name for d in dev_base.iterdir() if d.is_dir()] if dev_base.exists() else []
+    test_runs = [d.name for d in test_base.iterdir() if d.is_dir()] if test_base.exists() else []
+    dev_runs.sort(reverse=True)
+    test_runs.sort(reverse=True)
+
     col1, col2 = st.columns(2)
     with col1:
-        dev_clicked = st.button(f"Annotate Dev Set (run {DEV_SIMULATION_TIMESTAMP})")
+        selected_dev = st.selectbox("Select Dev Simulation Run", dev_runs, key="dev_run_select")
+        dev_clicked = st.button("Annotate Dev Set", key="dev_btn")
     with col2:
-        test_clicked = st.button(f"Annotate Test Set (run {TEST_SIMULATION_TIMESTAMP})", disabled=True)
+        selected_test = st.selectbox("Select Test Simulation Run", test_runs, key="test_run_select")
+        test_clicked = st.button("Annotate Test Set", key="test_btn")
+
     if dev_clicked or test_clicked:
         if email and "@" in email and "." in email.split("@")[1]:  # Better email validation
             st.session_state.annotator_email = email
-            st.session_state.annotation_set = 'dev' if dev_clicked else 'test'
-            st.session_state.simulation_timestamp = DEV_SIMULATION_TIMESTAMP if dev_clicked else TEST_SIMULATION_TIMESTAMP
+            if dev_clicked:
+                st.session_state.annotation_set = 'dev'
+                st.session_state.simulation_timestamp = selected_dev
+            else:
+                st.session_state.annotation_set = 'test'
+                st.session_state.simulation_timestamp = selected_test
             # Load annotated files when user logs in
             st.session_state.annotated_files = load_annotated_files()
             # Set flag to force next unannotated file after login
