@@ -51,5 +51,4 @@ streamlit run app.py
 └── annotations/  (created automatically)
 ```
 
-# TODO swap randomly
-# Deploy Kubernetes
+# TODO remove votes, reply, share etc. These are confusing
