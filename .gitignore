@@ -4,6 +4,7 @@ __pycache__/
 
 # API keys
 .env
+fine_tuning/.env
 
 # Pickled data
 *.pkl
@@ -15,6 +16,16 @@ __pycache__/
 
 # Logs
 *.log
-sandbox/*
-plot_sandbox/*
+sandbox/
+outputs/
 .vscode/restore-terminals.json
+
+data/reddit/cmv/reddit_user_profiles_deprecated.json
+data/reddit/cmv/reddit_user_profiles.json
+
+fine_tuning/.venv/
+fine_tuning/wandb/
+fine_tuning/dist/
+annotation-app/vertex-ai-leo.json
+annotation-app/generated_debates/
+annotation-app/annotations

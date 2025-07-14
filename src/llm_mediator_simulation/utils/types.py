@@ -68,8 +68,8 @@ class Metrics:
 class LLMMessage(TypedDict):
     """LLM message intervention response format."""
 
-    do_intervene: bool
-    intervention_justification: str
+    do_write: bool
+    justification: str
     text: str
 
 
@@ -78,5 +78,5 @@ class LLMProbaMessage(TypedDict):
     Same as LLMMessage, but with a probability of intervention instead of a decision."""
 
     do_intervene: float
-    intervention_justification: str
+    justification: str
     text: str

@@ -1,6 +1,6 @@
 """Mistral model wrapper."""
 
-from typing import Literal, override
+from typing import Any, Literal, override
 
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
@@ -28,7 +28,7 @@ class MistralModel(LanguageModel):
         self.model_name = model_name
 
     @override
-    def sample(self, prompt: str, seed: int | None = None) -> str:
+    def sample(self, prompt: str, seed: int | None = None, **kwargs: Any) -> str:
         """Generate text based on the given prompt."""
 
         response = self.client.chat(

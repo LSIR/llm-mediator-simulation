@@ -1,7 +1,7 @@
 """OpenAI GPT model wrapper."""
 
 import asyncio
-from typing import Literal, override
+from typing import Any, Literal, override
 
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import ChatCompletionMessageParam
@@ -32,7 +32,7 @@ class GPTModel(LanguageModel):
         self.client = OpenAI(api_key=api_key)
 
     @override
-    def sample(self, prompt: str, seed: int | None = None) -> str:
+    def sample(self, prompt: str, seed: int | None = None, **kwargs: Any) -> str:
         messages: list[ChatCompletionMessageParam] = [
             {"role": "user", "content": prompt}
         ]
@@ -69,7 +69,9 @@ class AsyncGPTModel(AsyncLanguageModel):
         self.client = AsyncOpenAI(api_key=api_key)
 
     @override
-    async def sample(self, prompts: list[str], seed: int | None = None) -> list[str]:
+    async def sample(
+        self, prompts: list[str], seed: int | None = None, **kwargs: Any
+    ) -> list[str]:
         # Prepare prompts
         messages: list[list[ChatCompletionMessageParam]] = [
             [{"role": "user", "content": prompt}] for prompt in prompts

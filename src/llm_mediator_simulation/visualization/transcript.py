@@ -15,12 +15,12 @@ def debate_interventions_transcript(interventions: list[Intervention]) -> str:
     lines: list[str] = []
 
     for intervention in interventions:
-        if intervention.text is None or intervention.text == "":
-            continue
+        # if intervention.text is None or intervention.text == "": # TODO Uncomment these lines
+        #    continue
 
         author = intervention.debater.name if intervention.debater else "Mediator"
 
-        line = f"{intervention.timestamp.strftime('%H:%M:%S')} - {author}: {intervention.text}"
+        line = f"{intervention.timestamp.strftime('%H:%M:%S')} - {author}: {intervention.text} ({intervention.justification})"  # TODO Remove everything after {intervention.text}
         lines.append(line)
 
     return "\n\n".join(lines)

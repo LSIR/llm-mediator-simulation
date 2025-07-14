@@ -53,17 +53,92 @@ from llm_mediator_simulation.utils.types import (
 T_scale = TypeVar("T_scale", bound=Scale)
 T_resonning_error = TypeVar("T_resonning_error", bound=ReasoningError)
 
-LLM_RESPONSE_FORMAT: dict[str, str] = {
-    "do_intervene": "bool",
-    "intervention_justification": "a string justification of why you want to intervene or not, which will not be visible by others.",
-    "text": "the text message for your intervention, visible by others. Leave empty if you decide not to intervene",
-}
+
+def response_format(utterance: Literal["message", "comment"] = "message"):
+    llm_response_format: dict[str, str] = {
+        "do_write": "bool",
+        "justification": f"a string justification of why you decide to write a {utterance} or not.",
+        "text": f"the text of your {utterance}. Leave empty if you decide to not write.",
+    }  # order matters for the LLM, to investigate?
+
+    return llm_response_format
+
 
 LLM_PROBA_RESPONSE_FORMAT: dict[str, str] = {
-    "do_intervene": "a float probability of intervention",
-    "intervention_justification": "a string justification of why you want to intervene or not, which will not be visible by others.",
+    "do_write": "a float probability of intervention",
+    "justification": "a string justification of why you want to intervene or not, which will not be visible by others.",
     "text": "the text message for your intervention, visible by others. Leave empty if you decide not to intervene",
-}
+}  # TODO Update
+
+
+def debater_intervention_prompt(
+    debate_config_prompt: str,
+    identifier: Literal["name", "username"],
+    personality_prompt: str,
+    summary_config_prompt: str,
+    add: Literal["send", "post"],
+    utterance: Literal["message", "comment"],
+    agreement: Likert7AgreementLevel | None = None,
+    author_name: str | None = None,
+    json: bool = True,
+    few_shot_samples: list[dict] | None = None,
+):
+
+    if few_shot_samples:
+        prompt = """You simulate real Reddit users engaging in conversations."""
+        for example in few_shot_samples:
+            statement = example["statement"].strip()
+            if statement.endswith("."):
+                statement = statement[:-1].strip()
+            penultimate_utterance = example["penultimate_utterance"]
+            last_utterance = example["last_utterance"]
+
+            prompt += f"""\n\nEXAMPLE:
+If you were role-playing a real person with username {last_utterance["userid"]}, engaged in a conversation about the following statement: "{statement}", and replying to this {utterance}: 
+- {penultimate_utterance["userid"]}: {penultimate_utterance["text"].replace("\n", " ").strip()}, 
+
+Then you could {add} the following {utterance}:
+
+- {last_utterance["userid"]}: {last_utterance["text"].replace("\n", " ").strip()}\n"""
+        prompt += "\n\nNow, "
+
+    else:
+        prompt = ""
+
+    prompt += (
+        f"""{"y" if few_shot_samples else "Y"}ou are roleplaying this real person:"""
+    )
+
+    assert (
+        author_name or personality_prompt
+    ), "Either author_name or a personality must be provided."
+
+    if author_name:
+        prompt += f"""
+{identifier}: {author_name};"""
+
+    prompt += f"""
+{personality_prompt}"""
+
+    prompt += f"""\n\n{debate_config_prompt}"""
+
+    if agreement is not None:
+        prompt += f""", a statement with which you {agreement.value}."""
+    else:
+        prompt += "."
+
+    prompt += f"""\n\n{summary_config_prompt}
+
+Based on the other participant's opinions relatively to yours, as expressed in the conversation so far, {add} a new {utterance} of maximum 4 sentences.
+Do not repeat yourself and do not quote other participants."""
+    # Remember that you are allowed to insult, diminish and curse the people you debate with.\n"""
+
+    if json:
+        prompt += f"""\n\n{json_prompt(response_format(utterance))}"""
+    else:
+        prompt += f"""\n\nYour new {utterance}:\n- {author_name}:"""
+
+    return prompt
 
 
 @retry(attempts=5, verbose=True)
@@ -73,21 +148,44 @@ def debater_intervention(
     summary: SummaryHandler,
     debater: DebaterConfig,
     seed: int | None = None,
+    json: bool = True,
+    few_shot_samples: list[dict] | None = None,
 ) -> tuple[LLMMessage, str]:
     """Debater intervention: decision, motivation for the intervention, and intervention content."""
+    author_name = debater.name
+    prompt = debater_intervention_prompt(
+        config.to_prompt(),
+        debater.identifier,
+        debater.personality.to_prompt() if debater.personality is not None else "",
+        summary.to_prompt(),
+        config.add,
+        summary.utterance,
+        agreement=(
+            debater.topic_opinion.agreement
+            if debater.topic_opinion is not None
+            else None
+        ),
+        json=json,
+        author_name=author_name,
+        few_shot_samples=few_shot_samples,
+    )
 
-    prompt = f"""{config.to_prompt()}. {debater.to_prompt()} {summary.to_prompt()}
+    response = model.sample(prompt, seed=seed, json=json)
+    if json:
+        parsed_response = parse_llm_json(response, LLMMessage)
+    else:
+        text = response.split(f"{author_name}: ")[-1].strip()
+        # Remove trailing quotes
+        if text.endswith('"') and text.startswith('"'):
+            text = text[1:-1]
 
-Do you want to add a comment to the online debate right now?
-You should often add a comment when the previous context is empty or not in the favor of your \
-position. However, you should almost never add a comment when the previous context already \
-supports your position. Use short chat messages, no more than 3 sentences.
+        parsed_response: LLMMessage = {
+            "do_write": True,
+            "justification": "",
+            "text": text,
+        }
 
-{json_prompt(LLM_RESPONSE_FORMAT)}
-"""  # TODO review these instructions
-
-    response = model.sample(prompt, seed=seed)
-    return parse_llm_json(response, LLMMessage), prompt
+    return parsed_response, prompt
 
 
 def prompt_for_update(
@@ -272,7 +370,7 @@ name: {debater.name};\n"""
             name = "Mediator"
         else:
             name = intervention.debater.name
-        prompt += f"""— {name}: {intervention.text}\n"""  # https://en.wikipedia.org/wiki/Quotation_mark#Quotation_dash
+        prompt += f"""— {name}: "{intervention.text}"\n"""  # https://en.wikipedia.org/wiki/Quotation_mark#Quotation_dash
     prompt += "\n"
 
     ################################################
@@ -887,17 +985,14 @@ async def async_debater_interventions(
     summary_prompts = await summary.to_prompts()
 
     for debater, debate_summary in zip(debaters, summary_prompts):
-        prompts.append(
-            f"""{config.to_prompt()}. {debater.to_prompt()} {debate_summary}
-
-Do you want to add a comment to the online debate right now?
-You should often add a comment when the previous context is empty or not in the favor of your \
-position. However, you should almost never add a comment when the previous context already \
-supports your position. Use short chat messages, no more than 3 sentences.
-
-{json_prompt(LLM_RESPONSE_FORMAT)}
-"""
-        )  # TODO review these instructions
+        prompt = debater_intervention_prompt(
+            config.to_prompt(),
+            debater.to_prompt(),
+            debate_summary,
+            config.add,
+            summary.utterance,
+        )
+        prompts.append(prompt)
 
     responses = await model.sample(prompts, seed=seed)
     coerced, failed = parse_llm_jsons(responses, LLMMessage)
@@ -958,7 +1053,7 @@ async def async_mediator_interventions(
 
             {mediator.to_prompt()}
 
-            {json_prompt(LLM_RESPONSE_FORMAT)}
+            {json_prompt(LLM_RESPONSE_FORMAT)} # TODO
             """
         )
 

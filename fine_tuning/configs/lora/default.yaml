@@ -1,0 +1,7 @@
+# LoRA configuration
+r: 4  # Rank
+lora_alpha: 16  # Alpha scaling
+target_modules: ["q_proj", "v_proj"]  # Target attention modules
+lora_dropout: 0.05
+bias: "none"
+task_type: "CAUSAL_LM" 

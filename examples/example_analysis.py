@@ -48,10 +48,36 @@ from llm_mediator_simulation.visualization.transcript import debate_transcript
 
 
 def get_last_debate_in_dir(dir: str) -> str:
-    debates = sorted(
-        [os.path.join(dir, f) for f in os.listdir(dir) if f.endswith(".pkl")]
-    )
-    return debates[-1]
+    # Recursively search for the last debate in the directory
+    # We assume that if the last recursive subdir does not contain any pickled files, then there is no debate
+    # in the directory. We don't check previous subdir that may recursively contain pickled files...
+    # If time, implement DFS traversal of the subdir tree...
+    files = [
+        os.path.join(dir, f)
+        for f in os.listdir(dir)
+        if os.path.isfile(os.path.join(dir, f)) and f.endswith(".pkl")
+    ]
+
+    while not files:
+        # get the last subdirectory
+        subdirs = [
+            os.path.join(dir, d)
+            for d in os.listdir(dir)
+            if os.path.isdir(os.path.join(dir, d))
+        ]
+        if not subdirs:
+            raise ValueError(f"No pickled debates found in {dir}")
+
+        subdirs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+        dir = subdirs[0]
+        files = [
+            os.path.join(dir, f)
+            for f in os.listdir(dir)
+            if os.path.isfile(os.path.join(dir, f)) and f.endswith(".pkl")
+        ]
+
+    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    return files[0]  # Return the most recent file
 
 
 def pickle_options(func):

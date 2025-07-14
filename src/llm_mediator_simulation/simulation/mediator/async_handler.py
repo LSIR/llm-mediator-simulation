@@ -67,7 +67,7 @@ class AsyncMediatorHandler:
                 debater=None,
                 text=result["text"],
                 prompt=prompt,
-                justification=result["intervention_justification"],
+                justification=result["intervention_justification"],  # TODO Update
                 timestamp=datetime.now(),
             )
             for result, prompt in zip(results, prompts)

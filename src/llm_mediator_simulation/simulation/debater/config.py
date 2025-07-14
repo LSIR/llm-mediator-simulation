@@ -1,14 +1,13 @@
 """Debater configuration dataclasses"""
 
 from dataclasses import dataclass
-from typing import override
+from typing import Literal
 
 from llm_mediator_simulation.personalities.personality import (
     Personality,
     PrintablePersonality,
 )
 from llm_mediator_simulation.personalities.scales import Likert7AgreementLevel
-from llm_mediator_simulation.utils.interfaces import Promptable
 
 ###################################################################################################
 #                                   Debater Characteristics                                       #
@@ -52,7 +51,7 @@ class PrintableDebaterConfig:
 
 
 @dataclass
-class DebaterConfig(Promptable):
+class DebaterConfig:
     """Debater metadata class
 
     Args:
@@ -60,21 +59,25 @@ class DebaterConfig(Promptable):
         personality (Personality, optional): The debater's personality. Defaults to None.
         topic_opinion (TopicOpinion, optional): The debater's opinion on the debate topic. Defaults to None.
         variable_topic_opinion (bool, optional): If True, the debater's opinion on the topic will change during the debate. Defaults to False.
+        identifier (str, optional): The word that will be used to refer to the debater identifier. Defaults to "name".
     """
 
     name: str
     personality: Personality | None = None
     topic_opinion: TopicOpinion | None = None
     variable_topic_opinion: bool = False
+    identifier: Literal["name", "username"] = "name"
 
-    @override
-    def to_prompt(self) -> str:
-        return f"""You are roleplaying this real person: 
-name: {self.name}; 
-{self.personality.to_prompt() if self.personality is not None else ""}
-        
-You {self.topic_opinion.agreement.value if self.topic_opinion is not None else Likert7AgreementLevel.NEUTRAL.value} with the current debate statement.
-Remember that you are allowed to insult, diminish and curse the people you debate with."""  # TODO Remove the last sentence
+    def prune(self):
+        """Prune the personality and topic opinion to only keep the most relevant information."""
+        if self.personality is not None:
+            self.personality.prune()
+
+        if (
+            self.topic_opinion
+            and self.topic_opinion.agreement == Likert7AgreementLevel.NEUTRAL
+        ):
+            self.topic_opinion = None
 
     def to_printable(self):
         """Return a simpler version of the debate pickle for printing with pprint without overwhelming informations."""

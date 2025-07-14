@@ -39,6 +39,11 @@ dependencies = [
   "transformers",
   "streamlit",
   "ollama",
+  "convokit",
+  "BAScraper",
+  "hydra-core",
+  "tiktoken",
+  "natsort",
 ]
 
 [project.urls]

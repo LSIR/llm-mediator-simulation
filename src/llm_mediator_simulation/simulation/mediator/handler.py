@@ -60,6 +60,6 @@ class MediatorHandler:
             debater=None,
             text=response["text"] if do_intervene else None,
             prompt=prompt,
-            justification=response["intervention_justification"],
+            justification=response["intervention_justification"],  # TODO Update
             timestamp=datetime.now(),
         )

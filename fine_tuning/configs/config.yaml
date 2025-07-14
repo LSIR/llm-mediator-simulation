@@ -1,0 +1,35 @@
+defaults:
+  - lora: default
+  - _self_
+
+# Random seed for reproducibility
+seed: 42
+
+# Model configuration
+model:
+  # https://wiki.rcp.epfl.ch/en/home/CaaS/cluster-changelog#:~:text=each%20user%20has%20a%20quota%20of%20100GB. in /home/ each user has max 100 GiB qquota but Olmo2 32B is 241 GiB... 
+  path: allenai/OLMo-2-0325-32B # "allenai/OLMo-2-0425-1B" # "allenai/OLMo-2-0325-32B" # allenai/OLMo-2-1124-7B # allenai/OLMo-2-1124-13B
+  trust_remote_code: true
+  load_in_4bit: false
+
+# Training configuration
+training:
+  output_path: "/mnt/datastore/laugier/olmo2-cga-cmv/sft"
+  num_train_epochs: 5
+  per_device_train_batch_size: 1 # 4
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 8 # 2 # 16 (!) https://arxiv.org/pdf/2503.03654
+  learning_rate: 5e-5
+  logging_steps: 10
+  eval_steps: 10
+  save_steps: 1000 # if you want to save intermediate checkpoints, then set to less than 130
+  optim: "adamw_8bit"
+  warmup_steps: 10
+  report_to: "wandb"
+  eval_strategy: "steps"
+  weight_decay: 0.01
+  lr_scheduler_type: "cosine"
+
+# Data configuration
+data:
+  path: ../data/reddit/cmv/cga_cmv_pairs_before_derailment.jsonl" 

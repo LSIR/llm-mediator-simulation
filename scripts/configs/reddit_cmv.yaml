@@ -1,0 +1,35 @@
+defaults:
+  - defaults
+  - debate_config: DebateConfig1
+  - summary_config: SummaryConfig1
+  - _self_
+#   - override hydra/hydra_logging: disabled # Comment to enable hydra saving
+#   - override hydra/job_logging: disabled # Comment to enable hydra saving
+
+# hydra: # Comment to enable hydra saving
+#   output_subdir: null # Comment to enable hydra saving
+#   run: # Comment to enable hydra saving
+#     dir: . # Comment to enable hydra saving
+
+# With Olmo2's tokenizer (cl100k_base), the following json backbone consumes 27 tokens:
+# 
+# {
+#   "do_intervene": true,
+#   "intervention_justification": "",
+#   "text": ""
+# }
+# ```
+# We want max 500 characters in the text, and, say max 100 characters in the justification.
+# As 1 token ~= 4 chars in English https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
+# We calculate: max_new_tokens = 500/4 + 100/4 + 27 = 177 rounded to 200
+
+max_new_tokens: 200
+repetition_penalty: 1.5
+debug: False
+prune_debaters: True
+
+json_debater_reponse: False
+few_shot_samples: False
+load_debater_profiles: True
+
+split: "test"

@@ -205,6 +205,10 @@ def aggregate_average_personalities(debate: DebatePickle):
                     )
 
         # Go to to next round
+        # Here we assume that a round of intervention consist sees each debater exactly once
+        # but this not true when we generate debates from truncated Reddit convs
+        # and force the debater order to follow the order in the hidden part of the debate, since in that case,
+        # the same debater can intervene 0, 1 or more times in the first round
         if debater_count == n:
             round += 1
             debater_count = 0

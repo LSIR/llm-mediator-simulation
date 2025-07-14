@@ -27,6 +27,7 @@ The project is structured like so:
 │
 ├── src/llm_mediator_simulations  # Main package
 │   │
+│   ├── configs        # Hydra configuration files
 │   ├── metrics        # Metrics computations
 │   ├── models         # LLM model wrappers
 │   ├── personalities  # Debater personalities

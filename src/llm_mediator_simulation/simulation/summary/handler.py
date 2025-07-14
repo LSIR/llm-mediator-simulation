@@ -1,6 +1,6 @@
 """Handler class for summaries"""
 
-from typing import override
+from typing import Literal, override
 
 from llm_mediator_simulation.models.language_model import LanguageModel
 from llm_mediator_simulation.simulation.summary.config import SummaryConfig
@@ -8,6 +8,7 @@ from llm_mediator_simulation.utils.interfaces import Promptable
 from llm_mediator_simulation.utils.model_utils import (
     summarize_conversation_with_last_messages,
 )
+from llm_mediator_simulation.utils.summary_prompt import summary_prompt
 from llm_mediator_simulation.utils.types import Intervention
 
 
@@ -34,12 +35,21 @@ class SummaryHandler(Promptable):
 
         self.debaters = config.debaters or []
         self.ignore = config.ignore
+        self.utterance: Literal["message", "comment"] = config.utterance
 
     @property
     def message_strings(self) -> list[str]:
         """Return the last message string contents"""
+        message_list = []
+        for message in self.latest_messages:
+            if message.text:
+                if message.debater:
+                    author_name = message.debater.name
+                else:
+                    author_name = "Mediator"
+                message_list.append(f"""- {author_name}: {message.text}""")
 
-        return [message.text for message in self.latest_messages if message.text]
+        return message_list
 
     def add_new_message(self, message: Intervention) -> None:
         """Add a new message to the latest messages list.
@@ -65,18 +75,15 @@ class SummaryHandler(Promptable):
 
     @override
     def to_prompt(self) -> str:
-        msg_sep = "\n\n"
-        if self.ignore:
-            return f"""Here are the last messages exchanged (you should focus your argumentation on them):
-{msg_sep.join(self.message_strings)}
-"""
-        else:
-            return f"""Here is a summary of the last exchanges (if empty, the conversation just started):
-# {self.summary}
 
-Here are the last messages exchanged (you should focus your argumentation on them):
-{msg_sep.join(self.message_strings)}
-"""
+        prompt = summary_prompt(
+            self.message_strings,
+            self.summary,
+            utterance=self.utterance,
+            ignore=self.ignore,
+        )
+
+        return prompt
 
     def raw_history_prompt(self) -> str:
         """Return the last messages "as is"."""

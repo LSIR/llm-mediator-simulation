@@ -313,7 +313,7 @@ class Personality(Promptable):
         # Not shuffled
         if self.vote_last_presidential_election:
             # self.vote_last_presidential_election can be "voted for the Democratic candidate", "voted with an invalid ballot", "were an eligible voter but did not vote", "were disenfranchised".
-            prompt += f"In the last presidential election, you {self.vote_last_presidential_election}.\n\n"
+            prompt += f"In the last presidential election, your vote was: {self.vote_last_presidential_election}.\n\n"
 
         # Shuffled iif ideologies per issue
         if self.ideologies:
@@ -464,6 +464,68 @@ class Personality(Promptable):
             variable_likelihood_of_beliefs=self.variable_likelihood_of_beliefs,
             free_form_opinions=self.free_form_opinions,
         )
+
+    def prune(self):
+        """Prune the personality
+        by removing the features that have low or mid level of importance,
+        as features predicting by automatic profiling have been filled with placeholder values.
+        """
+
+        if isinstance(self.traits, dict):
+            self.traits = {
+                trait: level
+                for trait, level in self.traits.items()
+                if level == Likert3Level.HIGH
+            }
+        if isinstance(self.facets, dict):
+            self.facets = {
+                facet: direction
+                for facet, direction in self.facets.items()
+                if direction == KeyingDirection.POSITIVE
+            }
+        if isinstance(self.moral_foundations, dict):
+            self.moral_foundations = {
+                foundation: level
+                for foundation, level in self.moral_foundations.items()
+                if level in {Likert5Level.FAIRLY, Likert5Level.EXTREMELY}
+            }
+
+        if isinstance(self.basic_human_values, dict):
+            self.basic_human_values = {
+                human_value: level
+                for human_value, level in self.basic_human_values.items()
+                if level
+                in {
+                    Likert5ImportanceLevel.IMPORTANT,
+                    Likert5ImportanceLevel.VERY_IMPORTANT,
+                }
+            }
+
+        if isinstance(self.ideologies, dict):
+            # In the case where self.ideologies is something like:
+            # {
+            #     Issues.GENERAL: Ideology.MODERATE,
+            #     Issues.ECONOMIC: Ideology.LIBERAL,
+            #     Issues.SOCIAL: Ideology.CONSERVATIVE,
+            # },
+            # we remove the general ideology if there are other ideologies as it is not very relevant...
+            if Issues.GENERAL in self.ideologies and len(self.ideologies) > 1:
+                self.ideologies.pop(Issues.GENERAL)
+
+            self.ideologies = {
+                issue: ideology
+                for issue, ideology in self.ideologies.items()
+                if ideology not in {Ideology.MODERATE, Ideology.INDEPENDENT}
+            }
+
+            # In the case where self.ideologies is something like:
+            # {
+            #     Issues.GENERAL: Ideology.MODERATE,
+            # },
+            # we transform it into a single Ideology value:
+            # self.ideologies = Ideology.MODERATE
+            if Issues.GENERAL in self.ideologies and len(self.ideologies) == 1:
+                self.ideologies = self.ideologies[Issues.GENERAL]
 
 
 def field_to_printable(personality_field: Any) -> Any:

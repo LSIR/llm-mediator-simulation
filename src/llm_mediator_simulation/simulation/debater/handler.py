@@ -47,13 +47,19 @@ class DebaterHandler:
         )
 
     def intervention(
-        self, initial_intervention: bool = False, seed: int | None = None
+        self,
+        initial_intervention: bool = False,
+        seed: int | None = None,
+        json: bool = True,
+        few_shot_samples: list[dict] | None = None,
     ) -> Intervention:
         """Do a debater intervention.
 
         Args:
             initial_intervention: If this is the first intervention from this debater.
             seed: The seed to use for the random sampling at generation.
+            json: Whether to enforce JSON generation.
+            few_shot_samples: The few shot samples to use for the debater intervention.
         """
 
         # Update the debater personality
@@ -71,6 +77,8 @@ class DebaterHandler:
             summary=self.summary_handler,
             debater=self.config,
             seed=seed,
+            json=json,
+            few_shot_samples=few_shot_samples,
         )
 
         return Intervention(
@@ -79,7 +87,7 @@ class DebaterHandler:
             ),  # Freeze the debater configuration because the personality can change
             text=response["text"],
             prompt=prompt,
-            justification=response["intervention_justification"],
+            justification=response["justification"],
             timestamp=datetime.now(),
         )
 

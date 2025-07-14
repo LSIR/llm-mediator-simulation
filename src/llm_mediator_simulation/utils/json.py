@@ -54,8 +54,12 @@ def extract_json(string: str) -> str:
     end = string.rfind("```")
 
     if start == -1 or end == -1 or start >= end:
-        start = string.rfind("{\n")
-        end = re.search(r"\n\s*}", string).end()
+        start_match = list(re.finditer(r"\{\n?", string))
+        start = start_match[-1].start() if start_match else -1
+        end = string.rfind(r"}") + 1
+        # if end_match == -1 or end_match < start:
+        #     raise ValueError("No JSON code block found.")
+        # end = end_match.end()
         if start == -1 or end == -1 or start >= end:
             raise ValueError("No JSON code block found.")
 
@@ -81,6 +85,7 @@ If None, no validation is performed.
 
     data = json.loads(sanitized_json)
 
+    # If the JSON is not valid, raise an error
     if typedDict and not validate_shallow_json(data, typedDict):
         raise ValueError(
             "JSON response does not match the expected TypedDict instance."

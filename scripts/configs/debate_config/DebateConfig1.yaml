@@ -1,0 +1,6 @@
+_target_: llm_mediator_simulation.simulation.debate.config.DebateConfig
+# Reddit CMV description: [...] Enter with a mindset for *conversation, not debate*.
+context: >-
+  Act as a Reddit user engaged
+  in a conversation about the following statement:
+add: post
